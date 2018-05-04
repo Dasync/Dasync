@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E952AF37-734C-458F-8202-8D639367B96E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <FileAlignment>512</FileAlignment>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dasync.AzureStorage</RootNamespace>
+    <AssemblyName>Dasync.AzureStorage</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FrameworkFolder>netframework4.5</FrameworkFolder>
+    <OutputPath>bin\$(Configuration)\$(FrameworkFolder)\</OutputPath>
+    <BaseIntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</IntermediateOutputPath>
+    <DocumentationFile>bin\$(Configuration)\$(FrameworkFolder)\$(AssemblyName).xml</DocumentationFile>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE;NETFX;NETFX45</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE;NETFX;NETFX45</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="CloudQueueAdapter.cs" />
+    <Compile Include="CloudQueueClientAdapter.cs" />
+    <Compile Include="CloudQueueMessageExtensions.cs" />
+    <Compile Include="CloudStorageAccountAdapter.cs" />
+    <Compile Include="CloudTableAdapter.cs" />
+    <Compile Include="CloudTableClientAdapter.cs" />
+    <Compile Include="ConnectionStringParser.cs" />
+    <Compile Include="DI.cs" />
+    <Compile Include="ICloudQueue.cs" />
+    <Compile Include="ICloudQueueClient.cs" />
+    <Compile Include="ICloudStorageAccount.cs" />
+    <Compile Include="ICloudTable.cs" />
+    <Compile Include="ICloudTableClient.cs" />
+    <Compile Include="QueueDoesNotExistException.cs" />
+    <Compile Include="TableDoesNotExistException.cs" />
+    <Compile Include="TableRowAlreadyExistsException.cs" />
+    <Compile Include="TableRowETagMismatchException.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="WindowsAzure.Storage">
+      <Version>7.2.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Dasync.EETypes</id>
+        <version>0.1.0</version>
+        <authors>D-ASYNC LLC</authors>
+        <projectUrl>https://github.com/Dasync</projectUrl>
+        <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>Execution Engine types.</description>
+        <summary>Execution Engine types.</summary>
+        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
+        <tags>dasync execution engine types</tags>
+        <dependencies>
+            <group targetFramework=".NETStandard1.4">
+                <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+                <dependency id="System.Reflection" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+            <group targetFramework=".NETFramework4.6">
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Engine\EETypes\bin\Release\netframework4.5\Dasync.EETypes.dll" target="lib\net45\Dasync.EETypes.dll" />
+        <file src="..\Engine\EETypes\bin\Release\netframework4.5\Dasync.EETypes.xml" target="lib\net45\Dasync.EETypes.xml" />
+        <file src="..\Engine\EETypes\bin\Release\netframework4.6\Dasync.EETypes.dll" target="lib\net46\Dasync.EETypes.dll" />
+        <file src="..\Engine\EETypes\bin\Release\netframework4.6\Dasync.EETypes.xml" target="lib\net46\Dasync.EETypes.xml" />
+        <file src="..\Engine\EETypes\bin\Release\netstandard1.4\Dasync.EETypes.dll" target="lib\netstandard1.4\Dasync.EETypes.dll" />
+        <file src="..\Engine\EETypes\bin\Release\netstandard1.4\Dasync.EETypes.xml" target="lib\netstandard1.4\Dasync.EETypes.xml" />
+    </files>
+</package>

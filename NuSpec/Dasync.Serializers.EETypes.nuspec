@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Dasync.Serializers.EETypes</id>
+        <version>0.1.0</version>
+        <authors>D-ASYNC LLC</authors>
+        <projectUrl>https://github.com/Dasync</projectUrl>
+        <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>Serializers for Exection Engine types.</description>
+        <summary>Serializers for Exection Engine types.</summary>
+        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
+        <tags>dasync serialize eetypes</tags>
+        <dependencies>
+            <group targetFramework=".NETStandard1.4">
+                <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+                <dependency id="System.Reflection" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Accessors" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.EETypes" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Proxy" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Serialization" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="Dasync.Accessors" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.EETypes" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Proxy" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Serialization" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Data\Serializers.EETypes\bin\Release\netframework4.5\Dasync.Serializers.EETypes.dll" target="lib\net45\Dasync.Serializers.EETypes.dll" />
+        <file src="..\Data\Serializers.EETypes\bin\Release\netframework4.5\Dasync.Serializers.EETypes.xml" target="lib\net45\Dasync.Serializers.EETypes.xml" />
+        <file src="..\Data\Serializers.EETypes\bin\Release\netstandard1.4\Dasync.Serializers.EETypes.dll" target="lib\netstandard1.4\Dasync.Serializers.EETypes.dll" />
+        <file src="..\Data\Serializers.EETypes\bin\Release\netstandard1.4\Dasync.Serializers.EETypes.xml" target="lib\netstandard1.4\Dasync.Serializers.EETypes.xml" />
+    </files>
+</package>

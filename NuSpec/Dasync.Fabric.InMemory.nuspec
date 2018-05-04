@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Dasync.Fabric.InMemory</id>
+        <version>0.1.0</version>
+        <authors>D-ASYNC LLC</authors>
+        <projectUrl>https://github.com/Dasync</projectUrl>
+        <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>In-memory fabric emulation for testing and debugging.</description>
+        <summary>In-memory fabric emulation for testing and debugging.</summary>
+        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
+        <tags>dasync fabric inmemory test debug</tags>
+        <dependencies>
+            <group targetFramework=".NETStandard1.4">
+                <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+                <dependency id="Dasync.EETypes" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Serialization" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ServiceRegistry" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="Dasync.EETypes" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Serialization" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ServiceRegistry" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Fabric\Fabric.InMemory\bin\Release\netstandard1.4\Dasync.Fabric.InMemory.dll" target="lib\netstandard1.4\Dasync.Fabric.InMemory.dll" />
+        <file src="..\Fabric\Fabric.InMemory\bin\Release\netstandard1.4\Dasync.Fabric.InMemory.xml" target="lib\netstandard1.4\Dasync.Fabric.InMemory.xml" />
+        <file src="..\Fabric\Fabric.InMemory\bin\Release\netframework4.5\Dasync.Fabric.InMemory.dll" target="lib\net45\Dasync.Fabric.InMemory.dll" />
+        <file src="..\Fabric\Fabric.InMemory\bin\Release\netframework4.5\Dasync.Fabric.InMemory.xml" target="lib\net45\Dasync.Fabric.InMemory.xml" />
+    </files>
+</package>

@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B7568C78-9434-465D-B292-B70460033223}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <FileAlignment>512</FileAlignment>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dasync.Ioc.Ninject</RootNamespace>
+    <AssemblyName>Dasync.Ioc.Ninject</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FrameworkFolder>netframework4.5</FrameworkFolder>
+    <OutputPath>bin\$(Configuration)\$(FrameworkFolder)\</OutputPath>
+    <BaseIntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</IntermediateOutputPath>
+    <DocumentationFile>bin\$(Configuration)\$(FrameworkFolder)\$(AssemblyName).xml</DocumentationFile>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE;NETFX;NETFX45</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>RELEASE;TRACE;NETFX;NETFX45</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="DI.cs" />
+    <Compile Include="KernelExtensions.cs" />
+    <Compile Include="NinjectIocContainerAdapter.cs" />
+    <Compile Include="KernelToIocContainerConverter.cs" />
+    <Compile Include="NinjectServiceBindingExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Ninject">
+      <Version>3.2.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IoC\Dasync.Ioc.csproj">
+      <Project>{6ffded6b-2f17-4c9e-b9f4-ab9aa93ba027}</Project>
+      <Name>Dasync.Ioc</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

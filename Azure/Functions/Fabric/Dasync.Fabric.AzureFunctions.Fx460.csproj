@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{985B3F1B-E3F0-4D44-A99D-9312EBEB7485}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <FileAlignment>512</FileAlignment>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dasync.Fabric.AzureFunctions</RootNamespace>
+    <AssemblyName>Dasync.Fabric.AzureFunctions</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <FrameworkFolder>netframework4.6</FrameworkFolder>
+    <OutputPath>bin\$(Configuration)\$(FrameworkFolder)\</OutputPath>
+    <BaseIntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</IntermediateOutputPath>
+    <DocumentationFile>bin\$(Configuration)\$(FrameworkFolder)\$(AssemblyName).xml</DocumentationFile>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE;NETFX;NETFX46</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE;RELEASE;NETFX;NETFX46</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="AzureFunctionsFabric.cs" />
+    <Compile Include="AzureStorageServiceRepository.cs" />
+    <Compile Include="AzureStorageTransitionCarrier.cs" />
+    <Compile Include="ConcurrentTransitionException.cs" />
+    <Compile Include="DI.cs" />
+    <Compile Include="GlobalStartup.cs" />
+    <Compile Include="EntryPoints\HttpTrigger.cs" />
+    <Compile Include="AzureWebJobsEnviromentalSettings.cs" />
+    <Compile Include="EntryPoints\QueueTrigger.cs" />
+    <Compile Include="StorageAccontConnectionStringResolver.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client">
+      <Version>5.2.4</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core">
+      <Version>5.2.4</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions">
+      <Version>2.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>9.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="System.Net.Http">
+      <Version>4.3.3</Version>
+    </PackageReference>
+    <PackageReference Include="System.ValueTuple">
+      <Version>4.4.0</Version>
+    </PackageReference>
+    <PackageReference Include="WindowsAzure.Storage">
+      <Version>7.2.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Data\Serialization.Json\Dasync.Serialization.Json.Fx450.csproj">
+      <Project>{e85d2ff8-3aa2-4f2c-aff8-90c7b9dc1bbe}</Project>
+      <Name>Dasync.Serialization.Json.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Data\Serialization\Dasync.Serialization.Fx450.csproj">
+      <Project>{d52dec50-984d-4089-b09b-c272348e820f}</Project>
+      <Name>Dasync.Serialization.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Data\Serializers.EETypes\Dasync.Serializers.EETypes.Fx450.csproj">
+      <Project>{2b5cb54a-6622-429f-8866-7d6b69fe1bec}</Project>
+      <Name>Dasync.Serializers.EETypes.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Data\Serializers.StandardTypes\Dasync.Serializers.StandardTypes.Fx450.csproj">
+      <Project>{fd1c95a7-4c25-450e-a15e-b993f7228ad5}</Project>
+      <Name>Dasync.Serializers.StandardTypes.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Data\ValueContainer\Dasync.ValueContainer.Fx450.csproj">
+      <Project>{e1077c7c-048b-46da-b8a4-b85a30d6e00f}</Project>
+      <Name>Dasync.ValueContainer.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Engine\Accessors\Dasync.Accessors.Fx450.csproj">
+      <Project>{ad937b13-5277-4fbb-ac0d-c4ae8c56584c}</Project>
+      <Name>Dasync.Accessors.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Engine\AsyncStateMachine\Dasync.AsyncStateMachine.Fx450.csproj">
+      <Project>{36cc3d73-7fcf-4eec-a0f8-e406a470a0f1}</Project>
+      <Name>Dasync.AsyncStateMachine.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Engine\EETypes\Dasync.EETypes.Fx450.csproj">
+      <Project>{e10b9109-b721-492e-b32d-048bc8f147c6}</Project>
+      <Name>Dasync.EETypes.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.Fx450.csproj">
+      <Project>{85f5737c-7d70-4c15-a72f-5336b18cc8c9}</Project>
+      <Name>Dasync.ExecutionEngine.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Engine\Proxy\Dasync.Proxy.Fx450.csproj">
+      <Project>{609f6864-473f-4eb5-a1b6-b93a33bacfae}</Project>
+      <Name>Dasync.Proxy.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Fabric\Bootstrap\Dasync.Bootstrap.Fx450.csproj">
+      <Project>{80cb1ca7-0acf-4c9f-850f-30990163ff4e}</Project>
+      <Name>Dasync.Bootstrap.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Fabric\ServiceRegistry\Dasync.ServiceRegistry.Fx450.csproj">
+      <Project>{8797e703-e6d6-46b4-a4a5-ceaecac3fe03}</Project>
+      <Name>Dasync.ServiceRegistry.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\IoC\IoC\Dasync.Ioc.csproj">
+      <Project>{6ffded6b-2f17-4c9e-b9f4-ab9aa93ba027}</Project>
+      <Name>Dasync.Ioc</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Connector.Storage\Dasync.FabricConnector.AzureStorage.Fx450.csproj">
+      <Project>{4400c0e4-7820-4655-98d7-bd91cb8da5b5}</Project>
+      <Name>Dasync.FabricConnector.AzureStorage.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Storage\Dasync.AzureStorage.Fx450.csproj">
+      <Project>{e952af37-734c-458f-8202-8d639367b96e}</Project>
+      <Name>Dasync.AzureStorage.Fx450</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

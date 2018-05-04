@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Dasync.Serializers.StandardTypes</id>
+        <version>0.1.0</version>
+        <authors>D-ASYNC LLC</authors>
+        <projectUrl>https://github.com/Dasync</projectUrl>
+        <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>Serializers for .NET Framework built-in types.</description>
+        <summary>Serializers for .NET Framework built-in types.</summary>
+        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
+        <tags>dasync serialize</tags>
+        <dependencies>
+            <group targetFramework=".NETStandard1.4">
+                <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+                <dependency id="System.Reflection" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Collections.NonGeneric" version="4.0.1" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Serialization" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="Dasync.Serialization" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Data\Serializers.StandardTypes\bin\Release\netframework4.5\Dasync.Serializers.StandardTypes.dll" target="lib\net45\Dasync.Serializers.StandardTypes.dll" />
+        <file src="..\Data\Serializers.StandardTypes\bin\Release\netframework4.5\Dasync.Serializers.StandardTypes.xml" target="lib\net45\Dasync.Serializers.StandardTypes.xml" />
+        <file src="..\Data\Serializers.StandardTypes\bin\Release\netstandard1.4\Dasync.Serializers.StandardTypes.dll" target="lib\netstandard1.4\Dasync.Serializers.StandardTypes.dll" />
+        <file src="..\Data\Serializers.StandardTypes\bin\Release\netstandard1.4\Dasync.Serializers.StandardTypes.xml" target="lib\netstandard1.4\Dasync.Serializers.StandardTypes.xml" />
+    </files>
+</package>

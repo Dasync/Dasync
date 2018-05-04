@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Dasync.Ioc.Ninject</id>
+        <version>0.1.0</version>
+        <authors>D-ASYNC LLC</authors>
+        <projectUrl>https://github.com/Dasync</projectUrl>
+        <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>Inversion of control - dependency injection.</description>
+        <summary>Inversion of control - dependency injection. Ninject.</summary>
+        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
+        <tags>dasync ioc di ninject</tags>
+        <dependencies>
+            <group targetFramework=".NETStandard2.0">
+                <dependency id="Dasync.Ioc" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Ninject" version="3.3.0" exclude="Build,Analyzers" />
+            </group>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="Dasync.Ioc" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Ninject" version="3.2.0" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\IoC\IoC.Ninject\bin\Release\netframework4.5\Dasync.Ioc.Ninject.dll" target="lib\net45\Dasync.Ioc.Ninject.dll" />
+        <file src="..\IoC\IoC.Ninject\bin\Release\netframework4.5\Dasync.Ioc.Ninject.xml" target="lib\net45\Dasync.Ioc.Ninject.xml" />
+        <file src="..\IoC\IoC.Ninject\bin\Release\netstandard2.0\Dasync.Ioc.Ninject.dll" target="lib\netstandard2.0\Dasync.Ioc.Ninject.dll" />
+        <file src="..\IoC\IoC.Ninject\bin\Release\netstandard2.0\Dasync.Ioc.Ninject.xml" target="lib\netstandard2.0\Dasync.Ioc.Ninject.xml" />
+    </files>
+</package>

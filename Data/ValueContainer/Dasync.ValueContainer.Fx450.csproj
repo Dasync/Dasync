@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E1077C7C-048B-46DA-B8A4-B85A30D6E00F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <FileAlignment>512</FileAlignment>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dasync.ValueContainer</RootNamespace>
+    <AssemblyName>Dasync.ValueContainer</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FrameworkFolder>netframework4.5</FrameworkFolder>
+    <OutputPath>bin\$(Configuration)\$(FrameworkFolder)\</OutputPath>
+    <BaseIntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</IntermediateOutputPath>
+    <DocumentationFile>bin\$(Configuration)\$(FrameworkFolder)\$(AssemblyName).xml</DocumentationFile>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>TRACE;DEBUG;NETFX;NETFX45</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>RELEASE;TRACE;NETFX;NETFX45</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="EmptyValueContainer.cs" />
+    <Compile Include="IStronglyTypedValueContainer.cs" />
+    <Compile Include="IValueContainer.cs" />
+    <Compile Include="IValueContainerFactory.cs" />
+    <Compile Include="IValueContainerProxyFactory.cs" />
+    <Compile Include="IValueContainerWithTypeInfo.cs" />
+    <Compile Include="MemberAccessor.cs" />
+    <Compile Include="NamedValue.cs" />
+    <Compile Include="ValueContainer.cs" />
+    <Compile Include="ValueContainerBase.cs" />
+    <Compile Include="ValueContainerEnumerable.cs" />
+    <Compile Include="ValueContainerExtensions.cs" />
+    <Compile Include="ValueContainerFactory.cs" />
+    <Compile Include="ValueContainerTypeBuilder.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

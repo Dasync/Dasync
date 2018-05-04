@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{85F5737C-7D70-4C15-A72F-5336B18CC8C9}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <FileAlignment>512</FileAlignment>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dasync.ExecutionEngine</RootNamespace>
+    <AssemblyName>Dasync.ExecutionEngine</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FrameworkFolder>netframework4.5</FrameworkFolder>
+    <OutputPath>bin\$(Configuration)\$(FrameworkFolder)\</OutputPath>
+    <BaseIntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</IntermediateOutputPath>
+    <DocumentationFile>bin\$(Configuration)\$(FrameworkFolder)\$(AssemblyName).xml</DocumentationFile>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE;NETFX;NETFX45</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE;RELEASE;NETFX;NETFX45</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Fabric\CurrentFabricHolder.cs" />
+    <Compile Include="Fabric\FabricConnectorFactorySelector.cs" />
+    <Compile Include="Fabric\FabricConnectorSelector.cs" />
+    <Compile Include="IntrinsicFlow\IntrinsicRoutines.cs" />
+    <Compile Include="IntrinsicFlow\WhenAllInputParameters.cs" />
+    <Compile Include="IntrinsicFlow\IntrinsicFlowController.cs" />
+    <Compile Include="Cancellation\CancellationTokenSourceIdGenerator.cs" />
+    <Compile Include="Cancellation\CancellationTokenSourceRegistry.cs" />
+    <Compile Include="IntrinsicFlow\InterceptingSynchronizationContext.cs" />
+    <Compile Include="Transitions\TransitionScope.cs" />
+    <Compile Include="Extensions\TaskResultExtensions.cs" />
+    <Compile Include="StateMetadata\Service\ServiceStateMetadata.cs" />
+    <Compile Include="StateMetadata\Service\ServiceStateMetadataProvider.cs" />
+    <Compile Include="StateMetadata\Service\ServiceStateValueContainerProvider.cs" />
+    <Compile Include="StateMetadata\Service\ServiceStateVariable.cs" />
+    <Compile Include="Proxy\RoutineImmediateExecutor.cs" />
+    <Compile Include="Transitions\TransitionContext.cs" />
+    <Compile Include="RoutineMethodIdProvider.cs" />
+    <Compile Include="NumericIdGenerator.cs" />
+    <Compile Include="Proxy\ServiceProxyBuilder.cs" />
+    <Compile Include="RoutineMethodResolver.cs" />
+    <Compile Include="Transitions\TransitionCommitter.cs" />
+    <Compile Include="Transitions\TransitionMonitor.cs" />
+    <Compile Include="Continuation\TaskContinuationClassifier.cs" />
+    <Compile Include="Continuation\TaskContinuationInfo.cs" />
+    <Compile Include="Continuation\TaskContinuationTracker.cs" />
+    <Compile Include="Continuation\TaskContinuationType.cs" />
+    <Compile Include="DI.cs" />
+    <Compile Include="Proxy\ProxyMethodExecutor.cs" />
+    <Compile Include="Transitions\TransitionRunner.cs" />
+    <Compile Include="ReflectionExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.Fx450.csproj">
+      <Project>{e1077c7c-048b-46da-b8a4-b85a30d6e00f}</Project>
+      <Name>Dasync.ValueContainer.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Fabric\ServiceRegistry\Dasync.ServiceRegistry.Fx450.csproj">
+      <Project>{8797e703-e6d6-46b4-a4a5-ceaecac3fe03}</Project>
+      <Name>Dasync.ServiceRegistry.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\IoC\IoC\Dasync.Ioc.csproj">
+      <Project>{6ffded6b-2f17-4c9e-b9f4-ab9aa93ba027}</Project>
+      <Name>Dasync.Ioc</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Accessors\Dasync.Accessors.Fx450.csproj">
+      <Project>{ad937b13-5277-4fbb-ac0d-c4ae8c56584c}</Project>
+      <Name>Dasync.Accessors.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AsyncStateMachine\Dasync.AsyncStateMachine.Fx450.csproj">
+      <Project>{36cc3d73-7fcf-4eec-a0f8-e406a470a0f1}</Project>
+      <Name>Dasync.AsyncStateMachine.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EETypes\Dasync.EETypes.Fx450.csproj">
+      <Project>{e10b9109-b721-492e-b32d-048bc8f147c6}</Project>
+      <Name>Dasync.EETypes.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Proxy\Dasync.Proxy.Fx450.csproj">
+      <Project>{609f6864-473f-4eb5-a1b6-b93a33bacfae}</Project>
+      <Name>Dasync.Proxy.Fx450</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

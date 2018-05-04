@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>Dasync.AzureFunctions</id>
+        <version>0.1.0</version>
+        <authors>D-ASYNC LLC</authors>
+        <projectUrl>https://github.com/Dasync</projectUrl>
+        <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>Runtime for Azure Functions.</description>
+        <tags>dasync azure functions azureFunctions</tags>
+        <dependencies>
+            <group targetFramework=".NETFramework4.6">
+                <dependency id="Dasync.Accessors" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.AsyncStateMachine" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.AzureStorage" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Bootstrap" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.EETypes" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ExecutionEngine" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.FabricConnector.AzureStorage" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Ioc" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Ioc.Ninject" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Proxy" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Serialization" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Serialization.Json" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Serializers.EETypes" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Serializers.StandardTypes" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ServiceRegistry" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Azure\Functions\Build\Dasync.AzureFunctions.props" target="build\Dasync.AzureFunctions.props" />
+        <file src="..\Azure\Functions\Build\Dasync.AzureFunctions.targets" target="build\Dasync.AzureFunctions.targets" />
+        <file src="..\Azure\Functions\Generator\bin\Release\Dasync.Ioc.dll" target="tools\net46\Dasync.Ioc.dll" />
+        <file src="..\Azure\Functions\Generator\bin\Release\Dasync.Ioc.Ninject.dll" target="tools\net46\Dasync.Ioc.Ninject.dll" />
+        <file src="..\Azure\Functions\Generator\bin\Release\Dasync.Ioc.Ninject.pdb" target="tools\net46\Dasync.Ioc.Ninject.pdb" />
+        <file src="..\Azure\Functions\Generator\bin\Release\Dasync.Ioc.Ninject.xml" target="tools\net46\Dasync.Ioc.Ninject.xml" />
+        <file src="..\Azure\Functions\Generator\bin\Release\GenerateFunctions.exe" target="tools\net46\GenerateFunctions.exe" />
+        <file src="..\Azure\Functions\Generator\bin\Release\GenerateFunctions.exe.config" target="tools\net46\GenerateFunctions.exe.config" />
+        <file src="..\Azure\Functions\Generator\bin\Release\GenerateFunctions.pdb" target="tools\net46\GenerateFunctions.pdb" />
+        <file src="..\Azure\Functions\Generator\bin\Release\Ninject.dll" target="tools\net46\Ninject.dll" />
+        <file src="..\Azure\Functions\Fabric\bin\Release\netframework4.6\Dasync.Fabric.AzureFunctions.dll" target="lib\net46\Dasync.Fabric.AzureFunctions.dll" />
+        <file src="..\Azure\Functions\Fabric\bin\Release\netframework4.6\Dasync.Fabric.AzureFunctions.xml" target="lib\net46\Dasync.Fabric.AzureFunctions.xml" />
+    </files>
+</package>

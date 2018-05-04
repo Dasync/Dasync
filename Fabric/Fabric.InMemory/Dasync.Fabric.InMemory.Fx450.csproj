@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3E731492-0E09-475D-849E-9FF5C7BEF475}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <FileAlignment>512</FileAlignment>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dasync.Fabric.InMemory</RootNamespace>
+    <AssemblyName>Dasync.Fabric.InMemory</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FrameworkFolder>netframework4.5</FrameworkFolder>
+    <OutputPath>bin\$(Configuration)\$(FrameworkFolder)\</OutputPath>
+    <BaseIntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\$(FrameworkFolder)\</IntermediateOutputPath>
+    <DocumentationFile>bin\$(Configuration)\$(FrameworkFolder)\$(AssemblyName).xml</DocumentationFile>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE;NETFX</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE;RELEASE;NETFX</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="ConcurrentRoutineExecutionException.cs" />
+    <Compile Include="DI.cs" />
+    <Compile Include="ETagMismatchException.cs" />
+    <Compile Include="InMemoryDataStore.cs" />
+    <Compile Include="InMemoryFabric.cs" />
+    <Compile Include="InMemoryFabricConnector.cs" />
+    <Compile Include="InMemoryFabricConnectorFactory.cs" />
+    <Compile Include="InMemoryFabricSerializerFactoryAdvisor.cs" />
+    <Compile Include="InMemoryServiceRepository.cs" />
+    <Compile Include="TransitionCarrier.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.Fx450.csproj">
+      <Project>{d52dec50-984d-4089-b09b-c272348e820f}</Project>
+      <Name>Dasync.Serialization.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.Fx450.csproj">
+      <Project>{e1077c7c-048b-46da-b8a4-b85a30d6e00f}</Project>
+      <Name>Dasync.ValueContainer.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.Fx450.csproj">
+      <Project>{e10b9109-b721-492e-b32d-048bc8f147c6}</Project>
+      <Name>Dasync.EETypes.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceRegistry\Dasync.ServiceRegistry.Fx450.csproj">
+      <Project>{8797e703-e6d6-46b4-a4a5-ceaecac3fe03}</Project>
+      <Name>Dasync.ServiceRegistry.Fx450</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

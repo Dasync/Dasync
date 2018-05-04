@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Dasync.FabricConnector.AzureStorage</id>
+        <version>0.1.0</version>
+        <authors>D-ASYNC LLC</authors>
+        <projectUrl>https://github.com/Dasync</projectUrl>
+        <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>A connector for a fabric based on Azure Storage.</description>
+        <summary>A connector for a fabric based on Azure Storage.</summary>
+        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
+        <tags>dasync fabric connector azure storage</tags>
+        <dependencies>
+            <group targetFramework=".NETStandard1.4">
+                <dependency id="WindowsAzure.Storage" version="9.0.0" exclude="Build,Analyzers" />
+                <dependency id="System.ValueTuple" version="4.4.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Serialization" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.EETypes" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.AzureStorage" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="WindowsAzure.Storage" version="7.2.1" exclude="Build,Analyzers" />
+                <dependency id="System.ValueTuple" version="4.4.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.Serialization" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.ValueContainer" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.EETypes" version="0.1.0" exclude="Build,Analyzers" />
+                <dependency id="Dasync.AzureStorage" version="0.1.0" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Azure\Connector.Storage\bin\Release\netframework4.5\Dasync.FabricConnector.AzureStorage.dll" target="lib\net45\Dasync.FabricConnector.AzureStorage.dll" />
+        <file src="..\Azure\Connector.Storage\bin\Release\netframework4.5\Dasync.FabricConnector.AzureStorage.xml" target="lib\net45\Dasync.FabricConnector.AzureStorage.xml" />
+        <file src="..\Azure\Connector.Storage\bin\Release\netstandard1.4\Dasync.FabricConnector.AzureStorage.dll" target="lib\netstandard1.4\Dasync.FabricConnector.AzureStorage.dll" />
+        <file src="..\Azure\Connector.Storage\bin\Release\netstandard1.4\Dasync.FabricConnector.AzureStorage.xml" target="lib\netstandard1.4\Dasync.FabricConnector.AzureStorage.xml" />
+    </files>
+</package>

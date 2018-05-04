@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Dasync.ServiceRegistry</id>
+        <version>0.1.0</version>
+        <authors>D-ASYNC LLC</authors>
+        <projectUrl>https://github.com/Dasync</projectUrl>
+        <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>Service Registry.</description>
+        <summary>Service Registry.</summary>
+        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
+        <tags>dasync service registry mesh</tags>
+        <dependencies>
+            <group targetFramework=".NETStandard1.4">
+                <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Fabric\ServiceRegistry\bin\Release\netframework4.5\Dasync.ServiceRegistry.dll" target="lib\net45\Dasync.ServiceRegistry.dll" />
+        <file src="..\Fabric\ServiceRegistry\bin\Release\netframework4.5\Dasync.ServiceRegistry.xml" target="lib\net45\Dasync.ServiceRegistry.xml" />
+        <file src="..\Fabric\ServiceRegistry\bin\Release\netstandard1.4\Dasync.ServiceRegistry.dll" target="lib\netstandard1.4\Dasync.ServiceRegistry.dll" />
+        <file src="..\Fabric\ServiceRegistry\bin\Release\netstandard1.4\Dasync.ServiceRegistry.xml" target="lib\netstandard1.4\Dasync.ServiceRegistry.xml" />
+    </files>
+</package>

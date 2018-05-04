@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Dasync.Accessors</id>
+        <version>0.1.0</version>
+        <authors>D-ASYNC LLC</authors>
+        <projectUrl>https://github.com/Dasync</projectUrl>
+        <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>Private memeber accessors to various types.</description>
+        <summary>Private memeber accessors to various types.</summary>
+        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
+        <tags>dasync accessors reflection</tags>
+        <dependencies>
+            <group targetFramework=".NETStandard1.4">
+                <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+                <dependency id="System.Reflection" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Reflection.Extensions" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Reflection.Primitives" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Reflection.TypeExtensions" version="4.3.0" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Engine\Accessors\bin\Release\netframework4.5\Dasync.Accessors.dll" target="lib\net45\Dasync.Accessors.dll" />
+        <file src="..\Engine\Accessors\bin\Release\netframework4.5\Dasync.Accessors.xml" target="lib\net45\Dasync.Accessors.xml" />
+        <file src="..\Engine\Accessors\bin\Release\netstandard1.4\Dasync.Accessors.dll" target="lib\netstandard1.4\Dasync.Accessors.dll" />
+        <file src="..\Engine\Accessors\bin\Release\netstandard1.4\Dasync.Accessors.xml" target="lib\netstandard1.4\Dasync.Accessors.xml" />
+    </files>
+</package>

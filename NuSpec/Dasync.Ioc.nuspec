@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Dasync.Ioc</id>
+        <version>0.1.0-alpha</version>
+        <authors>D-ASYNC LLC</authors>
+        <projectUrl>https://github.com/Dasync</projectUrl>
+        <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>Inversion of control - dependency injection.</description>
+        <summary>Inversion of control - dependency injection.</summary>
+        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
+        <tags>dasync ioc di</tags>
+        <dependencies>
+            <group targetFramework=".NETStandard1.1">
+                <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\IoC\Ioc\bin\Release\netstandard1.1\Dasync.Ioc.dll" target="lib\netstandard1.1\Dasync.Ioc.dll" />
+        <file src="..\IoC\Ioc\bin\Release\netstandard1.1\Dasync.Ioc.xml" target="lib\netstandard1.1\Dasync.Ioc.xml" />
+    </files>
+</package>

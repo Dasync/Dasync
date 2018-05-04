@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Dasync.Hints</id>
+        <version>0.1.0</version>
+        <authors>D-ASYNC LLC</authors>
+        <projectUrl>https://github.com/Dasync</projectUrl>
+        <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>Hints for developers and for the runtime.</description>
+        <summary>Hints for developers and for the runtime.</summary>
+        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
+        <tags>dasync hints markup</tags>
+        <dependencies>
+            <group targetFramework=".NETStandard1.4">
+                <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Hints\bin\Release\netstandard1.4\Dasync.Hints.dll" target="lib\netstandard1.4\Dasync.Hints.dll" />
+        <file src="..\Hints\bin\Release\netstandard1.4\Dasync.Hints.xml" target="lib\netstandard1.4\Dasync.Hints.xml" />
+        <file src="..\Hints\bin\Release\netframework4.5\Dasync.Hints.dll" target="lib\net45\Dasync.Hints.dll" />
+        <file src="..\Hints\bin\Release\netframework4.5\Dasync.Hints.xml" target="lib\net45\Dasync.Hints.xml" />
+    </files>
+</package>
