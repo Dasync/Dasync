@@ -221,4 +221,5 @@ public class MyService
 
 ## More info
 * [More details in blog posts](https://dasyncnet.wordpress.com/2018/05/04/what-is-dasync/)
+* [Tech Preview Demo](https://dasyncnet.wordpress.com/2018/05/04/dasync-on-azure-functions/)
 * [NuGet packages](https://www.nuget.org/packages?q=dasync)
