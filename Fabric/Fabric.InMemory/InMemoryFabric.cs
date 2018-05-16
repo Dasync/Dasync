@@ -53,6 +53,8 @@ namespace Dasync.Fabric.InMemory
         private void ScheduleMessage(Message message)
         {
             ExecutionContext.Run(
+                // .NET Framework complains about having the execution
+                // context being used more than once if not copied.
                 _nonTransitionExecutionContext.CreateCopy(),
                 _ => RunMessageInBackground(message),
                 state: null);

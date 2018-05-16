@@ -45,6 +45,7 @@
     <Compile Include="InMemoryFabricConnectorFactory.cs" />
     <Compile Include="InMemoryFabricSerializerFactoryAdvisor.cs" />
     <Compile Include="InMemoryServiceRepository.cs" />
+    <Compile Include="ReflectionExtensions.cs" />
     <Compile Include="TransitionCarrier.cs" />
   </ItemGroup>
   <ItemGroup>
