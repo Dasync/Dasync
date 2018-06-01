@@ -1,4 +1,6 @@
-﻿## What is D·ASYNC?
+﻿![D·ASYNC - Language Integrated Distributed Microservices](dasync-banner.png)
+
+## What is D·ASYNC?
 
 D·ASYNC (also D-ASYNC or DASYNC, where D stands for Distributed) is an ambitious framework for writing cloud-native distributed applications in C# language using just its syntax and paradigms of Object-Oriented Programming with the help of built-in support for Task Parallel Library (the async and await keywords).
 
