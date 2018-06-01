@@ -4,13 +4,15 @@
 
 D·ASYNC (also D-ASYNC or DASYNC, where D stands for Distributed) is an ambitious framework for writing cloud-native distributed applications in C# language using just its syntax and paradigms of Object-Oriented Programming with the help of built-in support for Task Parallel Library (the async and await keywords).
 
+The event-driven design with a persistence mechanism allows microservices to safely communicate with each other and external environment, and to save the execution state without allocation of compute resources, where auto-generated finite state machines from `async` methods are perfect candidates to describe a workflow.
+
 1. The basics. And resiliency.
 ```csharp
-// This is your 'service' or 'workflow'.
-public class BaristaSimulationWorkflow
+// This is your 'service', part of a 'workflow'.
+public class BaristaWorker
 {
   // This is a 'routine' of a workflow.
-  public virtual async Task Run()
+  public virtual async Task PerformDuties()
   {
     // This will call a sub-routine and save the sate
     // of the current one.
@@ -48,14 +50,14 @@ public class BaristaSimulationWorkflow
 ```csharp
 // Declaration of the interface of another service
 // that might be deployed in a different environment.
-public interface IOtherService
+public interface IPaymentTerminal
 {
-  Task DoAnotherThing();
+  Task Pay(Order order, CreditCard card);
 }
 
-public class MyService
+public class BaristaWorker
 {
-  private IOtherService _otherService;
+  private IPaymentTerminal _paymentTerminal;
 
   // Another service/workflow can be consumed by
   // injecting as a dependency. All calls to that
@@ -64,54 +66,57 @@ public class MyService
   // All replies will be routed back to this service.
   // This is where Dependency Injection meets Service
   // Discovery and Service Mesh.
-  public MyService(IOtherService otherService)
+  public BaristaWorker(IPaymentTerminal paymentTerminal)
   {
-    _otherService = otherService;
+    _paymentTerminal = paymentTerminal;
   }
   
-  public async Task DoThing()
+  protected virtual async Task<Order> TakeOrder()
   {
+    Order order = ...;
+    CreditCard card = ...;
     // Simple call to another service may ensure
     // transactionality between two. That complexity
     // is hidden to help you focus on the business logic.
-    await _otherService.DoAnotherThing();
+    await _paymentTerminal.Pay(order, card);
+    // And again, state is saved here for resiliency.
   }
 }
 ```
 
 3. Scalability: Factory pattern and resource provisioning.
 ```csharp
-public interface IMyWorkflow : IDisposable
+public interface IBaristaWorker : IDisposable
 {
-  Task Run();
+  Task PerformDuties();
 }
 
-public interface IMyWorkflowFactory
+public interface IBaristaWorkerFactory
 {
-  Task<IMyWorkflow> Create();
+  Task<IBaristaWorker> Create();
 }
 
-public class ControlService
+public class CoffeeShopManager
 {
-  private IMyWorkflowFactory _factory;
+  private IBaristaWorkerFactory _factory;
   
-  public ControlService(IMyWorkflowFactory factory)
+  public CoffeeShopManager(IBaristaWorkerFactory factory)
   {
     _factory = factory;
   }
   
-  public virtual async Task Run()
+  public virtual async Task OnCustomerLineTooLong()
   {
     // Create an instance of a workflow, where 'under
     // the hood' it can provision necessary cloud
     // resources first. That is hidden behind the
     // factory abstraction, what allows to focus on
     // the business logic and put the infrastructure aside.
-    using (var workflowInstance = await _factory.Create())
+    using (var baristaWorker = await _factory.Create())
     {
       // This can be routed to a different cloud resource
       // or deployment what enables dynamic scalability.
-      await workflowInstance.Run();
+      await baristaWorker.PerformDuties();
       // Calling IDisposable.Dispose() will de-provision
       // allocated resources.
     }
@@ -121,25 +126,25 @@ public class ControlService
 
 4. Scalability: Parallel execution.
 ```csharp
-public class MyWorkflow
+public class CoffeeMachine
 {
-  public virtual async Task Run()
+  public virtual async Task PourCoffeeAndMilk(Cup cup)
   {
     // You can execute multiple routines in parallel
-    // to increase performance by calling sub-routines.
-    Task fooTask = RunFoo();
-    Task barTask = RunBar();
+    // to 'horizontally scale out' the application.
+    Task coffeeTask = PourCoffee(cup);
+    Task milkTask = PourMilk(cup);
     
     // Then just await all of them, as you would
     // normally do with TPL.
-    await Task.WhenAll(fooTask, barTask);
+    await Task.WhenAll(coffeeTask, milkTask);
     
     // And that will be translated into such series of steps:
     // 1. Save state of current routine;
-    // 2. Schedule RunFoo
-    // 3. Schedule RunBar
-    // 4. RunFoo signals 'WhenAll' on completion
-    // 5. RunBar signals 'WhenAll' on completion
+    // 2. Schedule PourCoffee
+    // 3. Schedule PourMilk
+    // 4. PourCoffee signals 'WhenAll' on completion
+    // 5. PourMilk signals 'WhenAll' on completion
     // 6. 'WhenAll' resumes current routine from saved state.
   }
 }
@@ -148,46 +153,48 @@ public class MyWorkflow
 5. Statefulness and instances.
 ```csharp
 // This service has no private fields - it is stateless.
-public class MyStatelessService
+public class CoffeeMachine
 {
 }
 
 // This service has one or more private fields - it is stateful.
-public class MyStatefulService
+public class BaristaWorker
 {
-  private string _connectionString;
+  private string _fullName;
 }
 
 // Even though this service has a private field, it is
 // stateless, because the field represents an injected
 // dependency - something that can be re-constructed
-// and does not need to be persisted.
-public class MyStatelessService2
+// and does not need to be persisted in a storage.
+public class BaristaWorker
 {
-  private IOtherService _dependency;
+  private IPaymentTerminal _paymentTerminal;
 
-  public MyStatelessService2(IOtherService dependency)
+  public BaristaWorker(IPaymentTerminal paymentTerminal)
   {
-    _dependency = dependency;
+    _paymentTerminal = paymentTerminal;
   }
 }
  
 // Most likely this factory service is a singleton,
-// however it creates an instance of a service, which
-// can be a multiton for example.
-public interface IMyServiceFactory
+// however it creates an instance of another service,
+// which can be a multiton for example.
+public interface IBaristaWorkerFactory
 {
-  Task<IMyService> Create(string id);
+  Task<IBaristaWorker> Summon(string fullName);
 }
 ```
 
 6. Integration with other TPL functions.
 ```csharp
-public class MyService
+public class BaristaWorker
 {
-  public async Task EchoWithCheckpoint()
+  protected virtual async Task<Order> TakeOrder()
   {
-    string input = Console.ReadLine();
+    var order = new Order();
+    
+    order.DrinkName = Console.ReadLine();
     
     // Normally, 'Yield' instructs runtime to re-schedule
     // continuation of an async method, thus gives opportunity
@@ -202,20 +209,33 @@ public class MyService
     // the Yield), the method will be re-tried from exact
     // point without calling Console.ReadLine again.
     
-    Console.WriteLine(input);
+    order.PersonName = Console.ReadLine();
+    
+    // No need to call 'Yield' here, because this is the
+    // end of the routine, which result will be committed
+    // upon completion of the last step.
+    
+    return order;
   }
 
-  public async Task PeriodicWakeUp()
+  public async Task ServeCustomers()
   {
-    for (var i = 0; i < 3; i++)
+    while (!TimeToGoHome)
     {
-      // The delay is translated by the DASYNC Execution
-      // Engine to saving state of the routine and resuming
-      // after given amount of time. This can be useful when
-      // you do polling for example, but don't want the method
-      // to be volatile (lose its execution context) and to
-      // allocate resources in memory.
-      await Task.Delay(20_000);
+      if (!AnyNewCustomer)
+      {
+        // The delay is translated by the DASYNC Execution
+        // Engine to saving state of the routine and resuming
+        // after given amount of time. This can be useful when
+        // you do polling for example, but don't want the method
+        // to be volatile (lose its execution context) and/or to
+        // allocate compute and memory resources.
+        await Task.Delay(20_000);
+      }
+      else
+      {
+        ...
+      }
     }
   }
 }
