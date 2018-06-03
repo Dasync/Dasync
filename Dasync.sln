@@ -53,6 +53,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Fabric.AzureFunction
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.CloudEvents", "Data\CloudEvents\Dasync.CloudEvents.csproj", "{70CC1713-00F1-49F0-A65C-123F0B241A81}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Fabric.FileBased", "Fabric\Fabric.FileBased\Dasync.Fabric.FileBased.csproj", "{5366A2C5-3FFF-4101-9BFA-B5BD8B56E4E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,10 @@ Global
 		{70CC1713-00F1-49F0-A65C-123F0B241A81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70CC1713-00F1-49F0-A65C-123F0B241A81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70CC1713-00F1-49F0-A65C-123F0B241A81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5366A2C5-3FFF-4101-9BFA-B5BD8B56E4E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5366A2C5-3FFF-4101-9BFA-B5BD8B56E4E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5366A2C5-3FFF-4101-9BFA-B5BD8B56E4E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5366A2C5-3FFF-4101-9BFA-B5BD8B56E4E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -160,6 +166,7 @@ Global
 		{BEAB481A-5A85-4BBC-A705-F12DD27CBAE6} = {9A50D63D-AD2B-4A69-B48E-6931C295DB96}
 		{805D8862-A9DC-45D2-924B-937BF7CEDE3E} = {BEAB481A-5A85-4BBC-A705-F12DD27CBAE6}
 		{70CC1713-00F1-49F0-A65C-123F0B241A81} = {45C9E14F-A562-4E97-8751-8723709661B8}
+		{5366A2C5-3FFF-4101-9BFA-B5BD8B56E4E8} = {79D23AA5-2B44-49EF-B25B-EE784E5F68EE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F8B4417C-1BAD-421A-9164-89A427E53FA2}

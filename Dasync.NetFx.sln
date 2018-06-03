@@ -59,6 +59,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Ioc.Autofac", "IoC\I
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dasync.CloudEvents.Fx450", "Data\CloudEvents\Dasync.CloudEvents.Fx450.csproj", "{057CC32B-4F80-4444-91A1-223488041FFF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dasync.Fabric.FileBased.Fx450", "Fabric\Fabric.FileBased\Dasync.Fabric.FileBased.Fx450.csproj", "{7AC6C577-A929-40B3-812D-DE8FF7DD7AD6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -153,6 +155,10 @@ Global
 		{057CC32B-4F80-4444-91A1-223488041FFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{057CC32B-4F80-4444-91A1-223488041FFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{057CC32B-4F80-4444-91A1-223488041FFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AC6C577-A929-40B3-812D-DE8FF7DD7AD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AC6C577-A929-40B3-812D-DE8FF7DD7AD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AC6C577-A929-40B3-812D-DE8FF7DD7AD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AC6C577-A929-40B3-812D-DE8FF7DD7AD6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -181,6 +187,7 @@ Global
 		{7DBD2F63-690D-486E-A425-30937385F32F} = {DBA759D0-DC75-4883-A4C6-C08E479FDA28}
 		{AB32283E-0DF3-4806-BCE1-E3D9592A8A7F} = {DBA759D0-DC75-4883-A4C6-C08E479FDA28}
 		{057CC32B-4F80-4444-91A1-223488041FFF} = {284BE224-A303-4FA2-A520-D7671E5BD2BC}
+		{7AC6C577-A929-40B3-812D-DE8FF7DD7AD6} = {9143AAEA-5D04-4F44-9623-AE725CC71420}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9EC5AF2B-7D6F-4EB0-BCC3-6781DC488FAC}
