@@ -4,6 +4,8 @@ namespace Dasync.EETypes.Intents
 {
     public sealed class ContinueRoutineIntent
     {
+        public long Id;
+
         public ContinuationDescriptor Continuation;
 
         public RoutineResultDescriptor Result;

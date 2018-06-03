@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dasync.Accessors;
 using Dasync.AsyncStateMachine;
+using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Proxy;
@@ -29,6 +30,7 @@ namespace Dasync.ExecutionEngine.Transitions
         private readonly IMethodInvokerFactory _methodInvokerFactory;
         private readonly IServiceStateValueContainerProvider _serviceStateValueContainerProvider;
         private readonly IntrinsicRoutines _intrinsicRoutines;
+        private readonly INumericIdGenerator _idGenerator;
 
         public TransitionRunner(
             ITransitionScope transitionScope,
@@ -38,7 +40,8 @@ namespace Dasync.ExecutionEngine.Transitions
             IAsyncStateMachineMetadataProvider asyncStateMachineMetadataProvider,
             IMethodInvokerFactory methodInvokerFactory,
             IServiceStateValueContainerProvider serviceStateValueContainerProvider,
-            IntrinsicRoutines intrinsicRoutines)
+            IntrinsicRoutines intrinsicRoutines,
+            INumericIdGenerator idGenerator)
         {
             _transitionScope = transitionScope;
             _transitionCommitter = transitionCommitter;
@@ -48,6 +51,7 @@ namespace Dasync.ExecutionEngine.Transitions
             _methodInvokerFactory = methodInvokerFactory;
             _serviceStateValueContainerProvider = serviceStateValueContainerProvider;
             _intrinsicRoutines = intrinsicRoutines;
+            _idGenerator = idGenerator;
         }
 
         public async Task RunAsync(
@@ -194,6 +198,11 @@ namespace Dasync.ExecutionEngine.Transitions
 
                     foreach (var intent in scheduledActions.ExecuteRoutineIntents)
                         intent.Caller = callerDescriptor;
+                }
+
+                if (scheduledActions.ResumeRoutineIntent != null)
+                {
+                    scheduledActions.ResumeRoutineIntent.Id = _idGenerator.NewId();
                 }
 
                 if (completionTask.IsCompleted)
@@ -345,6 +354,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 {
                     var intent = new ContinueRoutineIntent
                     {
+                        Id = _idGenerator.NewId(),
                         Continuation = continuation,
                         Result = awaitedResultDescriptor,
                         Callee = awaitedRoutineDescriptor
