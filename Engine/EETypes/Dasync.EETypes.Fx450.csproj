@@ -71,6 +71,7 @@
     <Compile Include="ServiceId.cs" />
     <Compile Include="Proxy\ServiceProxyContext.cs" />
     <Compile Include="Transitions\ITransitionRunner.cs" />
+    <Compile Include="Transitions\RoutineStatus.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.Fx450.csproj">

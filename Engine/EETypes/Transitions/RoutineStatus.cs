@@ -1,4 +1,4 @@
-﻿namespace Dasync.FabricConnector.AzureStorage
+﻿namespace Dasync.EETypes.Transitions
 {
     public enum RoutineStatus
     {

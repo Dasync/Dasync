@@ -8,6 +8,7 @@ using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Fabric;
 using Dasync.EETypes.Intents;
+using Dasync.EETypes.Transitions;
 using Dasync.Serialization;
 using Microsoft.WindowsAzure.Storage.Queue;
 

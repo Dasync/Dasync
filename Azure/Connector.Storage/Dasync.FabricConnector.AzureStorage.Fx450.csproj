@@ -42,7 +42,6 @@
     <Compile Include="MultipartMessage.cs" />
     <Compile Include="DI.cs" />
     <Compile Include="RoutineRecord.cs" />
-    <Compile Include="RoutineStatus.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.ValueTuple">
