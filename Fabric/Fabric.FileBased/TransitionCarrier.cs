@@ -170,11 +170,7 @@ namespace Dasync.Fabric.FileBased
                 var fileName = routineId + ".json";
                 var filePath = Path.Combine(_fabric.RoutinesDirectory, fileName);
 
-                FileStream fileStream;
-                if (File.Exists(filePath))
-                    fileStream = new FileStream(filePath, FileMode.Truncate, FileAccess.ReadWrite, FileShare.Read, 4096);
-                else
-                    fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read, 4096);
+                var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, 4096);
 #warning need more precise error handling here - what if file is locked?
 
                 using (fileStream)
