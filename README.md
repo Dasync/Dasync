@@ -6,6 +6,8 @@ D·ASYNC (also D-ASYNC or DASYNC, where D stands for Distributed) is an ambitiou
 
 The event-driven design with a persistence mechanism allows microservices to safely communicate with each other and external environment, and to save the execution state without allocation of compute resources, where auto-generated finite state machines from `async` methods are perfect candidates to describe a workflow.
 
+## Few Programming Concepts
+
 1. The basics. And resiliency.
 ```csharp
 // This is your 'service', part of a 'workflow'.
@@ -14,7 +16,7 @@ public class BaristaWorker
   // This is a 'routine' of a workflow.
   public virtual async Task PerformDuties()
   {
-    // This will call a sub-routine and save the sate
+    // This will call a sub-routine and save the state
     // of the current one.
     var order = await TakeOrder();
     
@@ -84,47 +86,7 @@ public class BaristaWorker
 }
 ```
 
-3. Scalability: Factory pattern and resource provisioning.
-```csharp
-public interface IBaristaWorker : IDisposable
-{
-  Task PerformDuties();
-}
-
-public interface IBaristaWorkerFactory
-{
-  Task<IBaristaWorker> Create();
-}
-
-public class CoffeeShopManager
-{
-  private IBaristaWorkerFactory _factory;
-  
-  public CoffeeShopManager(IBaristaWorkerFactory factory)
-  {
-    _factory = factory;
-  }
-  
-  public virtual async Task OnCustomerLineTooLong()
-  {
-    // Create an instance of a workflow, where 'under
-    // the hood' it can provision necessary cloud
-    // resources first. That is hidden behind the
-    // factory abstraction, what allows to focus on
-    // the business logic and put the infrastructure aside.
-    using (var baristaWorker = await _factory.Create())
-    {
-      // This can be routed to a different cloud resource
-      // or deployment what enables dynamic scalability.
-      await baristaWorker.PerformDuties();
-      // Calling IDisposable.Dispose() will de-provision
-      // allocated resources.
-    }
-  }
-}
-```
-
-4. Scalability: Parallel execution.
+3. Scalability: Parallel execution.
 ```csharp
 public class CoffeeMachine
 {
@@ -150,43 +112,7 @@ public class CoffeeMachine
 }
 ```
 
-5. Statefulness and instances.
-```csharp
-// This service has no private fields - it is stateless.
-public class CoffeeMachine
-{
-}
-
-// This service has one or more private fields - it is stateful.
-public class BaristaWorker
-{
-  private string _fullName;
-}
-
-// Even though this service has a private field, it is
-// stateless, because the field represents an injected
-// dependency - something that can be re-constructed
-// and does not need to be persisted in a storage.
-public class BaristaWorker
-{
-  private IPaymentTerminal _paymentTerminal;
-
-  public BaristaWorker(IPaymentTerminal paymentTerminal)
-  {
-    _paymentTerminal = paymentTerminal;
-  }
-}
- 
-// Most likely this factory service is a singleton,
-// however it creates an instance of another service,
-// which can be a multiton for example.
-public interface IBaristaWorkerFactory
-{
-  Task<IBaristaWorker> Summon(string fullName);
-}
-```
-
-6. Integration with other TPL functions.
+4. Integration with other TPL functions.
 ```csharp
 public class BaristaWorker
 {
@@ -199,7 +125,7 @@ public class BaristaWorker
     // Normally, 'Yield' instructs runtime to re-schedule
     // continuation of an async method, thus gives opportunity
     // for other work items on the thread pool to execute.
-    // Similarly, DASYNC Execution Engine will save the sate
+    // Similarly, DASYNC Execution Engine will save the state
     // of the routine and will schedule its continuation,
     // possibly on a different node.
    
@@ -240,6 +166,8 @@ public class BaristaWorker
   }
 }
 ```
+
+You can find more concepts in the [Syntax Mapping blog post](https://dasyncnet.wordpress.com/2018/05/04/dasync-syntax-mapping/).
 
 ## More info
 * [More details in blog posts](https://dasyncnet.wordpress.com/2018/05/04/what-is-dasync/)
