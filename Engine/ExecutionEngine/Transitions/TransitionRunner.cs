@@ -183,7 +183,7 @@ namespace Dasync.ExecutionEngine.Transitions
                         ServiceState = isStatefullService ? serviceStateContainer : null,
                         Routine = scheduledActions.SaveRoutineState ? routineDescriptor : null,
                         RoutineState = scheduledActions.SaveRoutineState ? asmValueContainer : null,
-                        AwaitingRoutine = scheduledActions.ExecuteRoutineIntents?.SingleOrDefault(
+                        AwaitingRoutine = scheduledActions.ExecuteRoutineIntents?.FirstOrDefault(
                             intent => intent.Continuation?.Routine?.IntentId == routineDescriptor.IntentId)
                     };
                 }
