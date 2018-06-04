@@ -52,7 +52,8 @@ namespace Dasync.Serializers.StandardTypes
 
             // Must have 1 default constructor that does not take in any arguments.
             var ctors = type.GetConstructors();
-            if (ctors.Length != 1 || ctors[0].GetParameters().Length != 0)
+            var hasDefaultCtor = ctors.Length == 0 || (ctors.Length == 1 && ctors[0].GetParameters().Length == 0);
+            if (!hasDefaultCtor)
                 return false;
 
             return true;
