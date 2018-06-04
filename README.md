@@ -169,7 +169,14 @@ public class BaristaWorker
 
 You can find more concepts in the [Syntax Mapping blog post](https://dasyncnet.wordpress.com/2018/05/04/dasync-syntax-mapping/).
 
+## Examples
+
+Keep in mind that D·ASYNC technology is in preview now.
+* [Azure Functions Seamless Demo](https://dasyncnet.wordpress.com/2018/05/04/dasync-on-azure-functions/)
+* [Feature Showdown Application](Examples/FeatureShowdown/Program.cs)
+
 ## More info
+
+Don't hesitate to [contat about this project](https://dasyncnet.wordpress.com/contact/) if you have any questions or your want to contribute.
 * [More details in blog posts](https://dasyncnet.wordpress.com/2018/05/04/what-is-dasync/)
-* [Tech Preview Demo](https://dasyncnet.wordpress.com/2018/05/04/dasync-on-azure-functions/)
 * [NuGet packages](https://www.nuget.org/packages?q=dasync)
