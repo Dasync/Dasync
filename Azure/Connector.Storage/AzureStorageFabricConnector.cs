@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.AzureStorage;
+using Dasync.CloudEvents;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Fabric;
@@ -11,6 +11,7 @@ using Dasync.EETypes.Intents;
 using Dasync.EETypes.Transitions;
 using Dasync.Serialization;
 using Microsoft.WindowsAzure.Storage.Queue;
+using Newtonsoft.Json;
 
 namespace Dasync.FabricConnector.AzureStorage
 {
@@ -48,11 +49,6 @@ namespace Dasync.FabricConnector.AzureStorage
         {
             var pregeneratedRoutineId = intent.Id.ToString();
 
-            var transitionDescriptor = new TransitionDescriptor
-            {
-                Type = TransitionType.InvokeRoutine
-            };
-
             var routineDescriptor = new RoutineDescriptor
             {
                 IntentId = intent.Id,
@@ -60,13 +56,30 @@ namespace Dasync.FabricConnector.AzureStorage
                 RoutineId = pregeneratedRoutineId
             };
 
-            var message = PackMessage(
-                ("transition", transitionDescriptor),
-                ("serviceId", intent.ServiceId),
-                ("routine", routineDescriptor),
-                ("parameters", intent.Parameters),
-                ("continuation", intent.Continuation),
-                ("caller", intent.Caller));
+            var eventData = new RoutineEventData
+            {
+                ServiceId = intent.ServiceId,
+                Routine = routineDescriptor,
+                Caller = intent.Caller,
+                Continuation = intent.Continuation,
+                Parameters = _serializer.SerializeToString(intent.Parameters)
+            };
+
+            var eventEnvelope = new RoutineEventEnvelope
+            {
+                CloudEventsVersion = CloudEventsEnvelope.Version,
+                EventType = DasyncCloudEventsTypes.InvokeRoutine.Name,
+                EventTypeVersion = DasyncCloudEventsTypes.InvokeRoutine.Version,
+                Source = "/" + (intent.Caller?.ServiceId.ServiceName ?? ""),
+                EventID = intent.Id.ToString(),
+                EventTime = DateTimeOffset.Now,
+                ContentType = "application/json",
+                Data = CloudEventsSerialization.Serialize(eventData)
+            };
+
+            var message = new CloudQueueMessage(
+                JsonConvert.SerializeObject(eventEnvelope,
+                    CloudEventsSerialization.JsonSerializerSettings));
 
             while (true)
             {
@@ -90,17 +103,31 @@ namespace Dasync.FabricConnector.AzureStorage
         public async Task<ActiveRoutineInfo> ScheduleContinuationAsync(
             ContinueRoutineIntent intent, CancellationToken ct)
         {
-            var transitionDescriptor = new TransitionDescriptor
+            var eventData = new RoutineEventData
             {
-                Type = TransitionType.ContinueRoutine
+                ServiceId = intent.Continuation.ServiceId,
+                Routine = intent.Continuation.Routine,
+                Callee = intent.Callee,
+                Result = _serializer.SerializeToString(intent.Result)
             };
 
-            var message = PackMessage(
-                ("transition", transitionDescriptor),
-                ("serviceId", intent.Continuation.ServiceId),
-                ("routine", intent.Continuation.Routine),
-                ("result", intent.Result),
-                ("callee", intent.Callee));
+            var eventEnvelope = new RoutineEventEnvelope
+            {
+                CloudEventsVersion = CloudEventsEnvelope.Version,
+                EventType = DasyncCloudEventsTypes.ContinueRoutine.Name,
+                EventTypeVersion = DasyncCloudEventsTypes.ContinueRoutine.Version,
+                Source = "/" + (intent.Callee?.ServiceId.ServiceName ?? ""),
+                EventID = intent.Id.ToString(),
+                EventTime = DateTimeOffset.Now,
+                EventDeliveryTime = intent.Continuation.ContinueAt?.ToUniversalTime(),
+                ETag = intent.Continuation.Routine.ETag,
+                ContentType = "application/json",
+                Data = CloudEventsSerialization.Serialize(eventData)
+            };
+
+            var message = new CloudQueueMessage(
+                JsonConvert.SerializeObject(eventEnvelope,
+                    CloudEventsSerialization.JsonSerializerSettings));
 
             TimeSpan? delay = null;
             if (intent.Continuation.ContinueAt.HasValue)
@@ -161,43 +188,6 @@ namespace Dasync.FabricConnector.AzureStorage
             }
 
             return info;
-        }
-
-        private CloudQueueMessage PackMessage(params (string key, object value)[] parts)
-        {
-            var delimiterId = _idGenerator.NewId();
-
-            if (_serializer is ITextSerializer)
-            {
-                using (var textWriter = new StringWriter())
-                {
-                    using (var messageWriter = new MultipartMessageWriter(
-                        textWriter, _serializer, delimiterId))
-                    {
-                        foreach (var (key, value) in parts)
-                            if (value != null)
-                                messageWriter.Write(key, value);
-                    }
-                    return new CloudQueueMessage(textWriter.ToString());
-                }
-            }
-            else
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    using (var messageWriter = new MultipartMessageWriter(
-                        memoryStream, _serializer, delimiterId))
-                    {
-                        foreach (var (key, value) in parts)
-                            if (value != null)
-                                messageWriter.Write(key, value);
-                    }
-                    var data = memoryStream.ToArray();
-                    var message = new CloudQueueMessage(string.Empty);
-                    message.SetMessageContent(data);
-                    return message;
-                }
-            }
         }
     }
 

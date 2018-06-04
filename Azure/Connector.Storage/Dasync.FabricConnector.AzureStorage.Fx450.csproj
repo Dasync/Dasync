@@ -39,7 +39,6 @@
     <Compile Include="AzureStorageFabricConnectorConfiguration.cs" />
     <Compile Include="AzureStorageFabricConnectorFactory.cs" />
     <Compile Include="IStorageAccontConnectionStringResolver.cs" />
-    <Compile Include="MultipartMessage.cs" />
     <Compile Include="DI.cs" />
     <Compile Include="RoutineRecord.cs" />
   </ItemGroup>
@@ -52,6 +51,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Data\CloudEvents\Dasync.CloudEvents.Fx450.csproj">
+      <Project>{057cc32b-4f80-4444-91a1-223488041fff}</Project>
+      <Name>Dasync.CloudEvents.Fx450</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.Fx450.csproj">
       <Project>{d52dec50-984d-4089-b09b-c272348e820f}</Project>
       <Name>Dasync.Serialization.Fx450</Name>

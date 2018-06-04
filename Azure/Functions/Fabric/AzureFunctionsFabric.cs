@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.AzureStorage;
+using Dasync.CloudEvents;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Fabric;
@@ -22,7 +22,6 @@ using Dasync.Serialization;
 using Dasync.ServiceRegistry;
 using Dasync.ValueContainer;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using FunctionExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
@@ -215,13 +214,15 @@ namespace Dasync.Fabric.AzureFunctions
 
 #warning Keep message invisible while transitioning
 
-                var transitionCarrier = new AzureStorageTransitionCarrier(
-                    message, _routinesTable, _servicesTable, _defaultSerializer);
-                var transitionData = transitionCarrier;
-
+                var eventEnvelope = JsonConvert.DeserializeObject<RoutineEventEnvelope>(
+                    message.AsString, CloudEventsSerialization.JsonSerializerSettings);
                 // Free memory
                 message.SetMessageContent((string)null);
                 message.SetMessageContent((byte[])null);
+
+                var transitionCarrier = new AzureStorageTransitionCarrier(
+                    eventEnvelope, _routinesTable, _servicesTable, _defaultSerializer);
+                var transitionData = transitionCarrier;
 
                 var concurrentExecutionDetected = false;
                 try

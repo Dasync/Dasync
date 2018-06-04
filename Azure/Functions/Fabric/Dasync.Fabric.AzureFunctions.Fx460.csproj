@@ -72,6 +72,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Data\CloudEvents\Dasync.CloudEvents.Fx450.csproj">
+      <Project>{057cc32b-4f80-4444-91a1-223488041fff}</Project>
+      <Name>Dasync.CloudEvents.Fx450</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Data\Serialization.Json\Dasync.Serialization.Json.Fx450.csproj">
       <Project>{e85d2ff8-3aa2-4f2c-aff8-90c7b9dc1bbe}</Project>
       <Name>Dasync.Serialization.Json.Fx450</Name>

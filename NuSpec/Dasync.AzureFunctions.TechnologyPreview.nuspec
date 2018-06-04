@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>Dasync.AzureFunctions.TechnologyPreview</id>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
         <authors>D-ASYNC LLC</authors>
         <projectUrl>https://github.com/Dasync/Dasync</projectUrl>
         <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
@@ -52,6 +52,7 @@
         <file src="..\Data\Serializers.StandardTypes\bin\Release\netframework4.5\Dasync.Serializers.StandardTypes.dll" target="lib\net46\Dasync.Serializers.StandardTypes.dll" />
         <file src="..\Fabric\ServiceRegistry\bin\Release\netframework4.5\Dasync.ServiceRegistry.dll" target="lib\net46\Dasync.ServiceRegistry.dll" />
         <file src="..\Data\ValueContainer\bin\Release\netframework4.5\Dasync.ValueContainer.dll" target="lib\net46\Dasync.ValueContainer.dll" />
+        <file src="..\Data\CloudEvents\bin\Release\netframework4.5\Dasync.CloudEvents.dll" target="lib\net46\Dasync.CloudEvents.dll" />
 
         <file src="..\IoC\IoC.Autofac\bin\Release\netstandard1.1\Dasync.Ioc.Autofac.dll" target="lib\net46\Dasync.Ioc.Autofac.dll" />
         <file src="..\IoC\IoC.Ninject\bin\Release\netframework4.5\Dasync.Ioc.Ninject.dll" target="lib\net46\Dasync.Ioc.Ninject.dll" />

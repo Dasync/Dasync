@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.AzureStorage;
-using Dasync.FabricConnector.AzureStorage;
+using Dasync.CloudEvents;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Transitions;
+using Dasync.FabricConnector.AzureStorage;
 using Dasync.Serialization;
 using Dasync.ValueContainer;
-using Microsoft.WindowsAzure.Storage.Queue;
+using Newtonsoft.Json;
 
 namespace Dasync.Fabric.AzureFunctions
 {
@@ -24,56 +24,80 @@ namespace Dasync.Fabric.AzureFunctions
                 nameof(RoutineRecord.Continuation)
             };
 
-        private readonly MultipartMessageReader _messageReader;
         private readonly ICloudTable _routinesTable;
         private readonly ICloudTable _servicesTable;
         private readonly ISerializer _serializer;
-        private TransitionDescriptor _transitionDescriptor;
-        private ServiceId _serviceId;
-        private RoutineDescriptor _routineDescriptor;
+        private readonly RoutineEventEnvelope _eventEnvelope;
+        private RoutineEventData _routineEventData;
         private RoutineRecord _routineRecord;
 
         public AzureStorageTransitionCarrier(
-            CloudQueueMessage message,
+            RoutineEventEnvelope eventEnvelope,
             ICloudTable routinesTable,
             ICloudTable servicesTable,
             ISerializer serializer)
         {
+            _eventEnvelope = eventEnvelope;
             _routinesTable = routinesTable;
             _servicesTable = servicesTable;
             _serializer = serializer;
-            _messageReader = new MultipartMessageReader(message.AsBytes, serializer);
         }
 
-        public async Task<TransitionDescriptor> GetTransitionDescriptorAsync(CancellationToken ct)
+        private RoutineEventData EventData
         {
-            if (_transitionDescriptor == null)
+            get
             {
-                if (!_messageReader.TryGetValue("transition", out _transitionDescriptor))
-                    throw new InvalidOperationException("No transition info");
+                if (_routineEventData == null && _eventEnvelope.Data != null)
+                {
+                    _routineEventData = JsonConvert.DeserializeObject<RoutineEventData>(
+                        _eventEnvelope.Data, CloudEventsSerialization.JsonSerializerSettings);
+                    _eventEnvelope.Data = null; // Free up some memory
+                }
+                return _routineEventData;
             }
-            return _transitionDescriptor;
+        }
+
+        public Task<TransitionDescriptor> GetTransitionDescriptorAsync(CancellationToken ct)
+        {
+            TransitionDescriptor result;
+            if (_eventEnvelope.EventType == DasyncCloudEventsTypes.InvokeRoutine.Name)
+            {
+                result = new TransitionDescriptor
+                {
+                    Type = TransitionType.InvokeRoutine,
+                    ETag = _eventEnvelope.ETag
+                };
+            }
+            else if (_eventEnvelope.EventType == DasyncCloudEventsTypes.ContinueRoutine.Name)
+            {
+                result = new TransitionDescriptor
+                {
+                    Type = TransitionType.ContinueRoutine,
+                    ETag = _eventEnvelope.ETag
+                };
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unknown event type '{_eventEnvelope.EventType}'.");
+            }
+            return Task.FromResult(result);
         }
 
         public Task<ServiceId> GetServiceIdAsync(CancellationToken ct)
         {
-            if (_serviceId == null)
-                _messageReader.TryGetValue("serviceId", out _serviceId);
-            return Task.FromResult(_serviceId);
+            return Task.FromResult(EventData.ServiceId);
         }
 
         public Task<RoutineDescriptor> GetRoutineDescriptorAsync(CancellationToken ct)
         {
-            if (_routineDescriptor == null)
-                _messageReader.TryGetValue("routine", out _routineDescriptor);
-            return Task.FromResult(_routineDescriptor);
+            return Task.FromResult(EventData.Routine);
         }
 
         public Task ReadRoutineParametersAsync(IValueContainer target, CancellationToken ct)
         {
-            if (_messageReader.TryPopulate("parameters", target))
-                return Task.FromResult(true);
-            return Task.FromResult(false);
+            if (!string.IsNullOrEmpty(EventData.Parameters))
+                _serializer.Populate(EventData.Parameters, target);
+            return Task.FromResult(true);
         }
 
         public async Task ReadRoutineStateAsync(IValueContainer target, CancellationToken ct)
@@ -90,13 +114,13 @@ namespace Dasync.Fabric.AzureFunctions
         public Task ReadServiceStateAsync(IValueContainer target, CancellationToken ct)
         {
 #warning Read Service state
-            throw new NotImplementedException();
+            throw new NotImplementedException("Service state is not implemented yet due to non-finalized design.");
         }
 
         public async Task<List<ContinuationDescriptor>> GetContinuationsAsync(CancellationToken ct)
         {
-            if (_messageReader.TryGetValue<ContinuationDescriptor>("continuation", out var descriptor))
-                return new List<ContinuationDescriptor>(1) { descriptor };
+            if (EventData.Continuation != null)
+                return new List<ContinuationDescriptor>(1) { EventData.Continuation };
 
             var transitionDescriptor = await GetTransitionDescriptorAsync(ct);
             if (transitionDescriptor.Type != TransitionType.ContinueRoutine)
@@ -105,7 +129,8 @@ namespace Dasync.Fabric.AzureFunctions
             var routineRecord = await TryLoadRoutineRecordAsync(ct);
             if (routineRecord != null && !string.IsNullOrEmpty(routineRecord.Continuation))
             {
-                descriptor = _serializer.Deserialize<ContinuationDescriptor>(routineRecord.Continuation);
+                var descriptor = JsonConvert.DeserializeObject<ContinuationDescriptor>(
+                    routineRecord.Continuation, CloudEventsSerialization.JsonSerializerSettings);
                 return new List<ContinuationDescriptor>(1) { descriptor };
             }
 
@@ -114,9 +139,10 @@ namespace Dasync.Fabric.AzureFunctions
 
         public Task<RoutineResultDescriptor> GetAwaitedResultAsync(CancellationToken ct)
         {
-            if (_messageReader.TryGetValue<RoutineResultDescriptor>("result", out var descriptor))
-                return Task.FromResult(descriptor);
-            return Task.FromResult<RoutineResultDescriptor>(null);
+            RoutineResultDescriptor result = null;
+            if (EventData.Result != null)
+                result = _serializer.Deserialize<RoutineResultDescriptor>(EventData.Result);
+            return Task.FromResult(result);
         }
 
         public async Task SaveStateAsync(SaveStateIntent intent, CancellationToken ct)
@@ -128,7 +154,7 @@ namespace Dasync.Fabric.AzureFunctions
 #warning Save Service state
                 //var serviceStateRecord = GetOrCreateServiceStateRecord(intent.ServiceId);
                 //serviceStateRecord.StateJson = _serializer.Serialize(intent.ServiceState);
-                throw new NotImplementedException();
+                throw new NotImplementedException("Service state is not implemented yet due to non-finalized design.");
             }
 
             if (intent.RoutineState != null || intent.RoutineResult != null)
@@ -179,27 +205,19 @@ namespace Dasync.Fabric.AzureFunctions
                 // Copy over the continuation from the message to the routine record
                 //  on first transition, unless routine is already completed.
                 if (routineRecord.Status != (int)RoutineStatus.Complete &&
-                    string.IsNullOrEmpty(routineRecord.Continuation))
+                    string.IsNullOrEmpty(routineRecord.Continuation) && EventData.Continuation != null)
                 {
-                    if (_messageReader.TryGetPart("continuation", out var stream))
-                    {
-                        using (stream)
-                        {
-                            using (var textReader = new StreamReader(stream))
-                            {
-                                routineRecord.Continuation = textReader.ReadToEnd();
-                            }
-                        }
-                    }
+                    routineRecord.Continuation = JsonConvert.SerializeObject(
+                        EventData.Continuation, CloudEventsSerialization.JsonSerializerSettings);
                 }
 
                 routineRecord.Method = intent.Routine?.MethodId?.MethodName;
 
-                if (_messageReader.TryGetValue<CallerDescriptor>("caller", out var callerDescriptor))
+                if (EventData.Caller != null)
                 {
-                    routineRecord.CallerService = callerDescriptor.ServiceId?.ServiceName;
-                    routineRecord.CallerMethod = callerDescriptor.Routine?.MethodId?.MethodName;
-                    routineRecord.CallerRoutineId = callerDescriptor.Routine?.RoutineId;
+                    routineRecord.CallerService = EventData.Caller.ServiceId?.ServiceName;
+                    routineRecord.CallerMethod = EventData.Caller.Routine?.MethodId?.MethodName;
+                    routineRecord.CallerRoutineId = EventData.Caller.Routine?.RoutineId;
                 }
 
                 while (true)

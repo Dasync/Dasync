@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Data\CloudEvents\Dasync.CloudEvents.csproj" />
     <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.csproj" />
     <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.csproj" />
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />

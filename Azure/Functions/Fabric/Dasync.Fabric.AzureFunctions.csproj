@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Data\CloudEvents\Dasync.CloudEvents.csproj" />
     <ProjectReference Include="..\..\..\Data\Serialization.Json\Dasync.Serialization.Json.csproj" />
     <ProjectReference Include="..\..\..\Data\Serialization\Dasync.Serialization.csproj" />
     <ProjectReference Include="..\..\..\Data\Serializers.EETypes\Dasync.Serializers.EETypes.csproj" />
