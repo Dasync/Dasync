@@ -178,7 +178,8 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
 
                         ServiceId = new ServiceId
                         {
-                            ServiceName = nameof(IntrinsicRoutines)
+                            ServiceName = awaitedRoutineIntent.ServiceId.ServiceName,
+                            ProxyName = nameof(IntrinsicRoutines)
                         },
 
                         MethodId = _routineMethodIdProvider.GetId(

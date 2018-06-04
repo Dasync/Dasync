@@ -87,7 +87,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
                 var serviceInstance =
 #warning IntrinsicRoutines must be registered in the service registry, but it needs the engine IoC to resolve.
-                    serviceId.ServiceName == nameof(IntrinsicRoutines)
+                    serviceId.ProxyName == nameof(IntrinsicRoutines)
                     ? _intrinsicRoutines
                     : _serviceProxyBuilder.Build(serviceId);
 #warning check if the serviceInstance proxy is an actual non-abstract class with implementation
