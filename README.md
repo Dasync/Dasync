@@ -178,5 +178,6 @@ Keep in mind that D·ASYNC technology is in preview now.
 ## More info
 
 Don't hesitate to [contat about this project](https://dasyncnet.wordpress.com/contact/) if you have any questions or your want to contribute.
+* [High-level Overview on TheNewStack.io](https://thenewstack.io/meet-d-async-a-framework-for-writing-distributed-cloud-native-applications/)
 * [More details in blog posts](https://dasyncnet.wordpress.com/2018/05/04/what-is-dasync/)
 * [NuGet packages](https://www.nuget.org/packages?q=dasync)
