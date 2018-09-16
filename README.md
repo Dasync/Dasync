@@ -1,10 +1,11 @@
-﻿![D·ASYNC - Language Integrated Distributed Microservices](dasync-banner.png)
+﻿![D·ASYNC - Code First Distributed Applications](dasync-banner.png)
 
 ## What is D·ASYNC?
 
-D·ASYNC (also D-ASYNC or DASYNC, where D stands for Distributed) is an ambitious framework for writing cloud-native distributed applications in C# language using just its syntax and paradigms of Object-Oriented Programming with the help of built-in support for Task Parallel Library (the async and await keywords).
+D·ASYNC is a framework that allows to model business processes and workflows in C# language itself, focus on the application logic and put infrastructure aside, keep Clean Architecture and delay design decisions, where compiled software runs in a distributed manner from day one. D·ASYNC extends the ideology of Distributed Domain-Driven Design by making the programming language and OOP patterns the first class-citizen (an ultimate façade) for expressing intentions and behavior of your business.
 
-The event-driven design with a persistence mechanism allows microservices to safely communicate with each other and external environment, and to save the execution state without allocation of compute resources, where auto-generated finite state machines from `async` methods are perfect candidates to describe a workflow.
+D·ASYNC technology deeply integrates into the .NET runtime, controls execution of `async` methods (which are compiled to Finite State Machines), saves their state in a persistent storage, uses Message-Oriented Architecture and Event-Driven Design to distribute load across available compute nodes.
+
 
 ## Few Programming Concepts
 
