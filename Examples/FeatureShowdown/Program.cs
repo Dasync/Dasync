@@ -23,6 +23,7 @@ namespace DasyncFeatures
                 new Feature3.Demo(),
                 new Feature4.Demo(),
                 new Feature5.Demo(),
+                new Feature6.Demo(),
             };
 
             var feature = SelectFeature(featureDemoSet);
@@ -37,7 +38,7 @@ namespace DasyncFeatures
             // 2. Run im-memory emulation of DASYNC runtime to test
             //    serialization only.
             //
-            // 3. Run with file-based persistense, so next time your re-start
+            // 3. Run with file-based persistence, so next time your re-start
             //    this console app, it will pick up any unfinished work. [DEFAULT]
             //    Where does it store the data? In the 'data' folder :)
             //    It should be under '/bin/Debug/netcoreapp2.0' directory.

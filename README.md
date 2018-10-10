@@ -168,6 +168,42 @@ public class BaristaWorker
 }
 ```
 
+5. Better Saga Pattern.
+```csharp
+public async Task PlaceOrder()
+{
+  // Generate unique ID which will be persisted in this routine.
+  var transationId = Guid.NewGuid();
+
+  var price = 10;
+  var itemId = "Whole Coffee Beans 1lb";
+  var quantity = 1;
+
+  // 1. First, make sure that payment can be made.
+  // This is a call to a service #1.
+  await _paymentProcessor.Credit(transationId, price);
+  try
+  {
+    // 2. Then, reserve the item being purchased.
+    // This is a call to a service #2.
+    await _warehouse.ReserveItem(transationId, itemId, quantity);
+    // 3. Well, they are out of stock.
+    // The OutOfStockException is thrown.
+  }
+  catch
+  {
+    // 4. Refund the cost of an item.
+    // Perform a compensating action on service #1.
+    await _paymentProcessor.Debit(transationId, price);
+  }
+
+  // All in all, this async method (a routine) acts as an orchestrator.
+  // Invoking and subscribing to continuations of async methods of two
+  // services can be viewed as sending commands and listening to events.
+  // The workflow becomes very clear due to absense of evident events.
+}
+```
+
 You can find more concepts in the [Syntax Mapping blog post](https://dasyncnet.wordpress.com/2018/05/04/dasync-syntax-mapping/).
 
 ## Examples
