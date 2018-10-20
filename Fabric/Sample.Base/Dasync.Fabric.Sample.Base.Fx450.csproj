@@ -4,12 +4,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{80CB1CA7-0ACF-4C9F-850F-30990163FF4E}</ProjectGuid>
+    <ProjectGuid>{D131C1A5-3A82-4C91-B056-146D3AF138D2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <FileAlignment>512</FileAlignment>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dasync.Bootstrap</RootNamespace>
-    <AssemblyName>Dasync.Bootstrap</AssemblyName>
+    <RootNamespace>Dasync.Fabric.Sample.Base</RootNamespace>
+    <AssemblyName>Dasync.Fabric.Sample.Base</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FrameworkFolder>netframework4.5</FrameworkFolder>
     <OutputPath>bin\$(Configuration)\$(FrameworkFolder)\</OutputPath>
@@ -25,6 +25,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <DefineConstants>DEBUG;TRACE;NETFX;NETFX45</DefineConstants>
+    <DocumentationFile>bin\Debug\netframework4.5\Dasync.Fabric.Sample.Base.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,44 +34,33 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Dasync.Demo\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActiveRoutineInfo.cs" />
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="AggregateAssemblyNameShortener.cs" />
-    <Compile Include="AggregateObjectComposerSelector.cs" />
-    <Compile Include="AggregateObjectDecomposerSelector.cs" />
-    <Compile Include="AggregateTypeNameShortener.cs" />
-    <Compile Include="Bootstrapper.cs" />
+    <Compile Include="CurrentFabricHolder.cs" />
     <Compile Include="DI.cs" />
+    <Compile Include="FabricConnectorFactorySelector.cs" />
+    <Compile Include="FabricConnectorSelector.cs" />
+    <Compile Include="ICurrentFabric.cs" />
+    <Compile Include="IFabric.cs" />
+    <Compile Include="IFabricConnector.cs" />
+    <Compile Include="IFabricConnectorFactory.cs" />
+    <Compile Include="IFabricConnectorFactorySelector.cs" />
+    <Compile Include="IFabricConnectorSelector.cs" />
+    <Compile Include="IRoutinePollInterval.cs" />
+    <Compile Include="ITransitionStateSaver.cs" />
+    <Compile Include="RoutineCompletionNotifier.cs" />
+    <Compile Include="RoutineStatus.cs" />
+    <Compile Include="TransitionCommitter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.Fx450.csproj">
-      <Project>{d52dec50-984d-4089-b09b-c272348e820f}</Project>
-      <Name>Dasync.Serialization.Fx450</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Data\Serializers.EETypes\Dasync.Serializers.EETypes.Fx450.csproj">
-      <Project>{2b5cb54a-6622-429f-8866-7d6b69fe1bec}</Project>
-      <Name>Dasync.Serializers.EETypes.Fx450</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Data\Serializers.StandardTypes\Dasync.Serializers.StandardTypes.Fx450.csproj">
-      <Project>{fd1c95a7-4c25-450e-a15e-b993f7228ad5}</Project>
-      <Name>Dasync.Serializers.StandardTypes.Fx450</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.Fx450.csproj">
       <Project>{e10b9109-b721-492e-b32d-048bc8f147c6}</Project>
       <Name>Dasync.EETypes.Fx450</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.Fx450.csproj">
-      <Project>{85f5737c-7d70-4c15-a72f-5336b18cc8c9}</Project>
-      <Name>Dasync.ExecutionEngine.Fx450</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\IoC\IoC\Dasync.Ioc.csproj">
-      <Project>{6ffded6b-2f17-4c9e-b9f4-ab9aa93ba027}</Project>
-      <Name>Dasync.Ioc</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Sample.Base\Dasync.Fabric.Sample.Base.Fx450.csproj">
-      <Project>{d131c1a5-3a82-4c91-b056-146d3af138d2}</Project>
-      <Name>Dasync.Fabric.Sample.Base.Fx450</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceRegistry\Dasync.ServiceRegistry.Fx450.csproj">
       <Project>{8797e703-e6d6-46b4-a4a5-ceaecac3fe03}</Project>

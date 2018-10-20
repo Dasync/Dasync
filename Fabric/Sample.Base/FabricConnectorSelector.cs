@@ -2,10 +2,9 @@
 using System.Linq;
 using System.Threading;
 using Dasync.EETypes;
-using Dasync.EETypes.Fabric;
 using Dasync.ServiceRegistry;
 
-namespace Dasync.ExecutionEngine.Fabric
+namespace Dasync.Fabric.Sample.Base
 {
     public class FabricConnectorSelector : IFabricConnectorSelector
     {

@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.Bootstrap;
-using Dasync.EETypes.Fabric;
+using Dasync.Fabric.Sample.Base;
 using Dasync.Ioc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;

@@ -1,7 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Dasync.EETypes;
 
-namespace Dasync.EETypes.Fabric
+namespace Dasync.Fabric.Sample.Base
 {
     public interface IFabric
     {

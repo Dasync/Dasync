@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
-using Dasync.EETypes.Transitions;
+using Dasync.EETypes.Platform;
+using Dasync.Fabric.Sample.Base;
 using Dasync.Serialization;
 using Dasync.ValueContainer;
 using static Dasync.Fabric.InMemory.InMemoryDataStore;
@@ -13,7 +14,7 @@ namespace Dasync.Fabric.InMemory
 {
     partial class InMemoryFabric
     {
-        public class TransitionCarrier : ITransitionCarrier, ITransitionData
+        public class TransitionCarrier : ITransitionCarrier, ITransitionStateSaver
         {
             private readonly InMemoryFabric _fabric;
             private readonly Message _message;

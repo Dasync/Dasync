@@ -5,9 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dasync.CloudEvents;
 using Dasync.EETypes.Descriptors;
-using Dasync.EETypes.Fabric;
 using Dasync.EETypes.Intents;
-using Dasync.EETypes.Transitions;
+using Dasync.Fabric.Sample.Base;
 using Dasync.Serialization;
 using Newtonsoft.Json;
 

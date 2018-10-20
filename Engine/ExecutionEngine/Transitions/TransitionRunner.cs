@@ -9,9 +9,10 @@ using Dasync.Accessors;
 using Dasync.AsyncStateMachine;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
+using Dasync.EETypes.Engine;
 using Dasync.EETypes.Intents;
+using Dasync.EETypes.Platform;
 using Dasync.EETypes.Proxy;
-using Dasync.EETypes.Transitions;
 using Dasync.ExecutionEngine.Extensions;
 using Dasync.ExecutionEngine.IntrinsicFlow;
 using Dasync.ExecutionEngine.StateMetadata.Service;
@@ -56,15 +57,14 @@ namespace Dasync.ExecutionEngine.Transitions
 
         public async Task RunAsync(
             ITransitionCarrier transitionCarrier,
-            ITransitionData transitionData,
             CancellationToken ct)
         {
-            var transitionDescriptor = await transitionData.GetTransitionDescriptorAsync(ct);
+            var transitionDescriptor = await transitionCarrier.GetTransitionDescriptorAsync(ct);
 
             if (transitionDescriptor.Type == TransitionType.InvokeRoutine ||
                 transitionDescriptor.Type == TransitionType.ContinueRoutine)
             {
-                await RunRoutineAsync(transitionCarrier, transitionData, transitionDescriptor, ct);
+                await RunRoutineAsync(transitionCarrier, transitionDescriptor, ct);
             }
             else
             {
@@ -74,7 +74,6 @@ namespace Dasync.ExecutionEngine.Transitions
 
         private async Task RunRoutineAsync(
             ITransitionCarrier transitionCarrier,
-            ITransitionData transitionData,
             TransitionDescriptor transitionDescriptor,
             CancellationToken ct)
         {
@@ -82,8 +81,8 @@ namespace Dasync.ExecutionEngine.Transitions
             {
                 var transitionMonitor = _transitionScope.CurrentMonitor;
 
-                var serviceId = await transitionData.GetServiceIdAsync(ct);
-                var routineDescriptor = await transitionData.GetRoutineDescriptorAsync(ct);
+                var serviceId = await transitionCarrier.GetServiceIdAsync(ct);
+                var routineDescriptor = await transitionCarrier.GetRoutineDescriptorAsync(ct);
 
                 var serviceInstance =
 #warning IntrinsicRoutines must be registered in the service registry, but it needs the engine IoC to resolve.
@@ -100,7 +99,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 var serviceStateContainer = _serviceStateValueContainerProvider.CreateContainer(serviceInstance);
                 var isStatefullService = serviceStateContainer.GetCount() > 0;
                 if (isStatefullService)
-                    await transitionData.ReadServiceStateAsync(serviceStateContainer, ct);
+                    await transitionCarrier.ReadServiceStateAsync(serviceStateContainer, ct);
 
                 Task completionTask;
                 IValueContainer asmValueContainer = null;
@@ -108,7 +107,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 if (TryCreateAsyncStateMachine(routineMethod, out var asmInstance, out var asmMetadata, out completionTask))
                 {
                     var isContinuation = transitionDescriptor.Type == TransitionType.ContinueRoutine;
-                    asmValueContainer = await LoadRoutineStateAsync(transitionData, asmInstance, asmMetadata, isContinuation, ct);
+                    asmValueContainer = await LoadRoutineStateAsync(transitionCarrier, asmInstance, asmMetadata, isContinuation, ct);
 
                     asmMetadata.Owner.FieldInfo?.SetValue(asmInstance, serviceInstance);
 
@@ -138,7 +137,7 @@ namespace Dasync.ExecutionEngine.Transitions
                         throw new InvalidOperationException("Cannot continue a routine because it's not a state machine.");
 
                     var methodInvoker = _methodInvokerFactory.Create(routineMethod);
-                    var parameters = await LoadMethodParametersAsync(transitionData, methodInvoker, ct);
+                    var parameters = await LoadMethodParametersAsync(transitionCarrier, methodInvoker, ct);
 
                     transitionMonitor.OnRoutineStart(
                         serviceId,
@@ -183,7 +182,7 @@ namespace Dasync.ExecutionEngine.Transitions
                         ServiceState = isStatefullService ? serviceStateContainer : null,
                         Routine = scheduledActions.SaveRoutineState ? routineDescriptor : null,
                         RoutineState = scheduledActions.SaveRoutineState ? asmValueContainer : null,
-                        AwaitingRoutine = scheduledActions.ExecuteRoutineIntents?.FirstOrDefault(
+                        AwaitedRoutine = scheduledActions.ExecuteRoutineIntents?.FirstOrDefault(
                             intent => intent.Continuation?.Routine?.IntentId == routineDescriptor.IntentId)
                     };
                 }
@@ -224,24 +223,24 @@ namespace Dasync.ExecutionEngine.Transitions
                     };
 
                     await AddContinuationIntentsAsync(
-                        transitionData,
+                        transitionCarrier,
                         scheduledActions,
                         awaitedResultDescriptor,
                         awaitedRoutineDescriptor,
                         ct);
                 }
 
-                await _transitionCommitter.CommitAsync(transitionCarrier, scheduledActions, ct);
+                await _transitionCommitter.CommitAsync(scheduledActions, transitionCarrier, ct);
             }
         }
 
         private async Task<IValueContainer> LoadMethodParametersAsync(
-            ITransitionData transitionData,
+            ITransitionCarrier transitionCarrier,
             IMethodInvoker methodInvoker,
             CancellationToken ct)
         {
             var valueContainer = methodInvoker.CreateParametersContainer();
-            await transitionData.ReadRoutineParametersAsync(valueContainer, ct);
+            await transitionCarrier.ReadRoutineParametersAsync(valueContainer, ct);
             return valueContainer;
         }
 
@@ -274,7 +273,7 @@ namespace Dasync.ExecutionEngine.Transitions
         }
 
         private async Task<IValueContainer> LoadRoutineStateAsync(
-            ITransitionData transitionData,
+            ITransitionCarrier transitionCarrier,
             IAsyncStateMachine asyncStateMachine,
             AsyncStateMachineMetadata metadata,
             bool isContinuation,
@@ -284,11 +283,11 @@ namespace Dasync.ExecutionEngine.Transitions
 
             if (isContinuation)
             {
-                var awaitedResult = await transitionData.GetAwaitedResultAsync(ct);
+                var awaitedResult = await transitionCarrier.GetAwaitedResultAsync(ct);
                 if (awaitedResult != null)
                     TaskCapture.StartCapturing();
 
-                await transitionData.ReadRoutineStateAsync(asmValueContainer, ct);
+                await transitionCarrier.ReadRoutineStateAsync(asmValueContainer, ct);
 
                 if (awaitedResult != null)
                     UpdateTasksWithAwaitedRoutineResult(
@@ -296,7 +295,7 @@ namespace Dasync.ExecutionEngine.Transitions
             }
             else
             {
-                await transitionData.ReadRoutineParametersAsync(asmValueContainer, ct);
+                await transitionCarrier.ReadRoutineParametersAsync(asmValueContainer, ct);
             }
 
             return asmValueContainer;
@@ -340,13 +339,13 @@ namespace Dasync.ExecutionEngine.Transitions
         }
 
         private async Task AddContinuationIntentsAsync(
-            ITransitionData transitionData,
+            ITransitionCarrier transitionCarrier,
             ScheduledActions actions,
             RoutineResultDescriptor awaitedResultDescriptor,
             CallerDescriptor awaitedRoutineDescriptor,
             CancellationToken ct)
         {
-            var continuations = await transitionData.GetContinuationsAsync(ct);
+            var continuations = await transitionCarrier.GetContinuationsAsync(ct);
             if (continuations?.Count > 0)
             {
                 actions.ContinuationIntents = new List<ContinueRoutineIntent>(continuations.Count);

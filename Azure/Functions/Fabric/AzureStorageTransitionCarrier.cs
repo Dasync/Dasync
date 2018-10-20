@@ -7,7 +7,8 @@ using Dasync.CloudEvents;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
-using Dasync.EETypes.Transitions;
+using Dasync.EETypes.Platform;
+using Dasync.Fabric.Sample.Base;
 using Dasync.FabricConnector.AzureStorage;
 using Dasync.Serialization;
 using Dasync.ValueContainer;
@@ -15,7 +16,7 @@ using Newtonsoft.Json;
 
 namespace Dasync.Fabric.AzureFunctions
 {
-    public class AzureStorageTransitionCarrier : ITransitionData, ITransitionCarrier
+    public class AzureStorageTransitionCarrier : ITransitionCarrier, ITransitionStateSaver
     {
         private static readonly List<string> RoutineRecordPropertiesToRequest =
             new List<string>
@@ -185,12 +186,12 @@ namespace Dasync.Fabric.AzureFunctions
                     routineRecord.Result = _serializer.SerializeToString(intent.RoutineResult);
                     routineRecord.Status = (int)RoutineStatus.Complete;
                 }
-                else if (intent.AwaitingRoutine != null)
+                else if (intent.AwaitedRoutine != null)
                 {
                     routineRecord.Status = (int)RoutineStatus.Awaiting;
-                    routineRecord.AwaitService = intent.AwaitingRoutine.ServiceId?.ServiceName;
-                    routineRecord.AwaitMethod = intent.AwaitingRoutine.MethodId?.MethodName;
-                    routineRecord.AwaitIntentId = intent.AwaitingRoutine.Id;
+                    routineRecord.AwaitService = intent.AwaitedRoutine.ServiceId?.ServiceName;
+                    routineRecord.AwaitMethod = intent.AwaitedRoutine.MethodId?.MethodName;
+                    routineRecord.AwaitIntentId = intent.AwaitedRoutine.Id;
                 }
                 else
                 {

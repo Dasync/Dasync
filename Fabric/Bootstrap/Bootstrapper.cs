@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.EETypes;
-using Dasync.EETypes.Fabric;
 using Dasync.EETypes.Proxy;
+using Dasync.Fabric.Sample.Base;
 using Dasync.Ioc;
 using Dasync.ServiceRegistry;
 

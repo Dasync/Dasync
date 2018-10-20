@@ -2,7 +2,7 @@
 using Dasync.CloudEvents;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
-using Dasync.EETypes.Transitions;
+using Dasync.Fabric.Sample.Base;
 using Newtonsoft.Json;
 
 namespace Dasync.Fabric.FileBased

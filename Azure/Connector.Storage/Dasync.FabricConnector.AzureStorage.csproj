@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.0.0" />
   </ItemGroup>
 
@@ -33,6 +33,7 @@
     <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.csproj" />
     <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.csproj" />
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />
+    <ProjectReference Include="..\..\Fabric\Sample.Base\Dasync.Fabric.Sample.Base.csproj" />
     <ProjectReference Include="..\Storage\Dasync.AzureStorage.csproj" />
   </ItemGroup>
 

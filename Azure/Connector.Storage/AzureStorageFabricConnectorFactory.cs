@@ -1,7 +1,7 @@
 ﻿using System;
 using Dasync.AzureStorage;
 using Dasync.EETypes;
-using Dasync.EETypes.Fabric;
+using Dasync.Fabric.Sample.Base;
 using Dasync.Serialization;
 
 namespace Dasync.FabricConnector.AzureStorage

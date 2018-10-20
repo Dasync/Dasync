@@ -1,4 +1,4 @@
-﻿namespace Dasync.EETypes.Fabric
+﻿namespace Dasync.Fabric.Sample.Base
 {
     public interface IFabricConnectorFactorySelector
     {

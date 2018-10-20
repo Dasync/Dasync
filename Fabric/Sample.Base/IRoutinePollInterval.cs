@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Dasync.EETypes.Fabric
+namespace Dasync.Fabric.Sample.Base
 {
     public interface IRoutinePollInterval
     {

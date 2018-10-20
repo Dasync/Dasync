@@ -67,6 +67,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DasyncFeatures", "Examples\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Ioc.Autofac", "IoC\IoC.Autofac\Dasync.Ioc.Autofac.csproj", "{CD303982-19D3-4322-B2F0-8048092E32E0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Fabric.Sample.Base", "Fabric\Sample.Base\Dasync.Fabric.Sample.Base.csproj", "{AA2EE6FF-DA89-442B-9213-5F2EA28F87DC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +167,10 @@ Global
 		{CD303982-19D3-4322-B2F0-8048092E32E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD303982-19D3-4322-B2F0-8048092E32E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD303982-19D3-4322-B2F0-8048092E32E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA2EE6FF-DA89-442B-9213-5F2EA28F87DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA2EE6FF-DA89-442B-9213-5F2EA28F87DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA2EE6FF-DA89-442B-9213-5F2EA28F87DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA2EE6FF-DA89-442B-9213-5F2EA28F87DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -196,6 +202,7 @@ Global
 		{F4A664F5-8907-42D2-B05A-1AB1AF8B2BCA} = {0103B1F1-8F1D-4DB5-9EE5-CA5E8B970D10}
 		{1CFFE7F0-3321-4DC0-894D-8354738B081E} = {F4A664F5-8907-42D2-B05A-1AB1AF8B2BCA}
 		{CD303982-19D3-4322-B2F0-8048092E32E0} = {BDDDE05B-3CFC-4A50-8EFE-9C24A8ABBC4A}
+		{AA2EE6FF-DA89-442B-9213-5F2EA28F87DC} = {79D23AA5-2B44-49EF-B25B-EE784E5F68EE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F8B4417C-1BAD-421A-9164-89A427E53FA2}

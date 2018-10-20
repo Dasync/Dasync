@@ -120,6 +120,10 @@
       <Project>{80cb1ca7-0acf-4c9f-850f-30990163ff4e}</Project>
       <Name>Dasync.Bootstrap.Fx450</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Fabric\Sample.Base\Dasync.Fabric.Sample.Base.Fx450.csproj">
+      <Project>{d131c1a5-3a82-4c91-b056-146d3af138d2}</Project>
+      <Name>Dasync.Fabric.Sample.Base.Fx450</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Fabric\ServiceRegistry\Dasync.ServiceRegistry.Fx450.csproj">
       <Project>{8797e703-e6d6-46b4-a4a5-ceaecac3fe03}</Project>
       <Name>Dasync.ServiceRegistry.Fx450</Name>

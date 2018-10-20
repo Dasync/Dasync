@@ -1,13 +1,13 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Dasync.EETypes.Platform;
 
-namespace Dasync.EETypes.Transitions
+namespace Dasync.EETypes.Engine
 {
     public interface ITransitionRunner
     {
         Task RunAsync(
             ITransitionCarrier transitionCarrier,
-            ITransitionData transitionData,
             CancellationToken ct);
     }
 }

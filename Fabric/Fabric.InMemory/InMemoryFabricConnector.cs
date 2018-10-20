@@ -3,8 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
-using Dasync.EETypes.Fabric;
 using Dasync.EETypes.Intents;
+using Dasync.Fabric.Sample.Base;
 using Dasync.Serialization;
 using static Dasync.Fabric.InMemory.InMemoryDataStore;
 

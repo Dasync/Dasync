@@ -46,10 +46,7 @@
     <Compile Include="Descriptors\TransitionDescriptor.cs" />
     <Compile Include="Descriptors\TransitionType.cs" />
     <Compile Include="Descriptors\RoutineResultDescriptor.cs" />
-    <Compile Include="Fabric\ICurrentFabric.cs" />
-    <Compile Include="Fabric\IFabric.cs" />
-    <Compile Include="Fabric\IFabricConnectorFactory.cs" />
-    <Compile Include="Fabric\IFabricConnectorFactorySelector.cs" />
+    <Compile Include="Engine\ITransitionRunner.cs" />
     <Compile Include="Intents\ContinueRoutineIntent.cs" />
     <Compile Include="Intents\CreateServiceInstanceIntent.cs" />
     <Compile Include="Intents\ExecuteRoutineIntent.cs" />
@@ -59,18 +56,14 @@
     <Compile Include="IRoutineMethodIdProvider.cs" />
     <Compile Include="Intents\ScheduledActions.cs" />
     <Compile Include="Descriptors\ServiceDescriptor.cs" />
-    <Compile Include="Fabric\ActiveRoutineInfo.cs" />
-    <Compile Include="Fabric\IFabricConnector.cs" />
-    <Compile Include="Fabric\IFabricConnectorSelector.cs" />
-    <Compile Include="Fabric\IRoutinePollInterval.cs" />
+    <Compile Include="Platform\IRoutineCompletionNotifier.cs" />
+    <Compile Include="Platform\ITransitionCarrier.cs" />
+    <Compile Include="Platform\ITransitionCommitter.cs" />
     <Compile Include="RoutineMethodId.cs" />
-    <Compile Include="Transitions\ITransitionCarrier.cs" />
-    <Compile Include="Transitions\ITransitionData.cs" />
     <Compile Include="Proxy\ProxyTaskState.cs" />
     <Compile Include="Proxy\IServiceProxyBuilder.cs" />
     <Compile Include="ServiceId.cs" />
     <Compile Include="Proxy\ServiceProxyContext.cs" />
-    <Compile Include="Transitions\ITransitionRunner.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.Fx450.csproj">

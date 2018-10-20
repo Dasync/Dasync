@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Dasync.EETypes.Fabric;
 
-namespace Dasync.ExecutionEngine.Fabric
+namespace Dasync.Fabric.Sample.Base
 {
     public class FabricConnectorFactorySelector : IFabricConnectorFactorySelector
     {

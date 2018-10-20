@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Async;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.CloudEvents;
 using Dasync.EETypes;
-using Dasync.EETypes.Fabric;
-using Dasync.EETypes.Intents;
-using Dasync.EETypes.Transitions;
+using Dasync.EETypes.Engine;
+using Dasync.Fabric.Sample.Base;
 using Dasync.Serialization;
 using Newtonsoft.Json;
 
@@ -147,7 +145,6 @@ namespace Dasync.Fabric.FileBased
             for (; ; )
             {
                 var carrier = new TransitionCarrier(this, eventEnvelope);
-                var data = carrier;
 
                 //var transitionInfo = await data.GetTransitionDescriptorAsync(ct);
                 //if (transitionInfo.Type == TransitionType.InvokeRoutine ||
@@ -165,7 +162,7 @@ namespace Dasync.Fabric.FileBased
 
                 try
                 {
-                    await _transitionRunner.RunAsync(carrier, data, ct);
+                    await _transitionRunner.RunAsync(carrier, ct);
                     break;
                 }
                 catch (ConcurrentRoutineExecutionException)
