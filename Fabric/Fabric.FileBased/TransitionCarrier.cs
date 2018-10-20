@@ -200,6 +200,8 @@ namespace Dasync.Fabric.FileBased
 
                     using (var textWriter = new StreamWriter(fileStream, Encoding.UTF8, 512, leaveOpen: true))
                         _jsonSerializer.Serialize(textWriter, routineDataEnvelope);
+
+                    fileStream.SetLength(fileStream.Position);
                 }
             }
         }
