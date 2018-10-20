@@ -59,6 +59,7 @@
     <Compile Include="TimerExtensions.cs" />
     <Compile Include="TimerQueueExtensions.cs" />
     <Compile Include="ReflectionExtensions.cs" />
+    <Compile Include="TimerQueueTimerAccessor.cs" />
     <Compile Include="WhenAllPromiseAccessor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -12,24 +12,38 @@ namespace Dasync.Accessors
             return task.GetType().Name == "DelayPromise";
         }
 
-        private static bool TryGetTimer(Task task, out Timer timer)
+        private static bool TryGetTimer(Task task, out object timer)
         {
             timer = null;
             if (task.GetType().Name == "DelayPromise")
             {
                 timer = task.GetType()
                     .GetField("Timer", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                    .GetValue(task) as Timer;
+                    .GetValue(task);
             }
             return timer != null;
         }
 
         public static bool TryGetTimerStartAndDelay(Task delayPromise, out DateTime startTime, out TimeSpan delay)
         {
-            if (TryGetTimer(delayPromise, out var timer))
+            if (TryGetTimer(delayPromise, out var timerObject))
             {
-                timer.GetSettings(out var start, out var initialDelay, out var interval);
+                object timerQueueTimer;
 
+                if (TimerQueueTimerAccessor.IsTimerQueueTimer(timerObject))
+                {
+                    timerQueueTimer = timerObject;
+                }
+                else if (timerObject is Timer timer)
+                {
+                    timerQueueTimer = timer.GetTimerQueueTimer();
+                }
+                else
+                {
+                    throw new InvalidOperationException("unknown timer type");
+                }
+
+                TimerQueueTimerAccessor.GetSettings(timerQueueTimer, out var start, out var initialDelay, out var interval);
                 if (start.HasValue && initialDelay.HasValue)
                 {
                     startTime = start.Value;
@@ -45,9 +59,20 @@ namespace Dasync.Accessors
 
         public static bool TryCancelTimer(Task delayPromise)
         {
-            if (TryGetTimer(delayPromise, out var timer))
+            if (TryGetTimer(delayPromise, out var timerObject))
             {
-                timer.Dispose();
+                if (TimerQueueTimerAccessor.IsTimerQueueTimer(timerObject))
+                {
+                    TimerQueueTimerAccessor.Close(timerObject);
+                }
+                else if (timerObject is Timer timer)
+                {
+                    timer.Dispose();
+                }
+                else
+                {
+                    throw new InvalidOperationException("unknown timer type");
+                }
                 return true;
             }
             return false;
