@@ -4,9 +4,12 @@ using System.Threading.Tasks;
 using Dasync.EETypes.Descriptors;
 using Dasync.ValueContainer;
 
-namespace Dasync.EETypes.Transitions
+namespace Dasync.EETypes.Platform
 {
-    public interface ITransitionData
+    /// <summary>
+    /// Must be implemented by concrete platform.
+    /// </summary>
+    public interface ITransitionCarrier
     {
         Task<TransitionDescriptor> GetTransitionDescriptorAsync(CancellationToken ct);
 

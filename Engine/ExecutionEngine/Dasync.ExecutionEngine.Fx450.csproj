@@ -36,9 +36,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Fabric\CurrentFabricHolder.cs" />
-    <Compile Include="Fabric\FabricConnectorFactorySelector.cs" />
-    <Compile Include="Fabric\FabricConnectorSelector.cs" />
     <Compile Include="IntrinsicFlow\IntrinsicRoutines.cs" />
     <Compile Include="IntrinsicFlow\WhenAllInputParameters.cs" />
     <Compile Include="IntrinsicFlow\IntrinsicFlowController.cs" />
@@ -51,13 +48,11 @@
     <Compile Include="StateMetadata\Service\ServiceStateMetadataProvider.cs" />
     <Compile Include="StateMetadata\Service\ServiceStateValueContainerProvider.cs" />
     <Compile Include="StateMetadata\Service\ServiceStateVariable.cs" />
-    <Compile Include="Proxy\RoutineImmediateExecutor.cs" />
     <Compile Include="Transitions\TransitionContext.cs" />
     <Compile Include="RoutineMethodIdProvider.cs" />
     <Compile Include="NumericIdGenerator.cs" />
     <Compile Include="Proxy\ServiceProxyBuilder.cs" />
     <Compile Include="RoutineMethodResolver.cs" />
-    <Compile Include="Transitions\TransitionCommitter.cs" />
     <Compile Include="Transitions\TransitionMonitor.cs" />
     <Compile Include="Continuation\TaskContinuationClassifier.cs" />
     <Compile Include="Continuation\TaskContinuationInfo.cs" />
@@ -98,5 +93,6 @@
       <Name>Dasync.Proxy.Fx450</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -84,6 +84,7 @@ namespace DasyncFeatures
                 .Load(Dasync.Proxy.DI.Bindings)
                 .Load(Dasync.AsyncStateMachine.DI.Bindings)
                 .Load(Dasync.ExecutionEngine.DI.Bindings)
+                .Load(Dasync.Fabric.Sample.Base.DI.Bindings)
                 .Load(Dasync.Bootstrap.DI.Bindings);
 
             if (inMemoryEmulation)

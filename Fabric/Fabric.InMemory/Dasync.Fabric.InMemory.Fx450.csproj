@@ -61,6 +61,10 @@
       <Project>{e10b9109-b721-492e-b32d-048bc8f147c6}</Project>
       <Name>Dasync.EETypes.Fx450</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Sample.Base\Dasync.Fabric.Sample.Base.Fx450.csproj">
+      <Project>{d131c1a5-3a82-4c91-b056-146d3af138d2}</Project>
+      <Name>Dasync.Fabric.Sample.Base.Fx450</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceRegistry\Dasync.ServiceRegistry.Fx450.csproj">
       <Project>{8797e703-e6d6-46b4-a4a5-ceaecac3fe03}</Project>
       <Name>Dasync.ServiceRegistry.Fx450</Name>

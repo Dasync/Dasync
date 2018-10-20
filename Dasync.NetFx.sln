@@ -61,6 +61,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dasync.CloudEvents.Fx450", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dasync.Fabric.FileBased.Fx450", "Fabric\Fabric.FileBased\Dasync.Fabric.FileBased.Fx450.csproj", "{7AC6C577-A929-40B3-812D-DE8FF7DD7AD6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dasync.Fabric.Sample.Base.Fx450", "Fabric\Sample.Base\Dasync.Fabric.Sample.Base.Fx450.csproj", "{D131C1A5-3A82-4C91-B056-146D3AF138D2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -159,6 +161,10 @@ Global
 		{7AC6C577-A929-40B3-812D-DE8FF7DD7AD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7AC6C577-A929-40B3-812D-DE8FF7DD7AD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7AC6C577-A929-40B3-812D-DE8FF7DD7AD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D131C1A5-3A82-4C91-B056-146D3AF138D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D131C1A5-3A82-4C91-B056-146D3AF138D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D131C1A5-3A82-4C91-B056-146D3AF138D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D131C1A5-3A82-4C91-B056-146D3AF138D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -188,6 +194,7 @@ Global
 		{AB32283E-0DF3-4806-BCE1-E3D9592A8A7F} = {DBA759D0-DC75-4883-A4C6-C08E479FDA28}
 		{057CC32B-4F80-4444-91A1-223488041FFF} = {284BE224-A303-4FA2-A520-D7671E5BD2BC}
 		{7AC6C577-A929-40B3-812D-DE8FF7DD7AD6} = {9143AAEA-5D04-4F44-9623-AE725CC71420}
+		{D131C1A5-3A82-4C91-B056-146D3AF138D2} = {9143AAEA-5D04-4F44-9623-AE725CC71420}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9EC5AF2B-7D6F-4EB0-BCC3-6781DC488FAC}

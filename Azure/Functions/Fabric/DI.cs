@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Dasync.EETypes.Fabric;
+using Dasync.Fabric.Sample.Base;
 using Dasync.FabricConnector.AzureStorage;
-using Dasync.Ioc;
 using Dasync.ServiceRegistry;
 
 namespace Dasync.Fabric.AzureFunctions

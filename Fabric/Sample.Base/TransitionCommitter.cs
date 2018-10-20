@@ -1,31 +1,26 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Dasync.EETypes.Fabric;
 using Dasync.EETypes.Intents;
-using Dasync.EETypes.Transitions;
+using Dasync.EETypes.Platform;
 
-namespace Dasync.ExecutionEngine.Transitions
+namespace Dasync.Fabric.Sample.Base
 {
-    public interface ITransitionCommitter
-    {
-        Task CommitAsync(
-            ITransitionCarrier transitionCarrier,
-            ScheduledActions actions,
-            CancellationToken ct);
-    }
-
     public class TransitionCommitter : ITransitionCommitter
     {
         private readonly IFabricConnectorSelector _fabricConnectorSelector;
+        private readonly IRoutineCompletionNotifier _routineCompletionNotifier;
 
-        public TransitionCommitter(IFabricConnectorSelector fabricConnectorSelector)
+        public TransitionCommitter(
+            IFabricConnectorSelector fabricConnectorSelector,
+            IRoutineCompletionNotifier routineCompletionNotifier)
         {
             _fabricConnectorSelector = fabricConnectorSelector;
+            _routineCompletionNotifier = routineCompletionNotifier;
         }
 
         public async Task CommitAsync(
-            ITransitionCarrier transitionCarrier,
             ScheduledActions actions,
+            ITransitionCarrier transitionCarrier,
             CancellationToken ct)
         {
 #warning This need deep thinking on how to achieve transictionality
@@ -34,7 +29,7 @@ namespace Dasync.ExecutionEngine.Transitions
             {
 #warning Make sure that saving service and routine state is transactional - you don't want to re-run routine on failure after service state was saved only.
                 var intent = actions.SaveStateIntent;
-                await transitionCarrier.SaveStateAsync(intent, ct);
+                await ((ITransitionStateSaver)transitionCarrier).SaveStateAsync(intent, ct);
             }
 
             if (actions.ExecuteRoutineIntents?.Count > 0)
@@ -47,6 +42,8 @@ namespace Dasync.ExecutionEngine.Transitions
                     var info = await connector.ScheduleRoutineAsync(intent, ct);
 #warning TODO: check if routine is already done - it's possible on retry to run the transition, or under some special circumstances.
 #warning TODO: save scheduled routine info into current routine's state - needed for dynamic subscription.
+                    if (intent.NotifyOnCompletion)
+                        ((IInternalRoutineCompletionNotifier)_routineCompletionNotifier).RegisterComittedRoutine(intent.Id, connector, info);
                 }
             }
 

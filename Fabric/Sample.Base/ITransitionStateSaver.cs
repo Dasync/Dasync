@@ -2,9 +2,10 @@
 using System.Threading.Tasks;
 using Dasync.EETypes.Intents;
 
-namespace Dasync.EETypes.Transitions
+namespace Dasync.Fabric.Sample.Base
 {
-    public interface ITransitionCarrier
+    // Temporary interface
+    public interface ITransitionStateSaver
     {
         Task SaveStateAsync(SaveStateIntent intent, CancellationToken ct);
     }

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Dasync.EETypes.Intents;
 
-namespace Dasync.EETypes.Fabric
+namespace Dasync.Fabric.Sample.Base
 {
     public interface IFabricConnector
     {

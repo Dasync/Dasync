@@ -1,7 +1,6 @@
 ﻿using System;
-using Dasync.EETypes.Fabric;
 
-namespace Dasync.ExecutionEngine.Fabric
+namespace Dasync.Fabric.Sample.Base
 {
     public class CurrentFabricHolder : ICurrentFabric, ICurrentFabricSetter
     {

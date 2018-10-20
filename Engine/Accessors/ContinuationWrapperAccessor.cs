@@ -16,14 +16,20 @@ namespace Dasync.Accessors
 
         private static readonly FieldInfo _fi_m_continuation =
             ContinuationWrapperType.GetField("m_continuation",
+                BindingFlags.Instance | BindingFlags.NonPublic) ??
+            ContinuationWrapperType.GetField("_continuation",
                 BindingFlags.Instance | BindingFlags.NonPublic);
 
         private static readonly FieldInfo _fi_m_invokeAction =
             ContinuationWrapperType.GetField("m_invokeAction",
+                BindingFlags.Instance | BindingFlags.NonPublic) ??
+            ContinuationWrapperType.GetField("_invokeAction",
                 BindingFlags.Instance | BindingFlags.NonPublic);
 
         private static readonly FieldInfo _fi_m_innerTask =
             ContinuationWrapperType.GetField("m_innerTask",
+                BindingFlags.Instance | BindingFlags.NonPublic) ??
+            ContinuationWrapperType.GetField("_innerTask",
                 BindingFlags.Instance | BindingFlags.NonPublic);
 
         public static Action GetContinuation(object continuationWrapper)

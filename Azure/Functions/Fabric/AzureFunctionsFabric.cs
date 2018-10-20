@@ -11,11 +11,11 @@ using Dasync.AzureStorage;
 using Dasync.CloudEvents;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
-using Dasync.EETypes.Fabric;
+using Dasync.EETypes.Engine;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Proxy;
-using Dasync.EETypes.Transitions;
 using Dasync.ExecutionEngine;
+using Dasync.Fabric.Sample.Base;
 using Dasync.FabricConnector.AzureStorage;
 using Dasync.Proxy;
 using Dasync.Serialization;
@@ -222,12 +222,11 @@ namespace Dasync.Fabric.AzureFunctions
 
                 var transitionCarrier = new AzureStorageTransitionCarrier(
                     eventEnvelope, _routinesTable, _servicesTable, _defaultSerializer);
-                var transitionData = transitionCarrier;
 
                 var concurrentExecutionDetected = false;
                 try
                 {
-                    await _transitionRunner.RunAsync(transitionCarrier, transitionData, ct);
+                    await _transitionRunner.RunAsync(transitionCarrier, ct);
                 }
                 catch (ConcurrentTransitionException)
                 {

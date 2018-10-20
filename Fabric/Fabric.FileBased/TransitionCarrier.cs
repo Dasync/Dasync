@@ -8,7 +8,8 @@ using Dasync.CloudEvents;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
-using Dasync.EETypes.Transitions;
+using Dasync.EETypes.Platform;
+using Dasync.Fabric.Sample.Base;
 using Dasync.Serialization;
 using Dasync.ValueContainer;
 using Newtonsoft.Json;
@@ -17,7 +18,7 @@ namespace Dasync.Fabric.FileBased
 {
     partial class FileBasedFabric
     {
-        public class TransitionCarrier : ITransitionCarrier, ITransitionData
+        public class TransitionCarrier : ITransitionCarrier, ITransitionStateSaver
         {
             private readonly FileBasedFabric _fabric;
             private readonly RoutineEventEnvelope _eventEnvelope;

@@ -1,4 +1,4 @@
-﻿namespace Dasync.EETypes.Transitions
+﻿namespace Dasync.Fabric.Sample.Base
 {
     public enum RoutineStatus
     {

@@ -7,6 +7,7 @@ namespace Dasync.EETypes.Intents
     {
         public ServiceId ServiceId;
 
+#warning TODO: remove state of a service? Replace with a domain entity?
         public IValueContainer ServiceState;
 
         public RoutineDescriptor Routine;
@@ -19,6 +20,6 @@ namespace Dasync.EETypes.Intents
         /// If not null, the save state is caused due to calling another
         /// routine which must resume the current one upon completion.
         /// </summary>
-        public ExecuteRoutineIntent AwaitingRoutine;
+        public ExecuteRoutineIntent AwaitedRoutine;
     }
 }
