@@ -38,6 +38,7 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="AsyncDebugging.cs" />
     <Compile Include="AsyncLocal.cs" />
+    <Compile Include="AsyncStateMachineBoxAccessor.cs" />
     <Compile Include="AwaitTaskContinuationAccessor.cs" />
     <Compile Include="CancellationCallbackInfoExtenstions.cs" />
     <Compile Include="CancellationTokenRegistrationExtensions.cs" />

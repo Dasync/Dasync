@@ -106,7 +106,17 @@ namespace Dasync.ExecutionEngine.Continuation
                         continue;
                     }
 
-                    if (MoveNextRunnerAccessor.MoveNextRunnerType.IsAssignableFrom(targetType))
+                    if (AsyncStateMachineBoxAccessor.IsAsyncStateMachineBox(targetType))
+                    {
+                        return new TaskContinuationInfo
+                        {
+                            Type = TaskContinuationType.AsyncStateMachine,
+                            Target = AsyncStateMachineBoxAccessor.GetStateMachine(@delegate.Target),
+                            CapturedContext = AsyncStateMachineBoxAccessor.GetContext(@delegate.Target) ?? capturedContext
+                        };
+                    }
+
+                    if (MoveNextRunnerAccessor.IsMoveNextRunner(targetType))
                     {
                         return new TaskContinuationInfo
                         {
