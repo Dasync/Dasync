@@ -58,8 +58,9 @@ namespace Dasync.AsyncStateMachine
                     state = new AsyncStateMachineField(AsyncStateMachineFieldType.State, fi, name, internalName);
                 }
                 else if (/*name.Length == 0 && fi.Name.EndsWith("__builder") &&*/
-                    (fi.FieldType == typeof(AsyncTaskMethodBuilder) ||
-                        (fi.FieldType.GetTypeInfo().IsGenericType && fi.FieldType.GetGenericTypeDefinition() == typeof(AsyncTaskMethodBuilder<>))))
+                    fi.FieldType == typeof(AsyncTaskMethodBuilder) ||
+                    fi.FieldType == typeof(AsyncVoidMethodBuilder) ||
+                    (fi.FieldType.GetTypeInfo().IsGenericType && fi.FieldType.GetGenericTypeDefinition() == typeof(AsyncTaskMethodBuilder<>)))
                 {
                     if (isCompilerGeneratedField)
                         name = "__builder";
