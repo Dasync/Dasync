@@ -134,10 +134,12 @@ namespace Dasync.Proxy
             //AddConstructor(context);
             //AddFactoryMethod(context);
 
+            ImplementEvents(context, context.ObjectType);
+
             if (isClass)
             {
-                CopyConstructors(context);
                 OverrideClassMethods(context);
+                CopyConstructors(context);
             }
             else
             {
@@ -145,12 +147,21 @@ namespace Dasync.Proxy
                     ImplementInterfaceMethods(interfaceType, context);
             }
 
-            return typeBuilder
+            var proxyType = typeBuilder
 #if NETFX
                 .CreateType();
 #else
                 .CreateTypeInfo().AsType();
 #endif
+
+            // Set values to static fields
+            foreach (var tuple in context.StaticFieldValues)
+            {
+                var staticFieldInfo = proxyType.GetField(tuple.Key, BindingFlags.NonPublic | BindingFlags.Static);
+                staticFieldInfo.SetValue(null, tuple.Value);
+            }
+
+            return proxyType;
         }
 
         private static void ImplementObjectProxy(Context context)
@@ -350,11 +361,16 @@ namespace Dasync.Proxy
                     ctor.Attributes, ctor.CallingConvention, parameterTypes);
 
                 var il = ctorCopy.GetILGenerator();
-                il.Emit(OpCodes.Ldarg_0);
 
+                if (context.InitializeRaiseEventProxiesMethod != null)
+                {
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.Emit(OpCodes.Call, context.InitializeRaiseEventProxiesMethod);
+                }
+
+                il.Emit(OpCodes.Ldarg_0);
                 for (var i = 1; i <= parameterTypes.Length; i++)
                     il.Emit(OpCodes.Ldarg_S, i);
-
                 il.Emit(OpCodes.Call, ctor);
                 il.Emit(OpCodes.Ret);
 
@@ -370,20 +386,20 @@ namespace Dasync.Proxy
         private static void ImplementInterfaceMethods(Type interfaceType, Context context)
         {
             if (interfaceType.GetProperties()?.Length > 0)
-                throw new InvalidOperationException($"Cannot generate proxy for the interface '{context.ObjectType.FullName}' because it has properties");
-            if (interfaceType.GetEvents()?.Length > 0)
-                throw new InvalidOperationException($"Cannot generate proxy for the interface '{context.ObjectType.FullName}' because it has events");
+                throw new InvalidOperationException($"Cannot generate proxy for the interface '{(context.ObjectType ?? interfaceType).FullName}' because it has properties");
 
             if (!context.ImplementedInterfaces.Add(interfaceType))
                 return;
 
             context.TypeBuilder.AddInterfaceImplementation(interfaceType);
 
-            foreach (var interfaceMethod in interfaceType.GetMethods().Where(t => t.IsPublic))
+            foreach (var interfaceMethod in interfaceType.GetMethods().Where(mi => mi.IsPublic && !IsEventMethod(mi)))
             {
                 var methodBuilder = OverrideMethod(interfaceMethod, context);
                 context.TypeBuilder.DefineMethodOverride(methodBuilder, interfaceMethod);
             }
+
+            ImplementEvents(context, interfaceType);
 
             foreach (var implementedInterface in interfaceType.GetInterfaces().Where(IsPublic))
                 ImplementInterfaceMethods(implementedInterface, context);
@@ -402,7 +418,7 @@ namespace Dasync.Proxy
             {
                 context.TypeBuilder.AddInterfaceImplementation(interfaceType);
 
-                foreach (var interfaceMethod in interfaceType.GetMethods())
+                foreach (var interfaceMethod in interfaceType.GetMethods().Where(mi => !IsEventMethod(mi)))
                 {
                     var methodBuilder = OverrideMethod(interfaceMethod, context, explicitInterfaceMethod: true);
                     context.TypeBuilder.DefineMethodOverride(methodBuilder, interfaceMethod);
@@ -561,6 +577,204 @@ namespace Dasync.Proxy
             return methodBuilder;
         }
 
+        private static void ImplementEvents(Context context, Type typeDeclaringEvents)
+        {
+            var raiseEventProxies = new Dictionary<FieldInfo, MethodInfo>();
+
+            foreach (var @event in typeDeclaringEvents.GetEvents(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (@event.AddMethod.IsFinal || @event.RemoveMethod.IsFinal)
+                    continue;
+
+                var eventInfoField = context.TypeBuilder.DefineField(@event.Name + "_EventInfo",
+                    typeof(EventInfo), FieldAttributes.Private | FieldAttributes.Static);
+                context.StaticFieldValues.Add(eventInfoField.Name, @event);
+
+                var addMethodBuilder = ImplementAddOrRemoveEventDelegate(eventInfoField, @event.AddMethod, SubscribeProxyMethod, context);
+                context.TypeBuilder.DefineMethodOverride(addMethodBuilder, @event.AddMethod);
+
+                var removeMethodBuilder = ImplementAddOrRemoveEventDelegate(eventInfoField, @event.RemoveMethod, UnsubscribeProxyMethod, context);
+                context.TypeBuilder.DefineMethodOverride(removeMethodBuilder, @event.RemoveMethod);
+
+                var eventBuilder = context.TypeBuilder.DefineEvent(@event.Name, EventAttributes.None, @event.EventHandlerType);
+                eventBuilder.SetAddOnMethod(addMethodBuilder);
+                eventBuilder.SetRemoveOnMethod(removeMethodBuilder);
+
+                var raiseProxyMethod = CreateRaiseEventProxyMethod(context, @event, eventInfoField);
+                var autoGeneratedDelegateField = typeDeclaringEvents.GetField(@event.Name, BindingFlags.Instance | BindingFlags.NonPublic);
+                raiseEventProxies.Add(autoGeneratedDelegateField, raiseProxyMethod);
+            }
+
+            if (raiseEventProxies?.Count > 0)
+                context.InitializeRaiseEventProxiesMethod = CreateInitializeRaiseEventProxiesMethod(context, raiseEventProxies);
+        }
+
+        private static MethodBuilder ImplementAddOrRemoveEventDelegate(FieldInfo eventInfoStaticField, MethodInfo method, MethodInfo addOrRemoveProxyMethod, Context context)
+        {
+            var methodAttributes = MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.Virtual | MethodAttributes.SpecialName;
+
+            var methodBuilder = context.TypeBuilder.DefineMethod(
+                method.Name,
+                methodAttributes,
+                method.ReturnType,
+                method.GetParameters().Select(pi => pi.ParameterType).ToArray());
+
+            var parameters = method.GetParameters();
+            foreach (var p in parameters)
+            {
+                methodBuilder.DefineParameter(p.Position + 1, p.Attributes, p.Name);
+            }
+
+            var il = methodBuilder.GetILGenerator();
+
+            // Push 'Executor'
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, context.ExecutorField);
+            // Push 'this'
+            il.Emit(OpCodes.Ldarg_0);
+            // Push 'EventInfo'
+            il.Emit(OpCodes.Ldsfld, eventInfoStaticField);
+            // Push 'value' that contains a delegate
+            il.Emit(OpCodes.Ldarg_1);
+            // Call IProxyExecutor.Subscribe/Unsubscribe
+            il.Emit(OpCodes.Callvirt, addOrRemoveProxyMethod);
+            // Return void
+            il.Emit(OpCodes.Ret);
+
+            return methodBuilder;
+        }
+
+        private static MethodBuilder CreateRaiseEventProxyMethod(Context context, EventInfo @event, FieldInfo eventInfoStaticField)
+        {
+            var delegateInvokeMethod = @event.EventHandlerType.GetMethod("Invoke");
+
+            if (delegateInvokeMethod.ReturnType != typeof(void))
+                throw new InvalidOperationException($"The delegate '{@event.EventHandlerType}' must return System.Void in order to generate proxy for event '{@event.Name}' on '{@event.DeclaringType}'.");
+
+            var methodBuilder = context.TypeBuilder.DefineMethod(
+                "On" + @event.Name,
+                MethodAttributes.Private,
+                delegateInvokeMethod.ReturnType,
+                delegateInvokeMethod.GetParameters().Select(pi => pi.ParameterType).ToArray());
+
+            var parameters = delegateInvokeMethod.GetParameters();
+            foreach (var p in parameters)
+            {
+                var position = p.Position + 1; // 0 is for the return parameter in the MethodBuilder
+                var parameterBuilder = methodBuilder.DefineParameter(position, p.Attributes, p.Name);
+                if (p.HasDefaultValue)
+                    parameterBuilder.SetConstant(p.DefaultValue);
+            }
+
+#warning TODO: add support for method generic parameters?
+
+            var parameterSetType = ValueContainerTypeBuilder.Build(
+                parameters.Select(p => new KeyValuePair<string, Type>(p.Name, p.ParameterType)));
+
+            var il = methodBuilder.GetILGenerator();
+
+            var methodParamsVar = il.DeclareLocal(parameterSetType);
+
+            // Create parameters container and push it on the stack
+            if (parameterSetType.GetTypeInfo().IsClass)
+            {
+                il.Emit(OpCodes.Newobj, parameterSetType.GetConstructor(new Type[0]));
+            }
+            else
+            {
+                il.Emit(OpCodes.Ldloca_S, methodParamsVar.LocalIndex);
+                il.Emit(OpCodes.Initobj, parameterSetType);
+            }
+
+            // Assign values of input parameters to members of the container
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var param = parameters[i];
+                var fieldInfo = parameterSetType.GetField(param.Name, BindingFlags.Public | BindingFlags.Instance);
+                var propInfo = parameterSetType.GetProperty(param.Name, BindingFlags.Public | BindingFlags.Instance);
+
+                if (parameterSetType.GetTypeInfo().IsClass)
+                {
+                    il.Emit(OpCodes.Dup);
+                }
+                else
+                {
+                    il.Emit(OpCodes.Ldloca_S, methodParamsVar.LocalIndex);
+                }
+
+                il.Emit(OpCodes.Ldarg, i + 1);
+
+                if (fieldInfo != null)
+                {
+                    il.Emit(OpCodes.Stfld, fieldInfo);
+                }
+                else if (propInfo != null)
+                {
+                    il.Emit(OpCodes.Call, propInfo.SetMethod);
+                }
+                else
+                {
+                    throw new Exception();
+                }
+            }
+
+            if (parameterSetType.GetTypeInfo().IsClass)
+            {
+                // Store instance of to the container in a local variable
+                il.Emit(OpCodes.Stloc_S, methodParamsVar.LocalIndex);
+            }
+
+            // Push 'Executor'
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, context.ExecutorField);
+            // Push 'this'
+            il.Emit(OpCodes.Ldarg_0);
+            // Push 'EventInfo'
+            il.Emit(OpCodes.Ldsfld, eventInfoStaticField);
+            // Push reference to 'parameters'
+            il.Emit(OpCodes.Ldloca_S, methodParamsVar.LocalIndex);
+            // Call RaiseEvent<TParameters>
+            il.Emit(OpCodes.Callvirt, RaiseEventProxyMethod.MakeGenericMethod(parameterSetType));
+            // Return
+            il.Emit(OpCodes.Ret);
+
+            return methodBuilder;
+        }
+
+        private static MethodBuilder CreateInitializeRaiseEventProxiesMethod(Context context, Dictionary<FieldInfo, MethodInfo> proxies)
+        {
+            var methodBuilder = context.TypeBuilder.DefineMethod(
+                "InitializeRaiseEventProxies",
+                MethodAttributes.Private,
+                typeof(void),
+                new Type[0]);
+
+            var il = methodBuilder.GetILGenerator();
+
+            foreach (var tuple in proxies)
+            {
+                var eventDelegateField = context.TypeBuilder.DefineField(tuple.Key.Name + "_FieldInfo",
+                    typeof(FieldInfo), FieldAttributes.Private | FieldAttributes.Static);
+                context.StaticFieldValues.Add(eventDelegateField.Name, tuple.Key);
+
+                // Push 'FieldInfo'
+                il.Emit(OpCodes.Ldsfld, eventDelegateField);
+                // Push 'this'
+                il.Emit(OpCodes.Ldarg_0);
+
+                // Create delegate
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldftn, tuple.Value);
+                il.Emit(OpCodes.Newobj, tuple.Key.FieldType.GetConstructor(new[] { typeof(object), typeof(IntPtr) }));
+
+                il.Emit(OpCodes.Call, FieldInfoSetValueMethod);
+            }
+
+            il.Emit(OpCodes.Ret);
+
+            return methodBuilder;
+        }
+
         private sealed class Context
         {
             public Type ObjectType;
@@ -568,6 +782,8 @@ namespace Dasync.Proxy
             public HashSet<Type> ImplementedInterfaces = new HashSet<Type>();
             //public ConstructorInfo Constructor;
             public FieldInfo ExecutorField;
+            public Dictionary<string, object> StaticFieldValues = new Dictionary<string, object>();
+            public MethodBuilder InitializeRaiseEventProxiesMethod;
         }
 
         private static readonly ConstructorInfo NotImplementedExceptionCtor =
@@ -598,6 +814,18 @@ namespace Dasync.Proxy
         private static readonly MethodInfo ExecuteProxyMethod =
             typeof(IProxyMethodExecutor).GetMethod(nameof(IProxyMethodExecutor.Execute));
 
+        private static readonly MethodInfo SubscribeProxyMethod =
+            typeof(IProxyMethodExecutor).GetMethod(nameof(IProxyMethodExecutor.Subscribe));
+
+        private static readonly MethodInfo UnsubscribeProxyMethod =
+            typeof(IProxyMethodExecutor).GetMethod(nameof(IProxyMethodExecutor.Unsubscribe));
+
+        private static readonly MethodInfo RaiseEventProxyMethod =
+            typeof(IProxyMethodExecutor).GetMethod(nameof(IProxyMethodExecutor.RaiseEvent));
+
+        private static readonly MethodInfo FieldInfoSetValueMethod =
+            typeof(FieldInfo).GetMethod("SetValue", new[] { typeof(object), typeof(object) });
+
         private static bool IsPublic(Type t)
         {
 #if NETFX
@@ -606,5 +834,8 @@ namespace Dasync.Proxy
             return t.GetTypeInfo().IsPublic;
 #endif
         }
+
+        private static bool IsEventMethod(MethodInfo methodInfo) =>
+            methodInfo.IsSpecialName && (methodInfo.Name.StartsWith("add_") || methodInfo.Name.StartsWith("remove_"));
     }
 }
