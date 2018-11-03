@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Dasync.EETypes.Platform;
 using Dasync.Fabric.Sample.Base;
 using Dasync.ServiceRegistry;
 

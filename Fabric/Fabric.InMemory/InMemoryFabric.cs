@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.EETypes;
+using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Intents;
 using Dasync.Fabric.Sample.Base;
@@ -15,11 +16,15 @@ namespace Dasync.Fabric.InMemory
         private readonly ITransitionRunner _transitionRunner;
         private string _serializationFormat;
         private readonly ExecutionContext _nonTransitionExecutionContext = ExecutionContext.Capture();
+        private readonly INumericIdGenerator _numericIdGenerator;
 
         public InMemoryFabric(ITransitionRunner transitionRunner,
-            IInMemoryFabricSerializerFactoryAdvisor serializerFactoryAdvisor)
+            IInMemoryFabricSerializerFactoryAdvisor serializerFactoryAdvisor,
+            INumericIdGenerator numericIdGenerator)
         {
             _transitionRunner = transitionRunner;
+            _numericIdGenerator = numericIdGenerator;
+
             DataStore = InMemoryDataStore.Create(ScheduleMessage);
             var serializerFactory = serializerFactoryAdvisor.Advise();
             _serializationFormat = serializerFactory.Format;
@@ -73,34 +78,86 @@ namespace Dasync.Fabric.InMemory
 
             var ct = CancellationToken.None;
 
-            for (; ; )
+            if (message.IsEvent)
             {
-                var carrier = new TransitionCarrier(this, message);
-                carrier.Initialize();
+                var serviceId = Serializer.Deserialize<ServiceId>(message[nameof(ServiceId)]);
+                var eventId = Serializer.Deserialize<EventId>(message[nameof(EventId)]);
+                var eventDesc = new EventDescriptor { EventId = eventId, ServiceId = serviceId };
+                var subscribers = DataStore.GetEventSubscribers(eventDesc);
 
-                //var transitionInfo = await data.GetTransitionDescriptorAsync(ct);
-                //if (transitionInfo.Type == TransitionType.InvokeRoutine ||
-                //    transitionInfo.Type == TransitionType.ContinueRoutine)
-                //{
-                //    var routineDescriptor = await data.GetRoutineDescriptorAsync(ct);
-
-                //    if (!string.IsNullOrEmpty(transitionInfo.ETag) &&
-                //        transitionInfo.ETag != routineDescriptor.ETag)
-                //    {
-                //        // Ignore - stale duplicate message
-                //        return;
-                //    }
-                //}
-
-                try
+                foreach (var subscriber in subscribers)
                 {
-                    await _transitionRunner.RunAsync(carrier, ct);
-                    break;
+                    var routineId = Interlocked.Increment(ref DataStore.RoutineCounter);
+
+                    var routineRecord = new RoutineStateRecord
+                    {
+                        ETag = DateTime.UtcNow.Ticks.ToString("X16"),
+                        Id = routineId.ToString(),
+                        Completion = new TaskCompletionSource<string>()
+                    };
+
+                    lock (DataStore.Routines)
+                    {
+                        DataStore.Routines.Add(routineRecord.Id, routineRecord);
+                    }
+
+                    var transitionDescriptor = new TransitionDescriptor
+                    {
+                        Type = TransitionType.InvokeRoutine,
+                        ETag = routineRecord.ETag
+                    };
+
+                    var routineDescriptor = new RoutineDescriptor
+                    {
+                        MethodId = subscriber.MethodId,
+                        IntentId = _numericIdGenerator.NewId(),
+                        RoutineId = routineRecord.Id,
+                        ETag = routineRecord.ETag
+                    };
+
+                    var invokeRoutineMessage = new Message
+                    {
+                        //["IntentId"] = _serializer.Serialize(intent.Id),
+                        [nameof(TransitionDescriptor)] = Serializer.SerializeToString(transitionDescriptor),
+                        [nameof(ServiceId)] = Serializer.SerializeToString(subscriber.ServiceId),
+                        [nameof(RoutineDescriptor)] = Serializer.SerializeToString(routineDescriptor),
+                        ["Parameters"] = message["Parameters"]
+                    };
+
+                    DataStore.ScheduleMessage(invokeRoutineMessage);
                 }
-                catch (ConcurrentRoutineExecutionException)
+            }
+            else
+            {
+                for (; ; )
                 {
-                    // re-try
-                    continue;
+                    var carrier = new TransitionCarrier(this, message);
+                    carrier.Initialize();
+
+                    //var transitionInfo = await data.GetTransitionDescriptorAsync(ct);
+                    //if (transitionInfo.Type == TransitionType.InvokeRoutine ||
+                    //    transitionInfo.Type == TransitionType.ContinueRoutine)
+                    //{
+                    //    var routineDescriptor = await data.GetRoutineDescriptorAsync(ct);
+
+                    //    if (!string.IsNullOrEmpty(transitionInfo.ETag) &&
+                    //        transitionInfo.ETag != routineDescriptor.ETag)
+                    //    {
+                    //        // Ignore - stale duplicate message
+                    //        return;
+                    //    }
+                    //}
+
+                    try
+                    {
+                        await _transitionRunner.RunAsync(carrier, ct);
+                        break;
+                    }
+                    catch (ConcurrentRoutineExecutionException)
+                    {
+                        // re-try
+                        continue;
+                    }
                 }
             }
         }
