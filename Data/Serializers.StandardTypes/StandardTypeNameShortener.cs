@@ -90,6 +90,7 @@ namespace Dasync.Serializers.StandardTypes
             RegisterType(typeof(IEnumerator<>), "IEnumerator`1");
             RegisterType(typeof(IDictionary), "IDictionary");
             RegisterType(typeof(IDictionary<,>), "IDictionary`2");
+            RegisterType(typeof(EventArgs), "EventArgs");
         }
 
         static void RegisterType(Type type, string shortName)
