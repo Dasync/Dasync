@@ -65,7 +65,7 @@ namespace DasyncFeatures.Feature5
             Console.WriteLine("[manager] The visitor complained about a fly in the drink.");
 
             // !!! LOOK HERE !!!
-            // Calling a rotuine on a distributed service will save the state
+            // Calling a routine on a distributed service will save the state
             // of current routine, because together they define a workflow.
 
             await _baristaWorker.PleaseMakeAnotherCoffee();
@@ -89,7 +89,7 @@ namespace DasyncFeatures.Feature5
             Console.WriteLine("[barista] But that's a latte art! Fine..");
 
             // !!! LOOK HERE !!!
-            // Calling a rotuine on a simple dependency will NOT save the state
+            // Calling a routine on a simple dependency will NOT save the state
             // of current routine, because it's not a part of a workflow.
 
             await _coffeeMachine.BrewCoffee();
