@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.EETypes;
+using Dasync.EETypes.Descriptors;
 
 namespace Dasync.Fabric.InMemory
 {
@@ -11,6 +13,7 @@ namespace Dasync.Fabric.InMemory
         public class Message : Dictionary<string, string>
         {
             public DateTime? DeliverAt;
+            public bool IsEvent;
 
             public int Size
             {
@@ -57,6 +60,32 @@ namespace Dasync.Fabric.InMemory
 
         public Dictionary<string, ServiceStateRecord> Services { get; } =
             new Dictionary<string, ServiceStateRecord>();
+
+        private readonly Dictionary<EventDescriptor, List<EventSubscriberDescriptor>> _eventListeners =
+            new Dictionary<EventDescriptor, List<EventSubscriberDescriptor>>();
+
+        public void AddEventListener(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber)
+        {
+            lock (_eventListeners)
+            {
+                if (!_eventListeners.TryGetValue(eventDesc, out var listeners))
+                    _eventListeners[eventDesc] = listeners = new List<EventSubscriberDescriptor>();
+                listeners.Add(subscriber);
+            }
+        }
+
+        public IEnumerable<EventSubscriberDescriptor> GetEventSubscribers(EventDescriptor eventDesc)
+        {
+            if (_eventListeners.TryGetValue(eventDesc, out var listeners))
+                return listeners;
+            return Enumerable.Empty<EventSubscriberDescriptor>();
+        }
+
+        public static void BroadcastMessage(Message message)
+        {
+            foreach (var dataStore in _dataStoreMap.Values)
+                dataStore.ScheduleMessage(message);
+        }
 
         private static Dictionary<int, InMemoryDataStore> _dataStoreMap =
             new Dictionary<int, InMemoryDataStore>();
