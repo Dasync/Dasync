@@ -36,12 +36,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="EventIdProvider.cs" />
     <Compile Include="IntrinsicFlow\IntrinsicRoutines.cs" />
     <Compile Include="IntrinsicFlow\WhenAllInputParameters.cs" />
     <Compile Include="IntrinsicFlow\IntrinsicFlowController.cs" />
     <Compile Include="Cancellation\CancellationTokenSourceIdGenerator.cs" />
     <Compile Include="Cancellation\CancellationTokenSourceRegistry.cs" />
     <Compile Include="IntrinsicFlow\InterceptingSynchronizationContext.cs" />
+    <Compile Include="Proxy\BuildingServiceProxyContext.cs" />
     <Compile Include="Transitions\TransitionScope.cs" />
     <Compile Include="Extensions\TaskResultExtensions.cs" />
     <Compile Include="StateMetadata\Service\ServiceStateMetadata.cs" />
@@ -93,6 +95,5 @@
       <Name>Dasync.Proxy.Fx450</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

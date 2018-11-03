@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,22 +20,28 @@ namespace Dasync.ExecutionEngine.Proxy
     {
         private readonly ITransitionScope _transitionScope;
         private readonly IRoutineMethodIdProvider _routineMethodIdProvider;
+        private readonly IEventIdProvider _eventIdProvider;
         private readonly INumericIdGenerator _numericIdGenerator;
         private readonly ITransitionCommitter _transitionCommitter;
         private readonly IRoutineCompletionNotifier _routineCompletionNotifier;
+        private readonly IEventSubscriber _eventSubscriber;
 
         public ProxyMethodExecutor(
             ITransitionScope transitionScope,
             IRoutineMethodIdProvider routineMethodIdProvider,
+            IEventIdProvider eventIdProvider,
             INumericIdGenerator numericIdGenerator,
             ITransitionCommitter transitionCommitter,
-            IRoutineCompletionNotifier routineCompletionNotifier)
+            IRoutineCompletionNotifier routineCompletionNotifier,
+            IEventSubscriber eventSubscriber)
         {
             _transitionScope = transitionScope;
             _routineMethodIdProvider = routineMethodIdProvider;
+            _eventIdProvider = eventIdProvider;
             _numericIdGenerator = numericIdGenerator;
             _transitionCommitter = transitionCommitter;
             _routineCompletionNotifier = routineCompletionNotifier;
+            _eventSubscriber = eventSubscriber;
         }
 
         public Task Execute<TParameters>(IProxy proxy, MethodInfo methodInfo, ref TParameters parameters)
@@ -104,6 +111,74 @@ namespace Dasync.ExecutionEngine.Proxy
 
             var routineResult = await tcs.Task;
             proxyTask.TrySetResult(routineResult);
+        }
+
+        public void Subscribe(IProxy proxy, EventInfo @event, Delegate @delegate)
+        {
+            var eventDesc = new EventDescriptor
+            {
+                ServiceId = ((ServiceProxyContext)proxy.Context).Service.Id,
+                EventId = _eventIdProvider.GetId(@event)
+            };
+
+            if (@delegate.Target is IProxy subscriberProxy)
+            {
+                var subscriberProxyContext = (ServiceProxyContext)(subscriberProxy.Context ?? ServiceProxyBuildingContext.CurrentServiceProxyContext);
+                var subscriberServiceId = subscriberProxyContext.Service.Id;
+                var subscriberMethodId = _routineMethodIdProvider.GetId(@delegate.GetMethodInfo());
+
+                var subscriberDesc = new EventSubscriberDescriptor
+                {
+                    ServiceId = subscriberServiceId,
+                    MethodId = subscriberMethodId
+                };
+
+                _eventSubscriber.Subscribe(eventDesc, subscriberDesc);
+            }
+            else
+            {
+                throw new NotSupportedException("At this moment event subscribers must be routines of services.");
+            }
+        }
+
+        public void Unsubscribe(IProxy proxy, EventInfo @event, Delegate @delegate)
+        {
+            throw new NotSupportedException("Do you ever need to unsubscribe?");
+        }
+
+        public void RaiseEvent<TParameters>(IProxy proxy, EventInfo @event, ref TParameters parameters)
+            where TParameters : IValueContainer
+        {
+            var serviceProxyContext = (ServiceProxyContext)proxy.Context;
+
+            var intent = new RaiseEventIntent
+            {
+                Id = _numericIdGenerator.NewId(),
+                ServiceId = serviceProxyContext.Service.Id,
+                EventId = _eventIdProvider.GetId(@event),
+                Parameters = parameters
+            };
+
+            if (_transitionScope.IsActive)
+            {
+                _transitionScope.CurrentMonitor.RegisterIntent(intent);
+            }
+            else
+            {
+                RaiseEventInBackground(intent);
+            }
+        }
+
+        public async void RaiseEventInBackground(RaiseEventIntent intent)
+        {
+            var actions = new ScheduledActions
+            {
+                RaiseEventIntents = new List<RaiseEventIntent>
+                {
+                    intent
+                }
+            };
+            await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, ct: default(CancellationToken));
         }
     }
 }

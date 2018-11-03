@@ -67,6 +67,8 @@ namespace Dasync.ExecutionEngine.Transitions
 
         void RegisterIntent(ExecuteRoutineIntent intent, Task proxyTask);
 
+        void RegisterIntent(RaiseEventIntent intent);
+
         /// <summary>
         /// Save the state of current routine, then continue executing it.
         /// </summary>
@@ -146,6 +148,15 @@ namespace Dasync.ExecutionEngine.Transitions
                 actions.ExecuteRoutineIntents = new List<ExecuteRoutineIntent>();
             actions.ExecuteRoutineIntents.Add(intent);
             _taskContinuationTracker.StartTracking(proxyTask, _onRoutineContinuationSetCallback, intent);
+        }
+
+        public void RegisterIntent(RaiseEventIntent intent)
+        {
+            var transitionContext = Context;
+            var actions = transitionContext.ScheduledActions;
+            if (actions.RaiseEventIntents == null)
+                actions.RaiseEventIntents = new List<RaiseEventIntent>();
+            actions.RaiseEventIntents.Add(intent);
         }
 
         public void OnCheckpointIntent(DateTime? resumeTime = null)

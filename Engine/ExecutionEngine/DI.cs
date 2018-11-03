@@ -26,6 +26,7 @@ namespace Dasync.ExecutionEngine
             [typeof(ICancellationTokenSourceRegistry)] = typeof(CancellationTokenSourceRegistry),
             [typeof(ICancellationTokenSourceIdGenerator)] = typeof(CancellationTokenSourceIdGenerator),
             [typeof(IRoutineMethodIdProvider)] = typeof(RoutineMethodIdProvider),
+            [typeof(IEventIdProvider)] = typeof(EventIdProvider),
             [typeof(IIntrinsicFlowController)] = typeof(IntrinsicFlowController),
             [typeof(ITransitionScope)] = typeof(TransitionScope),
             [typeof(ITransitionMonitorFactory)] = typeof(TransitionMonitorFactory),
