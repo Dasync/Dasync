@@ -13,6 +13,7 @@ namespace Dasync.Fabric.Sample.Base
             [typeof(ICurrentFabric)] = typeof(CurrentFabricHolder),
             [typeof(ITransitionCommitter)] = typeof(TransitionCommitter),
             [typeof(IRoutineCompletionNotifier)] = typeof(RoutineCompletionNotifier),
+            [typeof(IEventSubscriber)] = typeof(EventSubscriber)
         };
     }
 }

@@ -43,6 +43,7 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="CurrentFabricHolder.cs" />
     <Compile Include="DI.cs" />
+    <Compile Include="EventSubscriber.cs" />
     <Compile Include="FabricConnectorFactorySelector.cs" />
     <Compile Include="FabricConnectorSelector.cs" />
     <Compile Include="ICurrentFabric.cs" />

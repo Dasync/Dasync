@@ -1,5 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Dasync.EETypes;
+using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
 
 namespace Dasync.Fabric.Sample.Base
@@ -17,6 +19,12 @@ namespace Dasync.Fabric.Sample.Base
 
         // TODO: dynamic continuation
         //Task AddContinuationAsync(RoutineDescriptor routineDescriptor, CancellationToken ct);
+
+        Task SubscribeForEventAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber);
+
+        Task OnEventSubscriberAddedAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber);
+
+        Task PublishEventAsync(RaiseEventIntent intent, CancellationToken ct);
     }
 
     public interface IFabricConnectorWithConfiguration
