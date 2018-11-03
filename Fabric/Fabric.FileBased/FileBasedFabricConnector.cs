@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.CloudEvents;
+using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
 using Dasync.Fabric.Sample.Base;
@@ -143,6 +144,21 @@ namespace Dasync.Fabric.FileBased
             };
 
             return Task.FromResult(info);
+        }
+
+        public Task SubscribeForEventAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task OnEventSubscriberAddedAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PublishEventAsync(RaiseEventIntent intent, CancellationToken ct)
+        {
+            throw new NotImplementedException();
         }
 
         internal static bool TryReadRoutineData(string directory, string routineId, out RoutineDataEnvelope dataEnvelope, out string eTag)
