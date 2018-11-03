@@ -48,6 +48,9 @@ namespace Dasync.ExecutionEngine.StateMetadata.Service
                 if (injectedAsDependency.Contains(fi))
                     continue;
 
+                if (IsEventBackingField(fi))
+                    continue;
+
                 var variableName = fi.Name;
 
                 if (IsPropertyBackingField(fi))
@@ -61,6 +64,10 @@ namespace Dasync.ExecutionEngine.StateMetadata.Service
 
         private static bool IsPropertyBackingField(FieldInfo fieldInfo)
             => fieldInfo.GetCustomAttribute<CompilerGeneratedAttribute>() != null;
+
+        private static bool IsEventBackingField(FieldInfo fieldInfo) =>
+            fieldInfo.GetCustomAttribute<CompilerGeneratedAttribute>() != null &&
+            fieldInfo.DeclaringType.GetEvent(fieldInfo.Name) != null;
 
         private static string GetAssociatedPropertyName(FieldInfo fieldInfo)
         {
