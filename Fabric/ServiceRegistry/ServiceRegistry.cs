@@ -23,7 +23,7 @@ namespace Dasync.ServiceRegistry
 
             var serviceName = string.IsNullOrEmpty(info.Name)
                 ? (serviceType != null
-                    ? GetSericeName(serviceType)
+                    ? GetServiceName(serviceType)
                     : throw new Exception("service without name or type"))
                 : info.Name;
             if (string.IsNullOrEmpty(serviceName))
@@ -68,7 +68,7 @@ namespace Dasync.ServiceRegistry
 #endif
 
 #warning Same logic is in GenerateFunctions tool
-        private static string GetSericeName(Type serviceType)
+        private static string GetServiceName(Type serviceType)
         {
             if (serviceType.IsInterface() &&
                 serviceType.Name.Length >= 2 &&

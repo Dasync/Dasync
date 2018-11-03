@@ -132,7 +132,7 @@ namespace Dasync.Ioc
                     {
                         case Type implementationType:
                             if (declarationType == implementationType)
-                                resolvedObject = BuildInstanceOfSelfBounfType(declarationType, context);
+                                resolvedObject = BuildInstanceOfSelfBoundType(declarationType, context);
                             else
                                 resolvedObject = ResolveInternal(implementationType, context);
                             binding.ImplementationObject = resolvedObject;
@@ -154,7 +154,7 @@ namespace Dasync.Ioc
             }
             else if (IsSelfBoundType(declarationType))
             {
-                var resolvedObject = BuildInstanceOfSelfBounfType(declarationType, context);
+                var resolvedObject = BuildInstanceOfSelfBoundType(declarationType, context);
                 return new object[] { resolvedObject };
             }
             else
@@ -181,7 +181,7 @@ namespace Dasync.Ioc
                 !type.GetTypeInfo().IsGenericTypeDefinition;
         }
 
-        private object BuildInstanceOfSelfBounfType(Type type, ResolveContext context)
+        private object BuildInstanceOfSelfBoundType(Type type, ResolveContext context)
         {
             var ctorInfo = SelectConstructor(type, context);
             var parametersInfo = ctorInfo.GetParameters();
