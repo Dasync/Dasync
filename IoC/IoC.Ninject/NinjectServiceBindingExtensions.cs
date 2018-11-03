@@ -47,6 +47,19 @@ namespace Dasync.Ioc.Ninject
                         }
                     }
                 }
+
+                if (serviceType == null)
+                {
+                    var selfBindings = syntax.Kernel.GetBindings(typeof(TImplementation)).ToList();
+                    foreach (var binding in selfBindings)
+                    {
+                        if (ReferenceEquals(binding.BindingConfiguration, syntax.BindingConfiguration))
+                        {
+                            serviceType = typeof(TImplementation);
+                            break;
+                        }
+                    }
+                }
             }
 
             if (serviceType == null)
