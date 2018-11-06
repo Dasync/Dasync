@@ -8,10 +8,14 @@ namespace Dasync.Fabric.FileBased
     public class FileBasedFabricConnectorFactory : IFabricConnectorFactory
     {
         private readonly ISerializerFactorySelector _serializerFactorySelector;
+        private readonly INumericIdGenerator _numericIdGenerator;
 
-        public FileBasedFabricConnectorFactory(ISerializerFactorySelector serializerFactorySelector)
+        public FileBasedFabricConnectorFactory(
+            ISerializerFactorySelector serializerFactorySelector,
+            INumericIdGenerator numericIdGenerator)
         {
             _serializerFactorySelector = serializerFactorySelector;
+            _numericIdGenerator = numericIdGenerator;
         }
 
         public string ConnectorType => "FileBased";
@@ -27,8 +31,11 @@ namespace Dasync.Fabric.FileBased
             var serializer = serializerFactory.Create();
 
             return new FileBasedFabricConnector(
+                _numericIdGenerator,
                 config.TransitionsDirectory,
                 config.RoutinesDirectory,
+                config.EventsDirectory,
+                null,
                 serializer,
                 config.SerializerFormat);
         }
@@ -39,6 +46,8 @@ namespace Dasync.Fabric.FileBased
         public string TransitionsDirectory { get; set; }
 
         public string RoutinesDirectory { get; set; }
+
+        public string EventsDirectory { get; set; }
 
         public string SerializerFormat { get; set; }
     }

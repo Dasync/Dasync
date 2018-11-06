@@ -20,9 +20,9 @@ namespace Dasync.Fabric.Sample.Base
         // TODO: dynamic continuation
         //Task AddContinuationAsync(RoutineDescriptor routineDescriptor, CancellationToken ct);
 
-        Task SubscribeForEventAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber);
+        Task SubscribeForEventAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector publisherFabricConnector);
 
-        Task OnEventSubscriberAddedAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber);
+        Task OnEventSubscriberAddedAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector subsriberFabricConnector);
 
         Task PublishEventAsync(RaiseEventIntent intent, CancellationToken ct);
     }

@@ -129,13 +129,13 @@ namespace Dasync.Fabric.InMemory
             return Task.FromResult(info);
         }
 
-        public Task SubscribeForEventAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber)
+        public Task SubscribeForEventAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector publisherFabricConnector)
         {
             _dataStore.AddEventListener(eventDesc, subscriber);
             return Task.FromResult(0);
         }
 
-        public Task OnEventSubscriberAddedAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber)
+        public Task OnEventSubscriberAddedAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector subsriberFabricConnector)
         {
             return Task.FromResult(0);
         }

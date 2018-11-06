@@ -13,6 +13,8 @@ namespace Dasync.CloudEvents
 
         public RoutineDescriptor Routine { get; set; }
 
+        public EventId EventId { get; set; }
+
         /// <summary>
         /// Caller of a sub-routine [execute only].
         /// </summary>
