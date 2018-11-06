@@ -55,7 +55,7 @@ namespace DasyncFeatures.Feature1
             Console.WriteLine($"You ordered {order.BeverageName}.");
         }
 
-        // A sub-routine of the workkflow.
+        // A sub-routine of the workflow.
         protected virtual async Task<Order> TakeOrder()
         {
             Console.Write("What beverage would you like? ");

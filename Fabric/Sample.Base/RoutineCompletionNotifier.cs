@@ -76,7 +76,9 @@ namespace Dasync.Fabric.Sample.Base
                 await Task.Delay(delayInterval);
             }
 
-            completionSink.SetResult(fabricConnectorAndRoutineInfo.RoutineInfo.Result);
+            Task.Run(() =>
+                completionSink.SetResult(fabricConnectorAndRoutineInfo.RoutineInfo.Result)
+            );
         }
     }
 }

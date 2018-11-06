@@ -17,6 +17,11 @@ namespace Dasync.EETypes.Intents
         public List<ExecuteRoutineIntent> ExecuteRoutineIntents;
 
         /// <summary>
+        /// Describes all events that need to be published.
+        /// </summary>
+        public List<RaiseEventIntent> RaiseEventIntents;
+
+        /// <summary>
         /// Save the state of the current routine if it's a state machine.
         /// </summary>
 #warning SaveRoutineState is just a flag indicating that SaveStateIntent must be initialized later

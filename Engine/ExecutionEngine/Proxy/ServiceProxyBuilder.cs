@@ -73,10 +73,7 @@ namespace Dasync.ExecutionEngine.Proxy
             if (additionalInterfaces != null)
                 allInterfaces = allInterfaces.Union(additionalInterfaces).Distinct();
 
-#warning Needs ability to inject services with different Service IDs (parent Service ID?) as a part of service mesh framework.
-            var proxy = (IProxy)_appServiceIocContainer.Resolve(proxyType);
-            proxy.Executor = _proxyMethodExecutor;
-            proxy.Context = new ServiceProxyContext
+            var serviceProxyContext = new ServiceProxyContext
             {
                 Service = new ServiceDescriptor
                 {
@@ -84,7 +81,20 @@ namespace Dasync.ExecutionEngine.Proxy
                     Interfaces = allInterfaces.ToArray()
                 }
             };
-            return proxy;
+
+            var buildingContext = ServiceProxyBuildingContext.EnterScope(serviceProxyContext);
+            try
+            {
+#warning Needs ability to inject services with different Service IDs (parent Service ID?) as a part of service mesh framework.
+                var proxy = (IProxy)_appServiceIocContainer.Resolve(proxyType);
+                proxy.Executor = _proxyMethodExecutor;
+                proxy.Context = serviceProxyContext;
+                return proxy;
+            }
+            finally
+            {
+                buildingContext.ExitScope();
+            }
         }
     }
 
@@ -92,7 +102,7 @@ namespace Dasync.ExecutionEngine.Proxy
     /// 
     /// WARNING
     /// 
-    /// Introduced to break the cyclic dependency between the Proxy Method Exexcutor and the Proxy Serializer:
+    /// Introduced to break the cyclic dependency between the Proxy Method Executor and the Proxy Serializer:
     /// the executor needs the serializer to serialize input, and the serializer needs executor to build service
     /// proxies on deserialization.
     /// 

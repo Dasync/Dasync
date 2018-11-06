@@ -265,7 +265,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
             var createBuilderMethod = metadata.Builder.FieldInfo.FieldType.GetMethod("Create", BindingFlags.Public | BindingFlags.Static);
             var taskBuilder = createBuilderMethod.Invoke(null, null);
-            var taskField = metadata.Builder.FieldInfo.FieldType.GetProperty("Task");
+            var taskField = metadata.Builder.FieldInfo.FieldType.GetProperty("Task", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             completionTask = (Task)taskField.GetValue(taskBuilder); // builder is a struct, need to initialize the Task here!
             metadata.Builder.FieldInfo.SetValue(asyncStateMachine, taskBuilder);
 

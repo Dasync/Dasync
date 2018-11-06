@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.CloudEvents;
+using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
 using Dasync.Fabric.Sample.Base;
@@ -14,19 +17,30 @@ namespace Dasync.Fabric.FileBased
 {
     public class FileBasedFabricConnector : IFabricConnector, IFabricConnectorWithConfiguration
     {
+        private readonly INumericIdGenerator _numericIdGenerator;
         private readonly string _transitionsDirectory;
         private readonly string _routinesDirectory;
+        private readonly string _eventsDirectory;
+        private readonly string _observersFilePath;
         private readonly ISerializer _serializer;
         private readonly string _serializerFormat;
+        private readonly Action<EventDescriptor, EventSubscriberDescriptor> _addEventListener;
 
         public FileBasedFabricConnector(
+            INumericIdGenerator numericIdGenerator,
             string transitionsDirectory,
             string routinesDirectory,
+            string eventsDirectory,
+            Action<EventDescriptor, EventSubscriberDescriptor> addEventListener,
             ISerializer serializer,
             string serializerFormat)
         {
+            _numericIdGenerator = numericIdGenerator;
             _transitionsDirectory = transitionsDirectory;
             _routinesDirectory = routinesDirectory;
+            _eventsDirectory = eventsDirectory;
+            _observersFilePath = Path.Combine(_eventsDirectory, "observers.yaml");
+            _addEventListener = addEventListener;
             _serializer = serializer;
             _serializerFormat = serializerFormat;
         }
@@ -37,6 +51,7 @@ namespace Dasync.Fabric.FileBased
         {
             TransitionsDirectory = _transitionsDirectory,
             RoutinesDirectory = _routinesDirectory,
+            EventsDirectory = _eventsDirectory,
             SerializerFormat = _serializerFormat
         };
 
@@ -143,6 +158,123 @@ namespace Dasync.Fabric.FileBased
             };
 
             return Task.FromResult(info);
+        }
+
+        public Task SubscribeForEventAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector publisherFabricConnector)
+        {
+            _addEventListener(eventDesc, subscriber);
+            return Task.FromResult(0);
+        }
+
+        public Task OnEventSubscriberAddedAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector subsriberFabricConnector)
+        {
+            var configuration = (FileBasedFabricConnectorConfiguration)((IFabricConnectorWithConfiguration)subsriberFabricConnector).Configuration;
+            var subscriberEventsDirectory = configuration.EventsDirectory;
+
+            var observers = ReadEventObservers();
+            if (observers.Add(subscriberEventsDirectory))
+                WriteEventObservers(observers);
+
+            return Task.FromResult(0);
+        }
+
+        private HashSet<string> ReadEventObservers()
+        {
+            if (!File.Exists(_observersFilePath))
+                return new HashSet<string>();
+
+            var observers = File.ReadAllLines(_observersFilePath)
+                .Where(line => !string.IsNullOrWhiteSpace(line) && line.StartsWith("- "))
+                .Select(line => line.Substring(2));
+
+            return new HashSet<string>(observers);
+        }
+
+        private void WriteEventObservers(HashSet<string> observers)
+        {
+            var lines = observers.Select(observer => "- " + observer);
+            File.WriteAllLines(_observersFilePath, lines);
+        }
+
+        public Task PublishEventAsync(RaiseEventIntent intent, CancellationToken ct)
+        {
+            var eventData = new RoutineEventData
+            {
+                ServiceId = intent.ServiceId,
+                EventId = intent.EventId,
+                Parameters = _serializer.SerializeToString(intent.Parameters)
+            };
+
+            var eventEnvelope = new RoutineEventEnvelope
+            {
+                CloudEventsVersion = CloudEventsEnvelope.Version,
+                EventType = DasyncCloudEventsTypes.RaiseEvent.Name,
+                EventTypeVersion = DasyncCloudEventsTypes.RaiseEvent.Version,
+                Source = "/" + (intent.ServiceId.ServiceName ?? ""),
+                EventID = intent.Id.ToString(),
+                EventTime = DateTimeOffset.Now,
+                ContentType = "application/json",
+                Data = CloudEventsSerialization.Serialize(eventData)
+            };
+
+            var content = CloudEventsSerialization.Serialize(eventEnvelope);
+
+            foreach (var eventsDirectory in ReadEventObservers())
+            {
+                var fileName = intent.Id.ToString() + ".json";
+                var filePath = Path.Combine(eventsDirectory, fileName);
+                try
+                {
+                    File.WriteAllText(filePath, content, Encoding.UTF8);
+                }
+                catch (IOException)
+                {
+                }
+            }
+
+            return Task.FromResult(0);
+        }
+
+        internal void ScheduleRoutineFromEvent(EventSubscriberDescriptor eventSubscriberDescriptor, RoutineEventData raisedEventData)
+        {
+            var intentId = _numericIdGenerator.NewId();
+
+            var pregeneratedRoutineId = intentId.ToString();
+
+            var routineDescriptor = new RoutineDescriptor
+            {
+                IntentId = intentId,
+                MethodId = eventSubscriberDescriptor.MethodId,
+                RoutineId = pregeneratedRoutineId
+            };
+
+            var eventData = new RoutineEventData
+            {
+                ServiceId = eventSubscriberDescriptor.ServiceId,
+                Routine = routineDescriptor,
+                Caller = new CallerDescriptor
+                {
+                    ServiceId = raisedEventData.ServiceId
+                },
+                Parameters = raisedEventData.Parameters
+            };
+
+            var eventEnvelope = new RoutineEventEnvelope
+            {
+                CloudEventsVersion = CloudEventsEnvelope.Version,
+                EventType = DasyncCloudEventsTypes.InvokeRoutine.Name,
+                EventTypeVersion = DasyncCloudEventsTypes.InvokeRoutine.Version,
+                Source = "/" + (raisedEventData.ServiceId?.ServiceName ?? ""),
+                EventID = intentId.ToString(),
+                EventTime = DateTimeOffset.Now,
+                ContentType = "application/json",
+                Data = CloudEventsSerialization.Serialize(eventData)
+            };
+
+            var fileName = intentId.ToString() + ".json";
+            var filePath = Path.Combine(_transitionsDirectory, fileName);
+            var content = CloudEventsSerialization.Serialize(eventEnvelope);
+            File.WriteAllText(filePath, content, Encoding.UTF8);
         }
 
         internal static bool TryReadRoutineData(string directory, string routineId, out RoutineDataEnvelope dataEnvelope, out string eTag)

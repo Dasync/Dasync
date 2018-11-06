@@ -1,7 +1,7 @@
-﻿using Dasync.Ioc.Ninject;
-using Ninject;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Dasync.Ioc.Ninject;
+using Ninject;
 
 namespace DasyncFeatures.Feature6
 {

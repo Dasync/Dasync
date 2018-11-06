@@ -128,5 +128,31 @@ namespace Dasync.Fabric.InMemory
 
             return Task.FromResult(info);
         }
+
+        public Task SubscribeForEventAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector publisherFabricConnector)
+        {
+            _dataStore.AddEventListener(eventDesc, subscriber);
+            return Task.FromResult(0);
+        }
+
+        public Task OnEventSubscriberAddedAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector subsriberFabricConnector)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task PublishEventAsync(RaiseEventIntent intent, CancellationToken ct)
+        {
+            var message = new Message
+            {
+                IsEvent = true,
+                [nameof(ServiceId)] = _serializer.SerializeToString(intent.ServiceId),
+                [nameof(EventId)] = _serializer.SerializeToString(intent.EventId),
+                ["Parameters"] = _serializer.SerializeToString(intent.Parameters)
+            };
+
+            InMemoryDataStore.BroadcastMessage(message);
+
+            return Task.FromResult(0);
+        }
     }
 }

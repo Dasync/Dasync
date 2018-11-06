@@ -188,6 +188,21 @@ namespace Dasync.FabricConnector.AzureStorage
 
             return info;
         }
+
+        public Task SubscribeForEventAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector publisherFabricConnector)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task OnEventSubscriberAddedAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector subsriberFabricConnector)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PublishEventAsync(RaiseEventIntent intent, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class AzureStorageFabricConnectorWithConfiguration

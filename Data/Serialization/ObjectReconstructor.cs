@@ -154,7 +154,14 @@ namespace Dasync.Serialization
                 }
                 else
                 {
-                    _scope.Index = FindIndex(_scope.Container, valueScope.ValueInfo.Name, _scope.Index + 1);
+                    var startIndex = _scope.Index + 1;
+
+                    _scope.Index = FindIndex(_scope.Container, valueScope.ValueInfo.Name, startIndex);
+
+                    // Try to find by value type if the argument was renamed.
+                    if (_scope.Index < 0 && value != null)
+                        _scope.Index = FindIndex(_scope.Container, value.GetType());
+
                     if (_scope.Index >= 0)
                     {
                         targetType = _scope.Container.GetType(_scope.Index);
@@ -164,6 +171,7 @@ namespace Dasync.Serialization
                         // TODO: better skip logic?
                         value = null;
                         targetType = null;
+                        _scope.Index = startIndex - 1;
                     }
                 }
 
@@ -253,6 +261,26 @@ namespace Dasync.Serialization
             }
 
             return -1;
+        }
+
+        private static int FindIndex(IValueContainer container, Type uniqueTypeToFind)
+        {
+            var foundIndex = -1;
+
+            var count = container.GetCount();
+            for (var i = 0; i < count; i++)
+            {
+                var type = container.GetType(i);
+                if (ReferenceEquals(type, uniqueTypeToFind))
+                {
+                    if (foundIndex >= 0)
+                        return -1;
+
+                    foundIndex = i;
+                }
+            }
+
+            return foundIndex;
         }
 
         private Type ResolveType(TypeSerializationInfo info)

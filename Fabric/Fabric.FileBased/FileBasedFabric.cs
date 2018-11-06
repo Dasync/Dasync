@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Async;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.CloudEvents;
 using Dasync.EETypes;
+using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
 using Dasync.Fabric.Sample.Base;
 using Dasync.Serialization;
@@ -19,9 +22,15 @@ namespace Dasync.Fabric.FileBased
         private readonly ITransitionRunner _transitionRunner;
         private string _serializationFormat;
         private Task _monitorTransitionsTask;
+        private Task _monitorEventsTask;
         private CancellationTokenSource _terminationCts;
 
-        public FileBasedFabric(ITransitionRunner transitionRunner,
+        private readonly Dictionary<EventDescriptor, List<EventSubscriberDescriptor>> _eventListeners =
+            new Dictionary<EventDescriptor, List<EventSubscriberDescriptor>>();
+
+        public FileBasedFabric(
+            ITransitionRunner transitionRunner,
+            INumericIdGenerator numericIdGenerator,
             IFileBasedFabricSerializerFactoryAdvisor serializerFactoryAdvisor,
             INumericIdGenerator idGenerator)
         {
@@ -30,12 +39,20 @@ namespace Dasync.Fabric.FileBased
             Directory = Path.GetFullPath(Path.Combine(System.IO.Directory.GetCurrentDirectory(), "data"));
             TransitionsDirectory = Path.Combine(Directory, "transitions");
             RoutinesDirectory = Path.Combine(Directory, "routines");
+            EventsDirectory = Path.Combine(Directory, "events");
 
             var serializerFactory = serializerFactoryAdvisor.Advise();
             _serializationFormat = serializerFactory.Format;
             Serializer = serializerFactory.Create();
 
-            Connector = new FileBasedFabricConnector(TransitionsDirectory, RoutinesDirectory, Serializer, _serializationFormat);
+            Connector = new FileBasedFabricConnector(
+                numericIdGenerator,
+                TransitionsDirectory,
+                RoutinesDirectory,
+                EventsDirectory,
+                AddEventListener,
+                Serializer,
+                _serializationFormat);
         }
 
         public IFabricConnector Connector { get; }
@@ -47,6 +64,8 @@ namespace Dasync.Fabric.FileBased
         private string TransitionsDirectory { get; }
 
         private string RoutinesDirectory { get; }
+
+        private string EventsDirectory { get; }
 
         public ISerializer Serializer { get; }
 
@@ -61,6 +80,9 @@ namespace Dasync.Fabric.FileBased
             if (!System.IO.Directory.Exists(RoutinesDirectory))
                 System.IO.Directory.CreateDirectory(RoutinesDirectory);
 
+            if (!System.IO.Directory.Exists(EventsDirectory))
+                System.IO.Directory.CreateDirectory(EventsDirectory);
+
             return Task.FromResult(true);
         }
 
@@ -68,6 +90,7 @@ namespace Dasync.Fabric.FileBased
         {
             _terminationCts = new CancellationTokenSource();
             _monitorTransitionsTask = Task.Run(() => MonitorTransitions(_terminationCts.Token));
+            _monitorEventsTask = Task.Run(() => MonitorEvents(_terminationCts.Token));
             return Task.FromResult(true);
         }
 
@@ -75,11 +98,20 @@ namespace Dasync.Fabric.FileBased
         {
             _terminationCts.Cancel();
             await _monitorTransitionsTask;
+            await _monitorEventsTask;
         }
 
         private async Task MonitorTransitions(CancellationToken ct)
         {
             var eventFilesStream = GetEventsFilesStream(TransitionsDirectory);
+            await eventFilesStream.ParallelForEachAsync(
+                filePath => ProcessEventAsync(filePath, ct),
+                ct);
+        }
+
+        private async Task MonitorEvents(CancellationToken ct)
+        {
+            var eventFilesStream = GetEventsFilesStream(EventsDirectory);
             await eventFilesStream.ParallelForEachAsync(
                 filePath => ProcessEventAsync(filePath, ct),
                 ct);
@@ -92,7 +124,7 @@ namespace Dasync.Fabric.FileBased
 
                 while (!yield.CancellationToken.IsCancellationRequested)
                 {
-                    var transitionIntentFiles = System.IO.Directory.GetFiles(directory);
+                    var transitionIntentFiles = System.IO.Directory.GetFiles(directory, "*.json");
 
                     var batchMinCreateTime = DateTime.MinValue;
                     var returnedFiles = 0;
@@ -142,6 +174,20 @@ namespace Dasync.Fabric.FileBased
                 await Task.Delay(eventEnvelope.EventDeliveryTime.Value - DateTimeOffset.UtcNow);
             }
 
+            if (eventEnvelope.EventType == DasyncCloudEventsTypes.RaiseEvent.Name)
+            {
+                await RaiseEventAsync(eventEnvelope, ct);
+            }
+            else
+            {
+                await RunRoutineAsync(eventEnvelope, ct);
+            }
+
+            File.Delete(filePath);
+        }
+
+        private async Task RunRoutineAsync(RoutineEventEnvelope eventEnvelope, CancellationToken ct)
+        {
             for (; ; )
             {
                 var carrier = new TransitionCarrier(this, eventEnvelope);
@@ -171,8 +217,39 @@ namespace Dasync.Fabric.FileBased
                     continue;
                 }
             }
+        }
 
-            File.Delete(filePath);
+        public void AddEventListener(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber)
+        {
+            lock (_eventListeners)
+            {
+                if (!_eventListeners.TryGetValue(eventDesc, out var listeners))
+                    _eventListeners[eventDesc] = listeners = new List<EventSubscriberDescriptor>();
+                listeners.Add(subscriber);
+            }
+        }
+
+        public IEnumerable<EventSubscriberDescriptor> GetEventListeners(EventDescriptor eventDesc)
+        {
+            if (_eventListeners.TryGetValue(eventDesc, out var listeners))
+                return listeners;
+            return Enumerable.Empty<EventSubscriberDescriptor>();
+        }
+
+        private async Task RaiseEventAsync(RoutineEventEnvelope eventEnvelope, CancellationToken ct)
+        {
+            var routineEventData = JsonConvert.DeserializeObject<RoutineEventData>(eventEnvelope.Data);
+
+            var eventDescriptor = new EventDescriptor
+            {
+                ServiceId = routineEventData.ServiceId,
+                EventId = routineEventData.EventId
+            };
+
+            foreach (var eventSubscriberDescriptor in GetEventListeners(eventDescriptor))
+            {
+                ((FileBasedFabricConnector)Connector).ScheduleRoutineFromEvent(eventSubscriberDescriptor, routineEventData);
+            }
         }
     }
 }

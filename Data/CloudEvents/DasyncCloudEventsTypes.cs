@@ -19,5 +19,11 @@
             Name = "dasync.routine.continue",
             Version = "0.1"
         };
+
+        public static readonly EventType RaiseEvent = new EventType
+        {
+            Name = "dasync.event.raise",
+            Version = "0.1"
+        };
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Platform;
@@ -61,6 +62,18 @@ namespace Dasync.Fabric.Sample.Base
                 {
                     var connector = _fabricConnectorSelector.Select(intent.Continuation.ServiceId);
                     var info = await connector.ScheduleContinuationAsync(intent, ct);
+                }
+            }
+
+            if (actions.RaiseEventIntents?.Count > 0)
+            {
+                foreach (var intent in actions.RaiseEventIntents)
+                {
+                    if (intent.ServiceId == null)
+                        throw new NotSupportedException();
+
+                    var connector = _fabricConnectorSelector.Select(intent.ServiceId);
+                    await connector.PublishEventAsync(intent, ct);
                 }
             }
         }

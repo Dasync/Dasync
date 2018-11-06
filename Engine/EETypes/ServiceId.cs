@@ -24,5 +24,19 @@
         // a service instance is created with a factory.
         // If so, who is considered a 'parent'?
         //public ServiceId ParentId;
+
+        public override bool Equals(object obj) =>
+            (obj is ServiceId serviceId)
+            ? this == serviceId
+            : base.Equals(obj);
+
+        public override int GetHashCode() =>
+            (ServiceName != null)
+            ? ServiceName.GetHashCode()
+            : base.GetHashCode();
+
+        public static bool operator ==(ServiceId a, ServiceId b) => string.Equals(a?.ServiceName, b?.ServiceName);
+
+        public static bool operator !=(ServiceId a, ServiceId b) => !(a == b);
     }
 }
