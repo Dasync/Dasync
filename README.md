@@ -247,7 +247,7 @@ You can find more concepts in the [Syntax Mapping blog post](https://dasyncnet.w
 
 Keep in mind that D·ASYNC technology is in preview now.
 * [Azure Functions Seamless Demo](https://dasyncnet.wordpress.com/2018/05/04/dasync-on-azure-functions/)
-* [Feature Showdown Application](Examples/FeatureShowdown/Program.cs)
+* [Feature Showdown Application](Examples/FeatureShowdown)
 
 ## More info
 
