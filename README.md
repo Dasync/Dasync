@@ -6,6 +6,13 @@ D·ASYNC is a framework that allows to model business processes and workflows in
 
 D·ASYNC technology deeply integrates into the .NET runtime, controls execution of `async` methods (which are compiled to Finite State Machines), saves their state in a persistent storage, uses Message-Oriented Architecture and Event-Driven Design to distribute load across available compute nodes.
 
+## How does it help?
+
+You can find the grand vision in Part 4 of the **'Conquest of Distributed Systems'** story. Part 1 describes a typical problem, Part 2 shows one of the most common solutions, and Part 3 reveals the core of the technology.
+- [Part 1: Business Workflows](https://medium.com/@sergiis/conquest-of-distributed-systems-part-1-business-workflows-fdda4b7b1c42)
+- [Part 2: Orchestration with Actor Model](https://medium.com/@sergiis/actor-model-hidden-in-plain-sight-the-era-of-true-serverless-part-2-6f61470955e9)
+- [Part 3: Actor Model Hidden in Plain Sight](https://medium.com/@sergiis/conquest-of-distributed-systems-part-3-actor-model-hidden-in-plain-sight-b06126a62ae)
+- [Part 4: The Now and the Vision](https://medium.com/@sergiis/conquest-of-distributed-systems-part-4-the-now-and-the-vision-e844c9aee2c7)
 
 ## Few Programming Concepts
 
