@@ -6,6 +6,7 @@ using Dasync.EETypes.Proxy;
 using Dasync.Proxy;
 using Dasync.Serialization;
 using Dasync.Serializers.EETypes.Cancellation;
+using Dasync.Serializers.EETypes.Completion;
 
 namespace Dasync.Serializers.EETypes
 {
@@ -17,13 +18,16 @@ namespace Dasync.Serializers.EETypes
 
         private readonly ServiceProxySerializer _serviceProxySerializer;
         private readonly CancellationTokenSourceSerializer _cancellationTokenSourceSerializer;
+        private readonly TaskCompletionSourceSerializer _taskCompletionSourceSerializer;
 
         public EETypesSerializerSelector(
             ServiceProxySerializer serviceProxySerializer,
-            CancellationTokenSourceSerializer cancellationTokenSourceSerializer)
+            CancellationTokenSourceSerializer cancellationTokenSourceSerializer,
+            TaskCompletionSourceSerializer taskCompletionSourceSerializer)
         {
             _serviceProxySerializer = serviceProxySerializer;
             _cancellationTokenSourceSerializer = cancellationTokenSourceSerializer;
+            _taskCompletionSourceSerializer = taskCompletionSourceSerializer;
         }
 
         public IObjectDecomposer SelectDecomposer(Type valueType)
@@ -39,6 +43,9 @@ namespace Dasync.Serializers.EETypes
 
             if (valueType == typeof(CancellationToken))
                 return _cancellationTokenSerializer;
+
+            if (valueType.IsConstructedGenericType && valueType.GetGenericTypeDefinition() == typeof(TaskCompletionSource<>))
+                return _taskCompletionSourceSerializer;
 
             if (typeof(IProxy).IsAssignableFrom(valueType))
                 return _serviceProxySerializer;
@@ -59,6 +66,9 @@ namespace Dasync.Serializers.EETypes
 
             if (typeof(CancellationTokenSource).IsAssignableFrom(targetType))
                 return _cancellationTokenSourceSerializer;
+
+            if (targetType.IsConstructedGenericType && targetType.GetGenericTypeDefinition() == typeof(TaskCompletionSource<>))
+                return _taskCompletionSourceSerializer;
 
             if (targetType == typeof(CancellationToken))
                 return _cancellationTokenSerializer;
