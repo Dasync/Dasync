@@ -157,7 +157,8 @@ namespace Dasync.ValueContainer
 #endif
 
                 return module;
-            });
+            },
+            LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         public static Type Build(IEnumerable<KeyValuePair<string, Type>> properties, string newTypeName = null)

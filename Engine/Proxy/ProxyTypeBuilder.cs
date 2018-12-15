@@ -63,7 +63,8 @@ namespace Dasync.Proxy
 
                 var moduleName = assemblyName.Name + ".dll";
                 return assemblyBuilder.DefineDynamicModule(moduleName);
-            });
+            },
+            LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         public Type Build(Type baseClass)
