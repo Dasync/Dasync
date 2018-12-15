@@ -107,8 +107,13 @@ namespace Dasync.Accessors
             var method = task.GetType().GetMethod("TrySetResult",
                 BindingFlags.Instance | BindingFlags.NonPublic);
 
-            if (task.GetResultType() == VoidTaskResultType)
+            var taskResultType = task.GetResultType();
+            if (taskResultType == VoidTaskResultType)
                 result = null;
+
+            // Quick Fix: JSON serializer deserializes integers as Long
+            if (result != null && !taskResultType.IsAssignableFrom(result.GetType()))
+                result = Convert.ChangeType(result, taskResultType);
 
             return (bool)method.Invoke(task, new[] { result });
         }
