@@ -203,6 +203,10 @@ namespace Dasync.Serialization
                         {
                             value = ResolveType(typeInfo);
                         }
+                        else if (targetType == typeof(Uri))
+                        {
+                            value = new Uri((string)Convert.ChangeType(value, typeof(string)));
+                        }
                         else
                         {
                             value = Convert.ChangeType(value, targetType);
