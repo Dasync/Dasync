@@ -54,6 +54,12 @@ namespace Dasync.Serialization.Json
                 type == typeof(long?) ||
                 type == typeof(ulong) ||
                 type == typeof(ulong?) ||
+                type == typeof(float) ||
+                type == typeof(float?) ||
+                type == typeof(double) ||
+                type == typeof(double?) ||
+                type == typeof(decimal) ||
+                type == typeof(decimal?) ||
                 type == typeof(string) ||
                 type == typeof(Guid) ||
                 type == typeof(Type) ||
