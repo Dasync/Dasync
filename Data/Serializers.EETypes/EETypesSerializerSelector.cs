@@ -6,7 +6,7 @@ using Dasync.EETypes.Proxy;
 using Dasync.Proxy;
 using Dasync.Serialization;
 using Dasync.Serializers.EETypes.Cancellation;
-using Dasync.Serializers.EETypes.Completion;
+using Dasync.Serializers.EETypes.Triggers;
 
 namespace Dasync.Serializers.EETypes
 {

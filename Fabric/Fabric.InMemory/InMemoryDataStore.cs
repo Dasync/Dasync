@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Dasync.Accessors;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
+using Dasync.ExecutionEngine.Extensions;
 
 namespace Dasync.Fabric.InMemory
 {
@@ -123,6 +125,39 @@ namespace Dasync.Fabric.InMemory
             {
                 return _dataStoreMap.TryGetValue(id, out dataStore);
             }
+        }
+
+        private readonly Dictionary<long, object> _triggers = new Dictionary<long, object>();
+
+        public void AddTrigger(long id, Type valueType)
+        {
+            var taskCompletionSource = TaskCompletionSourceAccessor.Create(valueType);
+            lock (_triggers)
+            {
+                _triggers.Add(id, taskCompletionSource);
+            }
+        }
+
+        public void ActivateTrigger(long id, TaskResult value)
+        {
+            object taskCompletionSource;
+            lock (_triggers)
+            {
+                taskCompletionSource = _triggers[id];
+            }
+            var task = TaskCompletionSourceAccessor.GetTask(taskCompletionSource);
+            task.TrySetResult(value);
+        }
+
+        public void SubscribeToTrigger(long id, Action<TaskResult> action)
+        {
+            object taskCompletionSource;
+            lock (_triggers)
+            {
+                taskCompletionSource = _triggers[id];
+            }
+            var task = TaskCompletionSourceAccessor.GetTask(taskCompletionSource);
+            task.ContinueWith(t => action(t.ToTaskResult()));
         }
     }
 }

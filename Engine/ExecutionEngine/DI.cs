@@ -4,11 +4,13 @@ using Dasync.EETypes;
 using Dasync.EETypes.Cancellation;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Proxy;
+using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Cancellation;
 using Dasync.ExecutionEngine.Continuation;
 using Dasync.ExecutionEngine.Intents;
 using Dasync.ExecutionEngine.IntrinsicFlow;
 using Dasync.ExecutionEngine.Proxy;
+using Dasync.ExecutionEngine.Triggers;
 using Dasync.ExecutionEngine.StateMetadata.Service;
 using Dasync.ExecutionEngine.Transitions;
 using Dasync.Proxy;
@@ -37,7 +39,8 @@ namespace Dasync.ExecutionEngine
             [typeof(IServiceStateMetadataProvider)] = typeof(ServiceStateMetadataProvider),
             [typeof(IServiceStateValueContainerProvider)] = typeof(ServiceStateValueContainerProvider),
             [typeof(ISerializedServiceProxyBuilder)] = typeof(SerializedServiceProxyBuilderHolder),
-            [typeof(SerializedServiceProxyBuilderHolder)] = typeof(SerializedServiceProxyBuilderHolder)
+            [typeof(SerializedServiceProxyBuilderHolder)] = typeof(SerializedServiceProxyBuilderHolder),
+            [typeof(ITaskCompletionSourceRegistry)] = typeof(TaskCompletionSourceRegistry)
         };
     }
 }

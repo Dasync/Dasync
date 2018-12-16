@@ -14,7 +14,7 @@ namespace Dasync.Fabric.InMemory
 {
     partial class InMemoryFabric
     {
-        public class TransitionCarrier : ITransitionCarrier, ITransitionStateSaver
+        public class TransitionCarrier : ITransitionCarrier, ITransitionStateSaver, ICurrentConnectorProvider
         {
             private readonly InMemoryFabric _fabric;
             private readonly Message _message;
@@ -39,9 +39,11 @@ namespace Dasync.Fabric.InMemory
                 }
             }
 
-            public Task<RoutineResultDescriptor> GetAwaitedResultAsync(CancellationToken ct)
+            public IFabricConnector Connector => _fabric.Connector;
+
+            public Task<ResultDescriptor> GetAwaitedResultAsync(CancellationToken ct)
             {
-                var result = GetValueOrDefault<RoutineResultDescriptor>();
+                var result = GetValueOrDefault<ResultDescriptor>();
                 return Task.FromResult(result);
             }
 

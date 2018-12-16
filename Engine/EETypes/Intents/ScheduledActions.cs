@@ -51,5 +51,11 @@ namespace Dasync.EETypes.Intents
         /// </summary>
 #warning Need to finalize the factory concept first.
         public bool DeleteServiceInstance;
+
+        public List<RegisterTriggerIntent> RegisterTriggerIntents;
+
+        public SubscribeToTriggerIntent SubscribeToTriggerIntent;
+
+        public List<ActivateTriggerIntent> ActivateTriggerIntents;
     }
 }

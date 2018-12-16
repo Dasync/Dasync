@@ -8,7 +8,7 @@ namespace Dasync.EETypes.Intents
 
         public ContinuationDescriptor Continuation;
 
-        public RoutineResultDescriptor Result;
+        public ResultDescriptor Result;
 
         /// <summary>
         /// Describes the routine of a service that was called and is returning

@@ -7,7 +7,9 @@ using Dasync.AsyncStateMachine;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
+using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Continuation;
+using Dasync.ExecutionEngine.Extensions;
 using Dasync.ExecutionEngine.IntrinsicFlow;
 
 namespace Dasync.ExecutionEngine.Transitions
@@ -78,6 +80,10 @@ namespace Dasync.ExecutionEngine.Transitions
         void OnCheckpointIntent(DateTime? resumeTime = null);
 
         void SaveStateWithoutResume();
+
+        void AwaitTrigger(TriggerReference triggerReference);
+
+        void ActivateTrigger(Task trigger, TriggerReference triggerReference);
     }
 
     public class TransitionMonitor : ITransitionMonitor
@@ -182,6 +188,34 @@ namespace Dasync.ExecutionEngine.Transitions
             var actions = transitionContext.ScheduledActions;
             actions.SaveRoutineState = true;
             CompleteTransition();
+        }
+
+        public void AwaitTrigger(TriggerReference triggerReference)
+        {
+            Context.ScheduledActions.SaveRoutineState = true;
+            Context.ScheduledActions.SubscribeToTriggerIntent = new SubscribeToTriggerIntent
+            {
+                TriggerId = triggerReference.Id,
+                Continuation = new ContinuationDescriptor
+                {
+                    ServiceId = Context.ServiceId,
+                    Routine = Context.RoutineDescriptor
+                }
+            };
+            CompleteTransition();
+        }
+
+        public void ActivateTrigger(Task trigger, TriggerReference triggerReference)
+        {
+            if (Context.ScheduledActions.ActivateTriggerIntents == null)
+                Context.ScheduledActions.ActivateTriggerIntents = new List<ActivateTriggerIntent>();
+
+            Context.ScheduledActions.ActivateTriggerIntents.Add(
+                new ActivateTriggerIntent
+                {
+                    TriggerId = triggerReference.Id,
+                    Value = trigger.ToTaskResult()
+                });
         }
 
         private void OnRoutineContinuationSet(Task routineCompletionTask, object continuationObject, object userData)

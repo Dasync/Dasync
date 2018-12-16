@@ -76,6 +76,26 @@ namespace Dasync.Fabric.Sample.Base
                     await connector.PublishEventAsync(intent, ct);
                 }
             }
+
+            if (actions.RegisterTriggerIntents?.Count > 0)
+            {
+                var connector = ((ICurrentConnectorProvider)transitionCarrier).Connector;
+                foreach (var intent in actions.RegisterTriggerIntents)
+                    await connector.RegisterTriggerAsync(intent, ct);
+            }
+
+            if (actions.ActivateTriggerIntents?.Count > 0)
+            {
+                var connector = ((ICurrentConnectorProvider)transitionCarrier).Connector;
+                foreach (var intent in actions.ActivateTriggerIntents)
+                    await connector.ActivateTriggerAsync(intent, ct);
+            }
+
+            if (actions.SubscribeToTriggerIntent != null)
+            {
+                var connector = ((ICurrentConnectorProvider)transitionCarrier).Connector;
+                await connector.SubscribeToTriggerAsync(actions.SubscribeToTriggerIntent, ct);
+            }
         }
     }
 }

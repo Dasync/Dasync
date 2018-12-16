@@ -138,11 +138,11 @@ namespace Dasync.Fabric.AzureFunctions
             return null;
         }
 
-        public Task<RoutineResultDescriptor> GetAwaitedResultAsync(CancellationToken ct)
+        public Task<ResultDescriptor> GetAwaitedResultAsync(CancellationToken ct)
         {
-            RoutineResultDescriptor result = null;
+            ResultDescriptor result = null;
             if (EventData.Result != null)
-                result = _serializer.Deserialize<RoutineResultDescriptor>(EventData.Result);
+                result = _serializer.Deserialize<ResultDescriptor>(EventData.Result);
             return Task.FromResult(result);
         }
 
