@@ -44,6 +44,7 @@
     <Compile Include="TaskAwaiter.cs" />
     <Compile Include="Task.cs" />
     <Compile Include="ServiceProxy.cs" />
+    <Compile Include="Triggers\TaskCompletionSource.cs" />
     <Compile Include="TypeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>

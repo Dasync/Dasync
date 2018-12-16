@@ -57,9 +57,17 @@
       <Project>{e1077c7c-048b-46da-b8a4-b85a30d6e00f}</Project>
       <Name>Dasync.ValueContainer.Fx450</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Engine\Accessors\Dasync.Accessors.Fx450.csproj">
+      <Project>{AD937B13-5277-4FBB-AC0D-C4AE8C56584C}</Project>
+      <Name>Dasync.Accessors.Fx450</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.Fx450.csproj">
       <Project>{e10b9109-b721-492e-b32d-048bc8f147c6}</Project>
       <Name>Dasync.EETypes.Fx450</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.Fx450.csproj">
+      <Project>{85F5737C-7D70-4C15-A72F-5336B18CC8C9}</Project>
+      <Name>Dasync.ExecutionEngine.Fx450</Name>
     </ProjectReference>
     <ProjectReference Include="..\Sample.Base\Dasync.Fabric.Sample.Base.Fx450.csproj">
       <Project>{d131c1a5-3a82-4c91-b056-146d3af138d2}</Project>
