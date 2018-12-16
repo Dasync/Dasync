@@ -6,6 +6,7 @@ using Dasync.EETypes.Cancellation;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Proxy;
+using Dasync.EETypes.Triggers;
 using Dasync.Serialization;
 using Dasync.ValueContainer;
 
@@ -19,13 +20,14 @@ namespace Dasync.Serializers.EETypes
         static EETypesNameShortener()
         {
             RegisterType(typeof(ServiceProxyContext), "proxy");
-            RegisterType(typeof(ProxyTaskState), nameof(ProxyTaskState));
+            RegisterType(typeof(RoutineReference), nameof(RoutineReference));
+            RegisterType(typeof(TriggerReference), nameof(TriggerReference));
             RegisterType(typeof(CancellationTokenSourceState), nameof(CancellationTokenSourceState));
             RegisterType(typeof(ServiceId), nameof(ServiceId));
             RegisterType(typeof(RoutineMethodId), nameof(RoutineMethodId));
             RegisterType(typeof(ContinuationDescriptor), nameof(ContinuationDescriptor));
             RegisterType(typeof(RoutineDescriptor), nameof(RoutineDescriptor));
-            RegisterType(typeof(RoutineResultDescriptor), nameof(RoutineResultDescriptor));
+            RegisterType(typeof(ResultDescriptor), nameof(ResultDescriptor));
             RegisterType(typeof(ServiceDescriptor), nameof(ServiceDescriptor));
             RegisterType(typeof(CallerDescriptor), nameof(CallerDescriptor));
             RegisterType(typeof(TaskResult), nameof(TaskResult));

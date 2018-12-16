@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Dasync.Accessors;
+﻿using Dasync.Accessors;
 using Dasync.AsyncStateMachine;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
@@ -13,11 +6,19 @@ using Dasync.EETypes.Engine;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Platform;
 using Dasync.EETypes.Proxy;
+using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Extensions;
 using Dasync.ExecutionEngine.IntrinsicFlow;
 using Dasync.ExecutionEngine.StateMetadata.Service;
 using Dasync.Proxy;
 using Dasync.ValueContainer;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Dasync.ExecutionEngine.Transitions
 {
@@ -32,6 +33,7 @@ namespace Dasync.ExecutionEngine.Transitions
         private readonly IServiceStateValueContainerProvider _serviceStateValueContainerProvider;
         private readonly IntrinsicRoutines _intrinsicRoutines;
         private readonly INumericIdGenerator _idGenerator;
+        private readonly ITaskCompletionSourceRegistry _taskCompletionSourceRegistry;
 
         public TransitionRunner(
             ITransitionScope transitionScope,
@@ -42,7 +44,8 @@ namespace Dasync.ExecutionEngine.Transitions
             IMethodInvokerFactory methodInvokerFactory,
             IServiceStateValueContainerProvider serviceStateValueContainerProvider,
             IntrinsicRoutines intrinsicRoutines,
-            INumericIdGenerator idGenerator)
+            INumericIdGenerator idGenerator,
+            ITaskCompletionSourceRegistry taskCompletionSourceRegistry)
         {
             _transitionScope = transitionScope;
             _transitionCommitter = transitionCommitter;
@@ -53,6 +56,7 @@ namespace Dasync.ExecutionEngine.Transitions
             _serviceStateValueContainerProvider = serviceStateValueContainerProvider;
             _intrinsicRoutines = intrinsicRoutines;
             _idGenerator = idGenerator;
+            _taskCompletionSourceRegistry = taskCompletionSourceRegistry;
         }
 
         public async Task RunAsync(
@@ -210,10 +214,10 @@ namespace Dasync.ExecutionEngine.Transitions
 
                     scheduledActions.SaveStateIntent.RoutineResult = routineResult;
 
-                    var awaitedResultDescriptor = new RoutineResultDescriptor
+                    var awaitedResultDescriptor = new ResultDescriptor
                     {
                         Result = routineResult,
-                        IntentId = routineDescriptor.IntentId
+                        CorrelationId = routineDescriptor.IntentId
                     };
 
                     var awaitedRoutineDescriptor = new CallerDescriptor
@@ -229,6 +233,8 @@ namespace Dasync.ExecutionEngine.Transitions
                         awaitedRoutineDescriptor,
                         ct);
                 }
+
+                ScanForExtraIntents(scheduledActions);
 
                 await _transitionCommitter.CommitAsync(scheduledActions, transitionCarrier, ct);
             }
@@ -302,12 +308,12 @@ namespace Dasync.ExecutionEngine.Transitions
         }
 
         private static void UpdateTasksWithAwaitedRoutineResult(
-            List<Task> deserializedTasks, RoutineResultDescriptor awaitedResult)
+            List<Task> deserializedTasks, ResultDescriptor awaitedResult)
         {
             foreach (var task in deserializedTasks)
             {
-                if (task.AsyncState is ProxyTaskState state &&
-                    state.IntentId == awaitedResult.IntentId)
+                if (task.AsyncState is IProxyTaskState state &&
+                    state.CorellationId == awaitedResult.CorrelationId)
                 {
                     task.TrySetResult(awaitedResult.Result);
                 }
@@ -341,7 +347,7 @@ namespace Dasync.ExecutionEngine.Transitions
         private async Task AddContinuationIntentsAsync(
             ITransitionCarrier transitionCarrier,
             ScheduledActions actions,
-            RoutineResultDescriptor awaitedResultDescriptor,
+            ResultDescriptor awaitedResultDescriptor,
             CallerDescriptor awaitedRoutineDescriptor,
             CancellationToken ct)
         {
@@ -359,6 +365,67 @@ namespace Dasync.ExecutionEngine.Transitions
                         Callee = awaitedRoutineDescriptor
                     };
                     actions.ContinuationIntents.Add(intent);
+                }
+            }
+        }
+
+#warning This method needs to be extracted into a separate class
+        private void ScanForExtraIntents(ScheduledActions scheduledActions)
+        {
+            if (scheduledActions.ExecuteRoutineIntents?.Count > 0)
+            {
+                foreach (var intent in scheduledActions.ExecuteRoutineIntents)
+                {
+                    var parameters = intent.Parameters;
+                    for (var i = 0; i < parameters.GetCount(); i++)
+                        AddIntentOnSpecialValue(parameters.GetValue(i));
+                }
+            }
+
+            if (scheduledActions.RaiseEventIntents?.Count > 0)
+            {
+                foreach (var intent in scheduledActions.RaiseEventIntents)
+                {
+                    var parameters = intent.Parameters;
+                    for (var i = 0; i < parameters.GetCount(); i++)
+                        AddIntentOnSpecialValue(parameters.GetValue(i));
+                }
+            }
+
+            if (scheduledActions.SaveStateIntent != null)
+            {
+                var values = scheduledActions.SaveStateIntent.RoutineState;
+                if (values != null)
+                {
+                    for (var i = 0; i < values.GetCount(); i++)
+                        AddIntentOnSpecialValue(values.GetValue(i));
+                }
+                AddIntentOnSpecialValue(scheduledActions.SaveStateIntent.RoutineResult?.Value);
+            }
+
+            void AddIntentOnSpecialValue(object value)
+            {
+                if (value == null)
+                    return;
+
+                if (value is CancellationToken cancellationToken)
+                {
+                    return;
+                }
+                else if (TaskCompletionSourceAccessor.IsTaskCompletionSource(value))
+                {
+                    if (_taskCompletionSourceRegistry.TryRegisterNew(value, out var triggerReference))
+                    {
+                        if (scheduledActions.RegisterTriggerIntents == null)
+                            scheduledActions.RegisterTriggerIntents = new List<RegisterTriggerIntent>();
+
+                        scheduledActions.RegisterTriggerIntents.Add(
+                            new RegisterTriggerIntent
+                            {
+                                TriggerId = triggerReference.Id,
+                                ValueType = TaskCompletionSourceAccessor.GetTask(value).GetResultType()
+                            });
+                    }
                 }
             }
         }

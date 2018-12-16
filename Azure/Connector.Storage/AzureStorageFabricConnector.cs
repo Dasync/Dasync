@@ -203,6 +203,21 @@ namespace Dasync.FabricConnector.AzureStorage
         {
             throw new NotImplementedException();
         }
+
+        public Task RegisterTriggerAsync(RegisterTriggerIntent intent, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ActivateTriggerAsync(ActivateTriggerIntent intent, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SubscribeToTriggerAsync(SubscribeToTriggerIntent intent, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class AzureStorageFabricConnectorWithConfiguration

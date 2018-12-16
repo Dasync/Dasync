@@ -8,9 +8,6 @@ namespace Dasync.Fabric.Sample.Base
 {
     public interface IFabricConnector
     {
-        // TODO: transactionality
-        //bool TryPreGenerateRoutineId(ExecuteRoutineIntent intent, out string routineId);
-
         Task<ActiveRoutineInfo> ScheduleRoutineAsync(ExecuteRoutineIntent intent, CancellationToken ct);
 
         Task<ActiveRoutineInfo> PollRoutineResultAsync(ActiveRoutineInfo info, CancellationToken ct);
@@ -25,6 +22,12 @@ namespace Dasync.Fabric.Sample.Base
         Task OnEventSubscriberAddedAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector subsriberFabricConnector);
 
         Task PublishEventAsync(RaiseEventIntent intent, CancellationToken ct);
+
+        Task RegisterTriggerAsync(RegisterTriggerIntent intent, CancellationToken ct);
+
+        Task ActivateTriggerAsync(ActivateTriggerIntent intent, CancellationToken ct);
+
+        Task SubscribeToTriggerAsync(SubscribeToTriggerIntent intent, CancellationToken ct);
     }
 
     public interface IFabricConnectorWithConfiguration

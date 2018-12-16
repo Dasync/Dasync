@@ -43,9 +43,9 @@ namespace Dasync.Fabric.FileBased
                 }
             }
 
-            public Task<RoutineResultDescriptor> GetAwaitedResultAsync(CancellationToken ct)
+            public Task<ResultDescriptor> GetAwaitedResultAsync(CancellationToken ct)
             {
-                var result = _fabric.Serializer.Deserialize<RoutineResultDescriptor>(EventData.Result);
+                var result = _fabric.Serializer.Deserialize<ResultDescriptor>(EventData.Result);
                 return Task.FromResult(result);
             }
 

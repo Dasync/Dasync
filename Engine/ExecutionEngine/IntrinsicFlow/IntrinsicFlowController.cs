@@ -9,6 +9,7 @@ using Dasync.AsyncStateMachine;
 using Dasync.EETypes;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Proxy;
+using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Continuation;
 using Dasync.ExecutionEngine.Transitions;
 
@@ -115,22 +116,28 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
 
         public void TryHandlePostMoveNext(ITransitionMonitor monitor)
         {
-            if (TryFindDelayPromise(monitor.Context.RoutineStateMachine, out var delayPromise)
-                && DelayPromiseAccessor.TryGetTimerStartAndDelay(
-                    delayPromise, out var timerStart, out var timerDelay)
+            if (!TryFindDelayAwaitedTask(monitor.Context.RoutineStateMachine, out var awaitedTask))
+                return;
+
+            if (DelayPromiseAccessor.IsDelayPromise(awaitedTask) &&
+                DelayPromiseAccessor.TryGetTimerStartAndDelay(awaitedTask, out var timerStart, out var timerDelay)
 #warning Needs a configuration setting for the minimum delay. If a delay is too short, it might be too expensive to try to save the state of a routine. Also, add ability to opt in/out auto save?
                 //&& timerDelay > TimeSpan.FromSeconds(5)
-                && DelayPromiseAccessor.TryCancelTimer(delayPromise))
+                && DelayPromiseAccessor.TryCancelTimer(awaitedTask))
             {
-                delayPromise.ResetContinuation();
-                delayPromise.TrySetResult(null);
+                awaitedTask.ResetContinuation();
+                awaitedTask.TrySetResult(null);
                 monitor.OnCheckpointIntent(resumeTime: timerStart + timerDelay);
+            }
+            else if (awaitedTask.AsyncState is TriggerReference triggerReference)
+            {
+                monitor.AwaitTrigger(triggerReference);
             }
         }
 
-        private bool TryFindDelayPromise(
+        private bool TryFindDelayAwaitedTask(
             IAsyncStateMachine stateMachine,
-            out Task delayPromise)
+            out Task awaitedTask)
         {
 #warning such analysis can be optimizer by pre-compiling the code per state machine type
             var metadata = _asyncStateMachineMetadataProvider.GetMetadata(stateMachine.GetType());
@@ -140,16 +147,33 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
                 if (TaskAwaiterUtils.IsAwaiterType(variable.FieldInfo.FieldType))
                 {
                     var awaiter = variable.FieldInfo.GetValue(stateMachine);
-                    var task = TaskAwaiterUtils.GetTask(awaiter);
-                    if (task != null && DelayPromiseAccessor.IsDelayPromise(task))
+                    awaitedTask = TaskAwaiterUtils.GetTask(awaiter);
+                    if (awaitedTask != null)
                     {
-                        delayPromise = task;
-                        return true;
+                        var continuationObject = awaitedTask.GetContinuationObject();
+                        var continuationInfo = _taskContinuationClassifier.GetContinuationInfo(continuationObject);
+                        if (continuationInfo.Type == TaskContinuationType.AsyncStateMachine &&
+                            ReferenceEquals(stateMachine, continuationInfo.Target))
+                        {
+                            return true;
+                        }
+                        else if (continuationInfo.Type == TaskContinuationType.ContinuationList)
+                        {
+                            foreach (var subContinuationObject in continuationInfo.Items)
+                            {
+                                var subContinuationInfo = _taskContinuationClassifier.GetContinuationInfo(subContinuationObject);
+                                if (subContinuationInfo.Type == TaskContinuationType.AsyncStateMachine &&
+                                    ReferenceEquals(stateMachine, subContinuationInfo.Target))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
                     }
                 }
             }
 
-            delayPromise = null;
+            awaitedTask = null;
             return false;
         }
 
@@ -212,7 +236,8 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
             var index = -1;
             for (var i = 0; i < awaitedTasks.Length; i++)
             {
-                if (awaitedTasks[i].AsyncState is ProxyTaskState state
+#warning Add handling of triggers (TaskCompletionSource)
+                if (awaitedTasks[i].AsyncState is RoutineReference state
                     && state.IntentId == awaitedRoutineIntent.Id)
                 {
                     index = i;
@@ -226,7 +251,7 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
 
             if (parameters.intents.All(i => i != null))
             {
-                whenAllTask.SetAsyncState(new ProxyTaskState
+                whenAllTask.SetAsyncState(new RoutineReference
                 {
                     IntentId = executeWhenAllIntent.Id
                 });
@@ -234,7 +259,7 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
         }
     }
 
-    public class WhenAllProxyTaskState : ProxyTaskState
+    public class WhenAllProxyTaskState : RoutineReference
     {
         public ExecuteRoutineIntent ExecuteWhenAllIntent;
     }

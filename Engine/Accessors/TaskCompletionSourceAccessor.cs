@@ -6,6 +6,10 @@ namespace Dasync.Accessors
 {
     public static class TaskCompletionSourceAccessor
     {
+        public static bool IsTaskCompletionSource(object target) =>
+            target.GetType().IsConstructedGenericType &&
+            target.GetType().GetGenericTypeDefinition() == typeof(TaskCompletionSource<>);
+
         public static object Create(Type taskResultType)
         {
             var taskCompletionSourceType = typeof(TaskCompletionSource<>).MakeGenericType(taskResultType);

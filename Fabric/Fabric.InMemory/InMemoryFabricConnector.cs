@@ -115,7 +115,7 @@ namespace Dasync.Fabric.InMemory
                 [nameof(TransitionDescriptor)] = _serializer.SerializeToString(transitionDescriptor),
                 [nameof(ServiceId)] = _serializer.SerializeToString(intent.Continuation.ServiceId),
                 [nameof(RoutineDescriptor)] = _serializer.SerializeToString(intent.Continuation.Routine),
-                [nameof(RoutineResultDescriptor)] = _serializer.SerializeToString(intent.Result),
+                [nameof(ResultDescriptor)] = _serializer.SerializeToString(intent.Result),
                 DeliverAt = intent.Continuation.ContinueAt?.ToUniversalTime()
             };
 
@@ -151,6 +151,51 @@ namespace Dasync.Fabric.InMemory
             };
 
             InMemoryDataStore.BroadcastMessage(message);
+
+            return Task.FromResult(0);
+        }
+
+        public Task RegisterTriggerAsync(RegisterTriggerIntent intent, CancellationToken ct)
+        {
+            _dataStore.AddTrigger(intent.TriggerId, intent.ValueType);
+            return Task.FromResult(0);
+        }
+
+        public Task ActivateTriggerAsync(ActivateTriggerIntent intent, CancellationToken ct)
+        {
+            _dataStore.ActivateTrigger(intent.TriggerId, intent.Value);
+            return Task.FromResult(0);
+        }
+
+        public Task SubscribeToTriggerAsync(SubscribeToTriggerIntent intent, CancellationToken ct)
+        {
+            _dataStore.SubscribeToTrigger(
+                intent.TriggerId,
+                taskResult =>
+                {
+                    var transitionDescriptor = new TransitionDescriptor
+                    {
+                        Type = TransitionType.ContinueRoutine,
+                        ETag = intent.Continuation.Routine.ETag
+                    };
+
+                    var resultDescriptor = new ResultDescriptor
+                    {
+                        CorrelationId = intent.TriggerId,
+                        Result = taskResult
+                    };
+
+                    var message = new Message
+                    {
+                        [nameof(TransitionDescriptor)] = _serializer.SerializeToString(transitionDescriptor),
+                        [nameof(ServiceId)] = _serializer.SerializeToString(intent.Continuation.ServiceId),
+                        [nameof(RoutineDescriptor)] = _serializer.SerializeToString(intent.Continuation.Routine),
+                        [nameof(ResultDescriptor)] = _serializer.SerializeToString(resultDescriptor),
+                        DeliverAt = intent.Continuation.ContinueAt?.ToUniversalTime()
+                    };
+
+                    _dataStore.ScheduleMessage(message);
+                });
 
             return Task.FromResult(0);
         }

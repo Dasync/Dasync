@@ -64,7 +64,7 @@ namespace Dasync.ExecutionEngine.Proxy
                 ? TaskAccessor.VoidTaskResultType
                 : TaskAccessor.GetTaskResultType(methodInfo.ReturnType);
 
-            var taskState = new ProxyTaskState
+            var taskState = new RoutineReference
             {
                 IntentId = intent.Id
 #warning must have id of actual routine for dynamic subscription (subscribe after a routine already scheduled).

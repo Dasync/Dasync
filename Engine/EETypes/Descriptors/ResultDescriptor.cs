@@ -1,6 +1,6 @@
 ﻿namespace Dasync.EETypes.Descriptors
 {
-    public sealed class RoutineResultDescriptor
+    public sealed class ResultDescriptor
     {
         /// <summary>
         /// The result of the awaited routine. 
@@ -11,6 +11,6 @@
         /// The <see cref="ExecuteRoutineIntent.Id"/> for awaited routine, which will be
         /// used to correlate serialized proxy tasks with <see cref="Result"/>.
         /// </summary>
-        public long IntentId;
+        public long CorrelationId;
     }
 }
