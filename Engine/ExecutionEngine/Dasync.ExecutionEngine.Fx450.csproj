@@ -64,6 +64,7 @@
     <Compile Include="Proxy\ProxyMethodExecutor.cs" />
     <Compile Include="Transitions\TransitionRunner.cs" />
     <Compile Include="ReflectionExtensions.cs" />
+    <Compile Include="Triggers\TaskCompletionSourceRegistry.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.Fx450.csproj">

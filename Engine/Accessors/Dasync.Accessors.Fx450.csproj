@@ -56,6 +56,7 @@
     <Compile Include="TaskAccessor.cs" />
     <Compile Include="TaskAwaiterUtils.cs" />
     <Compile Include="TaskCapture.cs" />
+    <Compile Include="TaskCompletionSourceAccessor.cs" />
     <Compile Include="TimerExtensions.cs" />
     <Compile Include="TimerQueueExtensions.cs" />
     <Compile Include="ReflectionExtensions.cs" />

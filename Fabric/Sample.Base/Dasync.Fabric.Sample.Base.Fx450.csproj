@@ -46,6 +46,7 @@
     <Compile Include="EventSubscriber.cs" />
     <Compile Include="FabricConnectorFactorySelector.cs" />
     <Compile Include="FabricConnectorSelector.cs" />
+    <Compile Include="ICurrentConnectorProvider.cs" />
     <Compile Include="ICurrentFabric.cs" />
     <Compile Include="IFabric.cs" />
     <Compile Include="IFabricConnector.cs" />
