@@ -272,3 +272,7 @@ Don't hesitate to [contact about this project](https://dasyncnet.wordpress.com/c
 * [The story of development on DZone](https://dzone.com/articles/d-async-cloud-native-apps)
 * [More details in blog posts](https://dasyncnet.wordpress.com/2018/05/04/what-is-dasync/)
 * [NuGet packages](https://www.nuget.org/packages?q=dasync)
+
+## Licencing
+
+The D-ASYNC project is open-source and absolutely free to use. It is licensed under modified conditions of the CDDL-1.0 license which don't allow to sell this software as a service - serves a similar purpose as recently introduced Confluent's 'Confluent Community License' and MongoDB's 'Server Side Public License'.
