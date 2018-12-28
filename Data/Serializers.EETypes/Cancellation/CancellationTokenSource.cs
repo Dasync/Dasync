@@ -76,7 +76,7 @@ namespace Dasync.Serializers.EETypes.Cancellation
 
     public sealed class CancellationTokenSourceContainer : ValueContainerBase
     {
-        public Guid Id;
+        public long Id;
         public DateTime? CancelTime;
         public CancellationTokenSource[] LinkedSources;
     }

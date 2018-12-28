@@ -26,7 +26,6 @@ namespace Dasync.ExecutionEngine
             [typeof(ITaskContinuationTracker)] = typeof(TaskContinuationTracker),
             [typeof(ITaskContinuationClassifier)] = typeof(TaskContinuationClassifier),
             [typeof(ICancellationTokenSourceRegistry)] = typeof(CancellationTokenSourceRegistry),
-            [typeof(ICancellationTokenSourceIdGenerator)] = typeof(CancellationTokenSourceIdGenerator),
             [typeof(IRoutineMethodIdProvider)] = typeof(RoutineMethodIdProvider),
             [typeof(IEventIdProvider)] = typeof(EventIdProvider),
             [typeof(IIntrinsicFlowController)] = typeof(IntrinsicFlowController),
