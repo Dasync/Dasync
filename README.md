@@ -2,11 +2,13 @@
 
 ## What is D·ASYNC?
 
-D·ASYNC is a framework that allows to model business processes and workflows in C# language itself, focus on the application logic and put infrastructure aside, keep Clean Architecture and delay design decisions, where compiled software runs in a distributed manner from day one. D·ASYNC extends the ideology of Distributed Domain-Driven Design by making the programming language and OOP patterns the first class-citizen (an ultimate façade) for expressing intentions and behavior of your business.
+You can think of D-ASYNC like EntityFramework but for inter-service communication and stateful workflows. Instead of focusing on domain entities and their mapping to data transfer objects, D-ASYNC framework targets domain commands, responses, queries, and events. The key feature of D-ASYNC framework is the ability to use C# language and .NET abstractions without a need to manually craft service clients or to define hierarchical state machines for persisted workflows.
 
-D·ASYNC technology deeply integrates into the .NET runtime, controls execution of `async` methods (which are compiled to Finite State Machines), saves their state in a persistent storage, uses Message-Oriented Architecture and Event-Driven Design to distribute load across available compute nodes.
+D-ASYNC engine uses a combination of conventional object proxies and an innovative technology that controls the execution of `async` methods, which are compiled into state machines. The capability to save state of underlying state machines allows a Cloud/Edge service platform to be message-oriented and event-driven, what works much better in a distributed system than a traditional synchronous communication mechanism.
 
 ## How does it help?
+
+For developers of service-oriented distributed systems, D-ASYNC framework can offer ~5x productivity boost as it hides the complexity of an 'infrastructure layer' and helps to focus more on the core business logic of an application.
 
 You can find the grand vision in Part 4 of the **'Conquest of Distributed Systems'** story. Part 1 describes a typical problem, Part 2 shows one of the most common solutions, and Part 3 reveals the core of the technology.
 - [Part 1: Business Workflows](https://medium.com/@sergiis/conquest-of-distributed-systems-part-1-business-workflows-fdda4b7b1c42)
@@ -15,6 +17,7 @@ You can find the grand vision in Part 4 of the **'Conquest of Distributed System
 - [Part 4: The Now and the Vision](https://medium.com/@sergiis/conquest-of-distributed-systems-part-4-the-now-and-the-vision-e844c9aee2c7)
 
 ## Few Programming Concepts
+The following C# examples may look trivial and as for a single-process application, but D-ASYNC framework makes them run (without any modifications) in a resilient, persistent, scalable, and distributed manner.
 
 1. The basics. And resiliency.
 ```csharp
