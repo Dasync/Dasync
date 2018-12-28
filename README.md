@@ -259,6 +259,12 @@ Keep in mind that D·ASYNC technology is in preview now.
 * [Azure Functions Seamless Demo](https://dasyncnet.wordpress.com/2018/05/04/dasync-on-azure-functions/)
 * [Feature Showdown Application](Examples/FeatureShowdown)
 
+## State of the project
+
+The D-ASYNC project consists of two logical parts: the platform-independent execution engine, and a platform. The same way EntityFramework has its core and numerous providers.
+
+The D-ASYNC execution engine is in pre-release state. The first platform is under active development to serve as a reference for other platforms. And there are many more features coming after the first release.
+
 ## More info
 
 Don't hesitate to [contact about this project](https://dasyncnet.wordpress.com/contact/) if you have any questions or your want to contribute.
