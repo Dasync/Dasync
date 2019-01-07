@@ -36,25 +36,25 @@ namespace Dasync.EETypes.Intents
         /// </summary>
         public List<ContinueRoutineIntent> ContinuationIntents;
 
-        /// <summary>
-        /// Describes all service instances that need to be created.
-        /// </summary>
-#warning Need to finalize the factory concept first.
-        public List<CreateServiceInstanceIntent> CreateServiceIntents;
+//        /// <summary>
+//        /// Describes all service instances that need to be created.
+//        /// </summary>
+//#warning Need to finalize the factory concept first.
+//        public List<CreateServiceInstanceIntent> CreateServiceIntents;
 
-        /// <summary>
-        /// Delete an instance of current service because current routine
-        /// being invoked is <see cref="IDisposable.Dispose"/>.
-        /// The pre-requirement for this operation is the instance of the
-        /// service must be created with factory pattern in first place.
-        /// See related <see cref="CreateServiceIntents"/>.
-        /// </summary>
-#warning Need to finalize the factory concept first.
-        public bool DeleteServiceInstance;
+//        /// <summary>
+//        /// Delete an instance of current service because current routine
+//        /// being invoked is <see cref="IDisposable.Dispose"/>.
+//        /// The pre-requirement for this operation is the instance of the
+//        /// service must be created with factory pattern in first place.
+//        /// See related <see cref="CreateServiceIntents"/>.
+//        /// </summary>
+//#warning Need to finalize the factory concept first.
+//        public bool DeleteServiceInstance;
 
         public List<RegisterTriggerIntent> RegisterTriggerIntents;
 
-        public SubscribeToTriggerIntent SubscribeToTriggerIntent;
+        public List<SubscribeToTriggerIntent> SubscribeToTriggerIntents;
 
         public List<ActivateTriggerIntent> ActivateTriggerIntents;
     }

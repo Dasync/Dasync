@@ -8,7 +8,7 @@ namespace Dasync.EETypes.Intents
         public ServiceId ServiceId;
 
 #warning TODO: remove state of a service? Replace with a domain entity?
-        public IValueContainer ServiceState;
+        //public IValueContainer ServiceState;
 
         public RoutineDescriptor Routine;
 

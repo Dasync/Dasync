@@ -180,11 +180,11 @@ namespace Dasync.Fabric.InMemory
 
         private Task SaveStateAsync(SaveStateIntent intent, CancellationToken ct)
         {
-            if (intent.ServiceState != null)
-            {
-                var serviceStateRecord = GetOrCreateServiceStateRecord(intent.ServiceId);
-                serviceStateRecord.State = Serializer.SerializeToString(intent.ServiceState);
-            }
+            //if (intent.ServiceState != null)
+            //{
+            //    var serviceStateRecord = GetOrCreateServiceStateRecord(intent.ServiceId);
+            //    serviceStateRecord.State = Serializer.SerializeToString(intent.ServiceState);
+            //}
 
             if (intent.RoutineState != null || intent.RoutineResult != null)
             {

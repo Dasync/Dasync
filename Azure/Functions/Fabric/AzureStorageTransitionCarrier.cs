@@ -112,11 +112,11 @@ namespace Dasync.Fabric.AzureFunctions
                 _serializer.Populate(routineRecord.State, target);
         }
 
-        public Task ReadServiceStateAsync(IValueContainer target, CancellationToken ct)
-        {
-#warning Read Service state
-            throw new NotImplementedException("Service state is not implemented yet due to non-finalized design.");
-        }
+//        public Task ReadServiceStateAsync(IValueContainer target, CancellationToken ct)
+//        {
+//#warning Read Service state
+//            throw new NotImplementedException("Service state is not implemented yet due to non-finalized design.");
+//        }
 
         public async Task<List<ContinuationDescriptor>> GetContinuationsAsync(CancellationToken ct)
         {
@@ -150,13 +150,13 @@ namespace Dasync.Fabric.AzureFunctions
         {
             var serviceId = await GetServiceIdAsync(ct);
 
-            if (intent.ServiceState != null)
-            {
-#warning Save Service state
-                //var serviceStateRecord = GetOrCreateServiceStateRecord(intent.ServiceId);
-                //serviceStateRecord.StateJson = _serializer.Serialize(intent.ServiceState);
-                throw new NotImplementedException("Service state is not implemented yet due to non-finalized design.");
-            }
+//            if (intent.ServiceState != null)
+//            {
+//#warning Save Service state
+//                //var serviceStateRecord = GetOrCreateServiceStateRecord(intent.ServiceId);
+//                //serviceStateRecord.StateJson = _serializer.Serialize(intent.ServiceState);
+//                throw new NotImplementedException("Service state is not implemented yet due to non-finalized design.");
+//            }
 
             if (intent.RoutineState != null || intent.RoutineResult != null)
             {

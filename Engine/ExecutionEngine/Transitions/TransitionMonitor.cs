@@ -193,7 +193,9 @@ namespace Dasync.ExecutionEngine.Transitions
         public void AwaitTrigger(TriggerReference triggerReference)
         {
             Context.ScheduledActions.SaveRoutineState = true;
-            Context.ScheduledActions.SubscribeToTriggerIntent = new SubscribeToTriggerIntent
+            if (Context.ScheduledActions.SubscribeToTriggerIntents == null)
+                Context.ScheduledActions.SubscribeToTriggerIntents = new List<SubscribeToTriggerIntent>();
+            Context.ScheduledActions.SubscribeToTriggerIntents.Add(new SubscribeToTriggerIntent
             {
                 TriggerId = triggerReference.Id,
                 Continuation = new ContinuationDescriptor
@@ -201,7 +203,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     ServiceId = Context.ServiceId,
                     Routine = Context.RoutineDescriptor
                 }
-            };
+            });
             CompleteTransition();
         }
 

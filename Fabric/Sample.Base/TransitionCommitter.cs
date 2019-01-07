@@ -91,10 +91,11 @@ namespace Dasync.Fabric.Sample.Base
                     await connector.ActivateTriggerAsync(intent, ct);
             }
 
-            if (actions.SubscribeToTriggerIntent != null)
+            if (actions.SubscribeToTriggerIntents?.Count > 0)
             {
                 var connector = ((ICurrentConnectorProvider)transitionCarrier).Connector;
-                await connector.SubscribeToTriggerAsync(actions.SubscribeToTriggerIntent, ct);
+                foreach (var intent in actions.SubscribeToTriggerIntents)
+                    await connector.SubscribeToTriggerAsync(intent, ct);
             }
         }
     }
