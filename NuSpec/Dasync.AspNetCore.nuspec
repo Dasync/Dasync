@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Dasync.AspNetCore</id>
+    <version>0.1.0-preview</version>
+    <authors>dasync sergiis</authors>
+    <owners>dasync</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
+    <description>preview</description>
+    <releaseNotes>preview</releaseNotes>
+    <copyright>D-ASYNC LLC  (c)  2019</copyright>
+    <repository type="GitHub" url="https://github.com/Dasync/Dasync" />
+    <dependencies>
+      <group targetFramework=".NETCoreApp2.2">
+        <dependency id="Microsoft.AspNetCore.App" version="2.2.0" exclude="Build,Analyzers" />
+        <dependency id="Newtonsoft.Json" version="9.0.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.AspNetCore.dll" target="lib\netcoreapp2.2\Dasync.AspNetCore.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.AspNetCore.pdb" target="lib\netcoreapp2.2\Dasync.AspNetCore.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Accessors.dll" target="lib\netcoreapp2.2\Dasync.Accessors.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Accessors.pdb" target="lib\netcoreapp2.2\Dasync.Accessors.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.AsyncStateMachine.dll" target="lib\netcoreapp2.2\Dasync.AsyncStateMachine.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.AsyncStateMachine.pdb" target="lib\netcoreapp2.2\Dasync.AsyncStateMachine.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.EETypes.dll" target="lib\netcoreapp2.2\Dasync.EETypes.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.EETypes.pdb" target="lib\netcoreapp2.2\Dasync.EETypes.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.ExecutionEngine.dll" target="lib\netcoreapp2.2\Dasync.ExecutionEngine.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.ExecutionEngine.pdb" target="lib\netcoreapp2.2\Dasync.ExecutionEngine.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Fabric.InMemory.dll" target="lib\netcoreapp2.2\Dasync.Fabric.InMemory.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Fabric.InMemory.pdb" target="lib\netcoreapp2.2\Dasync.Fabric.InMemory.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Fabric.Sample.Base.dll" target="lib\netcoreapp2.2\Dasync.Fabric.Sample.Base.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Fabric.Sample.Base.pdb" target="lib\netcoreapp2.2\Dasync.Fabric.Sample.Base.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Modeling.dll" target="lib\netcoreapp2.2\Dasync.Modeling.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Modeling.pdb" target="lib\netcoreapp2.2\Dasync.Modeling.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Proxy.dll" target="lib\netcoreapp2.2\Dasync.Proxy.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Proxy.pdb" target="lib\netcoreapp2.2\Dasync.Proxy.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serialization.dll" target="lib\netcoreapp2.2\Dasync.Serialization.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serialization.pdb" target="lib\netcoreapp2.2\Dasync.Serialization.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serialization.Json.dll" target="lib\netcoreapp2.2\Dasync.Serialization.Json.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serialization.Json.pdb" target="lib\netcoreapp2.2\Dasync.Serialization.Json.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serializers.EETypes.dll" target="lib\netcoreapp2.2\Dasync.Serializers.EETypes.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serializers.EETypes.pdb" target="lib\netcoreapp2.2\Dasync.Serializers.EETypes.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serializers.StandardTypes.dll" target="lib\netcoreapp2.2\Dasync.Serializers.StandardTypes.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serializers.StandardTypes.pdb" target="lib\netcoreapp2.2\Dasync.Serializers.StandardTypes.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.ValueContainer.dll" target="lib\netcoreapp2.2\Dasync.ValueContainer.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.ValueContainer.pdb" target="lib\netcoreapp2.2\Dasync.ValueContainer.pdb" />
+  </files>
+</package>
