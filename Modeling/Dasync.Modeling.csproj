@@ -6,7 +6,7 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <BaseIntermediateOutputPath>obj\$(Configuration)\$(TargetFramework)\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <!-- <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile> -->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -21,15 +21,6 @@
     <Compile Remove="obj\**" />
     <EmbeddedResource Remove="obj\**" />
     <None Remove="obj\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Collections.NonGeneric" Version="4.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Serialization\Dasync.Serialization.csproj" />
-    <ProjectReference Include="..\ValueContainer\Dasync.ValueContainer.csproj" />
   </ItemGroup>
 
 </Project>

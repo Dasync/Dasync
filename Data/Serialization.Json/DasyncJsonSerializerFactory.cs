@@ -11,7 +11,7 @@
                 new JsonValueReaderFactory());
         }
 
-        public string Format => "dasyncjson";
+        public string Format => "dasync+json";
 
         public ISerializer Create()
         {

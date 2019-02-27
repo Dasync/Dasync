@@ -135,10 +135,9 @@ namespace Dasync.Proxy
             //AddConstructor(context);
             //AddFactoryMethod(context);
 
-            ImplementEvents(context, context.ObjectType);
-
             if (isClass)
             {
+                ImplementEvents(context, context.ObjectType);
                 OverrideClassMethods(context);
                 CopyConstructors(context);
             }

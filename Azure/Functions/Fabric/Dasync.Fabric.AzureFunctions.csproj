@@ -38,8 +38,6 @@
     <ProjectReference Include="..\..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.csproj" />
     <ProjectReference Include="..\..\..\Engine\Proxy\Dasync.Proxy.csproj" />
     <ProjectReference Include="..\..\..\Fabric\Bootstrap\Dasync.Bootstrap.csproj" />
-    <ProjectReference Include="..\..\..\Fabric\ServiceRegistry\Dasync.ServiceRegistry.csproj" />
-    <ProjectReference Include="..\..\..\IoC\IoC\Dasync.Ioc.csproj" />
     <ProjectReference Include="..\..\Connector.Storage\Dasync.FabricConnector.AzureStorage.csproj" />
     <ProjectReference Include="..\..\Storage\Dasync.AzureStorage.csproj" />
   </ItemGroup>

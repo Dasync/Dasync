@@ -7,7 +7,7 @@ namespace Dasync.Serialization
     {
         private readonly Dictionary<string, ISerializerFactory> _factoryMap;
 
-        public SerializerFactorySelector(ISerializerFactory[] factories)
+        public SerializerFactorySelector(IEnumerable<ISerializerFactory> factories)
         {
             _factoryMap = new Dictionary<string, ISerializerFactory>(StringComparer.OrdinalIgnoreCase);
             foreach (var factory in factories)

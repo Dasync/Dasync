@@ -28,9 +28,7 @@
     <ProjectReference Include="..\..\Data\Serializers.EETypes\Dasync.Serializers.EETypes.csproj" />
     <ProjectReference Include="..\..\Data\Serializers.StandardTypes\Dasync.Serializers.StandardTypes.csproj" />
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />
-    <ProjectReference Include="..\..\IoC\IoC\Dasync.Ioc.csproj" />
     <ProjectReference Include="..\Sample.Base\Dasync.Fabric.Sample.Base.csproj" />
-    <ProjectReference Include="..\ServiceRegistry\Dasync.ServiceRegistry.csproj" />
   </ItemGroup>
 
 </Project>

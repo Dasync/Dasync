@@ -30,7 +30,7 @@ namespace Dasync.ExecutionEngine.Transitions
         private readonly IRoutineMethodResolver _routineMethodResolver;
         private readonly IAsyncStateMachineMetadataProvider _asyncStateMachineMetadataProvider;
         private readonly IMethodInvokerFactory _methodInvokerFactory;
-        private readonly IServiceStateValueContainerProvider _serviceStateValueContainerProvider;
+        //private readonly IServiceStateValueContainerProvider _serviceStateValueContainerProvider;
         private readonly IntrinsicRoutines _intrinsicRoutines;
         private readonly INumericIdGenerator _idGenerator;
         private readonly ITaskCompletionSourceRegistry _taskCompletionSourceRegistry;
@@ -42,7 +42,7 @@ namespace Dasync.ExecutionEngine.Transitions
             IRoutineMethodResolver routineMethodResolver,
             IAsyncStateMachineMetadataProvider asyncStateMachineMetadataProvider,
             IMethodInvokerFactory methodInvokerFactory,
-            IServiceStateValueContainerProvider serviceStateValueContainerProvider,
+            //IServiceStateValueContainerProvider serviceStateValueContainerProvider,
             IntrinsicRoutines intrinsicRoutines,
             INumericIdGenerator idGenerator,
             ITaskCompletionSourceRegistry taskCompletionSourceRegistry)
@@ -53,7 +53,7 @@ namespace Dasync.ExecutionEngine.Transitions
             _routineMethodResolver = routineMethodResolver;
             _asyncStateMachineMetadataProvider = asyncStateMachineMetadataProvider;
             _methodInvokerFactory = methodInvokerFactory;
-            _serviceStateValueContainerProvider = serviceStateValueContainerProvider;
+            //_serviceStateValueContainerProvider = serviceStateValueContainerProvider;
             _intrinsicRoutines = intrinsicRoutines;
             _idGenerator = idGenerator;
             _taskCompletionSourceRegistry = taskCompletionSourceRegistry;
@@ -100,10 +100,10 @@ namespace Dasync.ExecutionEngine.Transitions
                 var serviceType = (serviceInstance as IProxy)?.ObjectType ?? serviceInstance.GetType();
                 var routineMethod = _routineMethodResolver.Resolve(serviceType, routineDescriptor.MethodId);
 
-                var serviceStateContainer = _serviceStateValueContainerProvider.CreateContainer(serviceInstance);
-                var isStatefullService = serviceStateContainer.GetCount() > 0;
-                if (isStatefullService)
-                    await transitionCarrier.ReadServiceStateAsync(serviceStateContainer, ct);
+                //var serviceStateContainer = _serviceStateValueContainerProvider.CreateContainer(serviceInstance);
+                //var isStatefullService = serviceStateContainer.GetCount() > 0;
+                //if (isStatefullService)
+                //    await transitionCarrier.ReadServiceStateAsync(serviceStateContainer, ct);
 
                 Task completionTask;
                 IValueContainer asmValueContainer = null;
@@ -178,12 +178,12 @@ namespace Dasync.ExecutionEngine.Transitions
 
                 var scheduledActions = await transitionMonitor.TrackRoutineCompletion(completionTask);
 
-                if (scheduledActions.SaveRoutineState || isStatefullService)
+                if (scheduledActions.SaveRoutineState /*|| isStatefullService*/)
                 {
                     scheduledActions.SaveStateIntent = new SaveStateIntent
                     {
                         ServiceId = serviceId,
-                        ServiceState = isStatefullService ? serviceStateContainer : null,
+                        //ServiceState = isStatefullService ? serviceStateContainer : null,
                         Routine = scheduledActions.SaveRoutineState ? routineDescriptor : null,
                         RoutineState = scheduledActions.SaveRoutineState ? asmValueContainer : null,
                         AwaitedRoutine = scheduledActions.ExecuteRoutineIntents?.FirstOrDefault(

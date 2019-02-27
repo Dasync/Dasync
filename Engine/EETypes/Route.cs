@@ -10,7 +10,7 @@
 
         public string PartitionKey;
 
-        //public string SequenceKey; // causal order - can be used as a partition key for related events 
+        public string SequenceKey; // causal order - can be used as a partition key for related events 
 
         public string ApiVersion;
 
