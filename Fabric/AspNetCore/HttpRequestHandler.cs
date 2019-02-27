@@ -208,7 +208,9 @@ namespace DasyncAspNetCore
 
             var rfc7240Preferences = GetPreferences(context.Request.Headers);
 
-            if (isQueryMethod)
+            var isHttpRequestBlockingExecution = !(rfc7240Preferences.RespondAsync == true);
+
+            if (isHttpRequestBlockingExecution)
             {
                 var serviceInstance = _domainServiceProvider.GetService(serviceDefinition.Implementation);
                 var task = methodInvoker.Invoke(serviceInstance, parameterContainer);
