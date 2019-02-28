@@ -52,7 +52,7 @@ namespace Dasync.Fabric.Sample.Base
 #warning need to associate a routine with a cancellaion token, and abandon polling when canceled?
             var ct = CancellationToken.None;
 
-            for (var i = 0; ; i++)
+            for (var i = 0; fabricConnectorAndRoutineInfo.RoutineInfo.Result == null; i++)
             {
 #warning Ideally need to handle 'fire an forget' cases - the continuation is never set?
                 //if (!proxyTask.continuation == null after 1 min?)

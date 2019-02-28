@@ -100,6 +100,7 @@ namespace DasyncAspNetCore
 
             var isQueryRequest = context.Request.Method == "GET";
             var isCommandRequest = context.Request.Method == "PUT" || context.Request.Method == "POST";
+#warning Content-Type may contain the charset, e.g.  'application/json; charset=utf-8'
             var isJsonRequest = string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase);
             var isDasyncJsonRequest = string.Equals(context.Request.ContentType, "application/dasync+json", StringComparison.OrdinalIgnoreCase);
 

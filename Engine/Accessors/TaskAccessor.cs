@@ -173,7 +173,9 @@ namespace Dasync.Accessors
             {
                 return null;
             }
-            else if (taskType.IsGenericType() && taskType.GetGenericTypeDefinition() == typeof(Task<>))
+            else if (
+                (taskType.IsGenericType() && taskType.GetGenericTypeDefinition() == typeof(Task<>)) ||
+                (taskType.BaseType.IsGenericType() && taskType.BaseType.GetGenericTypeDefinition() == typeof(Task<>)))
             {
 #warning pre-compile accessor for Task.GetResult
                 var pi = taskType.GetProperty(nameof(Task<object>.Result));

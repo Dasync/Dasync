@@ -1,7 +1,9 @@
 ﻿using System;
+using Dasync.AspNetCore.Communication;
 using Dasync.EETypes;
 using Dasync.EETypes.Ioc;
 using Dasync.EETypes.Proxy;
+using Dasync.Fabric.Sample.Base;
 using Dasync.Modeling;
 using Microsoft.AspNetCore.Builder;
 //using Microsoft.AspNetCore.Hosting;
@@ -39,6 +41,9 @@ namespace DasyncAspNetCore
                 Dasync.Fabric.InMemory.DI.Bindings);
 
             services.AddSingleton<IDomainServiceProvider, DomainServiceProvider>();
+
+            services.Remove<IFabricConnectorSelector>();
+            services.AddSingleton<IFabricConnectorSelector, HttpFabricConnectorSelector>();
 
             return services;
         }
