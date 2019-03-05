@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Dasync.AspNetCore.Communication;
 using Dasync.EETypes;
 using Dasync.EETypes.Ioc;
 using Dasync.ExecutionEngine;
@@ -58,7 +59,7 @@ namespace DasyncAspNetCore
 
             if (pathSegments.Length == 0)
             {
-                context.Response.StatusCode = 400;
+                context.Response.StatusCode = 404;
                 context.Response.ContentType = "text/plain";
                 await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes("Empty request URL"));
                 return;
@@ -68,7 +69,7 @@ namespace DasyncAspNetCore
             var serviceDefinition = _communicationModelProvider.Model.FindServiceByName(serviceName);
             if (serviceDefinition == null)
             {
-                context.Response.StatusCode = 400;
+                context.Response.StatusCode = 404;
                 context.Response.ContentType = "text/plain";
                 await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes($"Service '{serviceName}' is not registered"));
                 return;
@@ -84,7 +85,7 @@ namespace DasyncAspNetCore
 
             if (pathSegments.Length == 1)
             {
-                context.Response.StatusCode = 400;
+                context.Response.StatusCode = 404;
                 context.Response.ContentType = "text/plain";
                 await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes("The request URL does not contain a service method"));
                 return;
@@ -92,7 +93,7 @@ namespace DasyncAspNetCore
 
             if (pathSegments.Length > 2)
             {
-                context.Response.StatusCode = 400;
+                context.Response.StatusCode = 404;
                 context.Response.ContentType = "text/plain";
                 await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes("The request URL contains extra segments"));
                 return;
@@ -135,7 +136,7 @@ namespace DasyncAspNetCore
             }
             catch
             {
-                context.Response.StatusCode = 400;
+                context.Response.StatusCode = 404;
                 context.Response.ContentType = "text/plain";
                 await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes($"The service '{serviceDefinition.Name}' does not have method '{methodName}'"));
                 return;
@@ -146,7 +147,7 @@ namespace DasyncAspNetCore
 
             if (isQueryRequest && !isQueryMethod)
             {
-                context.Response.StatusCode = 400;
+                context.Response.StatusCode = 404;
                 context.Response.ContentType = "text/plain";
                 await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes($"The method '{methodName}' of service '{serviceDefinition.Name}' is a command, but not a query, thus must be invoked with POST or PUT verb"));
                 return;
@@ -220,36 +221,46 @@ namespace DasyncAspNetCore
 
                 if (taskResult.IsCanceled)
                 {
-                    context.Response.StatusCode = 499; //Client Closed Request (Nginx)
-                    context.Response.ContentType = "text/plain";
-                    await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes("canceled"));
+                    context.Response.StatusCode = DasyncHttpCodes.Canceled;
+
+                    if (isDasyncJsonRequest)
+                    {
+                        context.Response.ContentType = "application/dasync+json";
+                        _dasyncJsonSerializer.Serialize(context.Response.Body, taskResult);
+                    }
+
                     return;
                 }
                 else if (taskResult.IsFaulted)
                 {
-                    context.Response.StatusCode = 412; // Precondition Failed (RFC 7232)
-                    context.Response.ContentType = "text/plain";
-                    await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(taskResult.Exception.Message));
-                    return;
-                }
-                else
-                {
-                    context.Response.StatusCode = 200;
+                    context.Response.StatusCode = DasyncHttpCodes.Faulted;
 
-                    if (isJsonRequest)
-                    {
-                        context.Response.ContentType = "application/json";
-                        await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taskResult.Value)));
-                    }
-                    else if (isDasyncJsonRequest)
+                    if (isDasyncJsonRequest)
                     {
                         context.Response.ContentType = "application/dasync+json";
                         _dasyncJsonSerializer.Serialize(context.Response.Body, taskResult);
                     }
                     else
                     {
-                        context.Response.ContentType = "text/plain";
-                        await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(taskResult.Value.ToString()));
+                        context.Response.ContentType = "application/json";
+                        await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taskResult.Exception)));
+                    }
+
+                    return;
+                }
+                else
+                {
+                    context.Response.StatusCode = DasyncHttpCodes.Succeeded;
+
+                    if (isDasyncJsonRequest)
+                    {
+                        context.Response.ContentType = "application/dasync+json";
+                        _dasyncJsonSerializer.Serialize(context.Response.Body, taskResult);
+                    }
+                    else
+                    {
+                        context.Response.ContentType = "application/json";
+                        await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taskResult.Value)));
                     }
 
                     return;

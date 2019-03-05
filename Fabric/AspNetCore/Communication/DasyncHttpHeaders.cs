@@ -1,4 +1,4 @@
-﻿namespace DasyncAspNetCore
+﻿namespace Dasync.AspNetCore.Communication
 {
     public static class DasyncHttpHeaders
     {

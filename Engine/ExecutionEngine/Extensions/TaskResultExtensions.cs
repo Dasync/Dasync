@@ -13,10 +13,14 @@ namespace Dasync.ExecutionEngine.Extensions
             if (status != TaskStatus.RanToCompletion && status != TaskStatus.Canceled && status != TaskStatus.Faulted)
                 throw new ArgumentException($"The task is not completed and is in '{status}' state.", nameof(task));
 
+            var exception = (task.Exception is AggregateException aggregateException && aggregateException.InnerExceptions?.Count == 1)
+                ? aggregateException.InnerException
+                : task.Exception;
+
             return new TaskResult
             {
                 Value = status == TaskStatus.RanToCompletion ? task.GetResult() : null,
-                Exception = status == TaskStatus.Faulted ? task.Exception : null,
+                Exception = status == TaskStatus.Faulted ? exception : null,
                 IsCanceled = status == TaskStatus.Canceled
             };
         }

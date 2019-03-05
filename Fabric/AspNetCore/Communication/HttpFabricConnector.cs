@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.EETypes.Descriptors;
@@ -45,7 +44,8 @@ namespace Dasync.AspNetCore.Communication
             var uri = _serviceHttpConfigurator.GetUrl(_serviceDefinition, intent);
             var response = await _httpClient.PutAsync(uri, content, ct);
 
-            if (response.StatusCode == HttpStatusCode.OK)
+            var statusCode = (int)response.StatusCode;
+            if (statusCode == DasyncHttpCodes.Succeeded || statusCode == DasyncHttpCodes.Faulted || statusCode == DasyncHttpCodes.Canceled)
             {
                 TaskResult taskResult;
                 using (var stream = await response.Content.ReadAsStreamAsync())
