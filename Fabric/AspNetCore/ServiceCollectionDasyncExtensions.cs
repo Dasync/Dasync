@@ -31,6 +31,7 @@ namespace DasyncAspNetCore
                 Dasync.Serialization.Json.DI.Bindings,
                 Dasync.Serializers.StandardTypes.DI.Bindings,
                 Dasync.Serializers.EETypes.DI.Bindings,
+                Dasync.Serializers.DomainTypes.DI.Bindings,
                 Dasync.Proxy.DI.Bindings,
                 Dasync.AsyncStateMachine.DI.Bindings,
                 Dasync.ExecutionEngine.DI.Bindings,

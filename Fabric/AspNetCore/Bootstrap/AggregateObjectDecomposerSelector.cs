@@ -1,4 +1,5 @@
 ﻿using Dasync.Serialization;
+using Dasync.Serializers.DomainTypes;
 using Dasync.Serializers.EETypes;
 using Dasync.Serializers.StandardTypes;
 
@@ -8,8 +9,9 @@ namespace Dasync.Bootstrap
     {
         public AggregateObjectDecomposerSelector(
             EETypesSerializerSelector eeTypesSerializerSelector,
+            DomainTypesSerializerSelector domainTypesSerializerSelector,
             StandardTypeDecomposerSelector standardTypeDecomposerSelector)
-            : base(eeTypesSerializerSelector, standardTypeDecomposerSelector)
+            : base(eeTypesSerializerSelector, domainTypesSerializerSelector, standardTypeDecomposerSelector)
         {
         }
     }

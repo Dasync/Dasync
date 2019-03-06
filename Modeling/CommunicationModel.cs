@@ -16,6 +16,11 @@ namespace Dasync.Modeling
         private readonly Dictionary<Type, ServiceDefinition> _servicesByImplemntationType =
             new Dictionary<Type, ServiceDefinition>();
 
+        private readonly HashSet<EntityProjectionDefinition> _entityProjections = new HashSet<EntityProjectionDefinition>();
+
+        private readonly Dictionary<Type, EntityProjectionDefinition> _entityProjectionsByInterfaceType =
+            new Dictionary<Type, EntityProjectionDefinition>();
+
         public IReadOnlyCollection<IServiceDefinition> Services => _services;
 
         public IServiceDefinition FindServiceByName(string name) =>
@@ -69,6 +74,17 @@ namespace Dasync.Modeling
 
             _services.Add(serviceDefinition);
             _servicesByInterfaceType.Add(newInterfaceType, serviceDefinition);
+        }
+
+        public IEntityProjectionDefinition FindEntityProjectionByIterfaceType(Type interfaceType) =>
+            _entityProjectionsByInterfaceType.TryGetValue(interfaceType, out var definition) ? definition : null;
+
+        public IReadOnlyCollection<IEntityProjectionDefinition> EntityProjections => _entityProjections;
+
+        internal void OnEntityProjectionInterfaceSet(EntityProjectionDefinition definition)
+        {
+            _entityProjections.Add(definition);
+            _entityProjectionsByInterfaceType.Add(definition.InterfaceType, definition);
         }
     }
 }

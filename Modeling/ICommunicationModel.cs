@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Dasync.Modeling
 {
@@ -13,5 +12,9 @@ namespace Dasync.Modeling
         IServiceDefinition FindServiceByImplementation(Type implementationType);
 
         IReadOnlyCollection<IServiceDefinition> Services { get; }
+
+        IEntityProjectionDefinition FindEntityProjectionByIterfaceType(Type interfaceType);
+
+        IReadOnlyCollection<IEntityProjectionDefinition> EntityProjections { get; }
     }
 }

@@ -20,6 +20,7 @@ namespace Dasync.Serializers.StandardTypes
             RegisterType(typeof(TypeSerializationInfo), "$type");
             RegisterType(typeof(Type), "Type");
             RegisterType(typeof(void), "void");
+            RegisterType(typeof(object), "object");
             RegisterType(typeof(byte), "byte");
             RegisterType(typeof(byte?), "byte?");
             RegisterType(typeof(sbyte), "sbyte");

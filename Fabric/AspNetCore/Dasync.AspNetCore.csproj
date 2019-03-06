@@ -40,6 +40,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Data\Serialization.Json\Dasync.Serialization.Json.csproj" />
     <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.csproj" />
+    <ProjectReference Include="..\..\Data\Serializers.DomainTypes\Dasync.Serializers.DomainTypes.csproj" />
     <ProjectReference Include="..\..\Data\Serializers.EETypes\Dasync.Serializers.EETypes.csproj" />
     <ProjectReference Include="..\..\Data\Serializers.StandardTypes\Dasync.Serializers.StandardTypes.csproj" />
     <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.csproj" />

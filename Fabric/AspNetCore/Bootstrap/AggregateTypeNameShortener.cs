@@ -1,4 +1,5 @@
 ﻿using Dasync.Serialization;
+using Dasync.Serializers.DomainTypes;
 using Dasync.Serializers.EETypes;
 using Dasync.Serializers.StandardTypes;
 
@@ -8,8 +9,9 @@ namespace Dasync.Bootstrap
     {
         public AggregateTypeNameShortener(
             StandardTypeNameShortener standardTypeNameShortener,
-            EETypesNameShortener eeTypesNameShortener)
-            : base(standardTypeNameShortener, eeTypesNameShortener)
+            EETypesNameShortener eeTypesNameShortener,
+            DomainTypesNameShortener domainTypesNameShortener)
+            : base(standardTypeNameShortener, eeTypesNameShortener, domainTypesNameShortener)
         {
         }
     }

@@ -2,8 +2,8 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Dasync.AspNetCore</id>
-    <version>0.1.4-preview</version>
-    <authors>dasync sergiis</authors>
+    <version>0.1.5-preview</version>
+    <authors>dasync,sergiis</authors>
     <owners>dasync</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
@@ -57,6 +57,9 @@
     
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serializers.StandardTypes.dll" target="lib\netcoreapp2.2\Dasync.Serializers.StandardTypes.dll" />
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serializers.StandardTypes.pdb" target="lib\netcoreapp2.2\Dasync.Serializers.StandardTypes.pdb" />
+    
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serializers.DomainTypes.dll" target="lib\netcoreapp2.2\Dasync.Serializers.DomainTypes.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Serializers.DomainTypes.pdb" target="lib\netcoreapp2.2\Dasync.Serializers.DomainTypes.pdb" />
     
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.ValueContainer.dll" target="lib\netcoreapp2.2\Dasync.ValueContainer.dll" />
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.ValueContainer.pdb" target="lib\netcoreapp2.2\Dasync.ValueContainer.pdb" />

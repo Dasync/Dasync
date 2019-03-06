@@ -149,5 +149,18 @@ namespace Dasync.Modeling
 
         public CommunicationModelBuilder ExternalService<TImplementation>(Action<ExternalServiceDefinitionBuilder> buildAction) =>
             ExternalService(typeof(TImplementation), buildAction);
+
+        public CommunicationModelBuilder EntityProjection(Type interfaceType)
+        {
+            if (!interfaceType.IsInterface)
+                throw new ArgumentException($"The type '{interfaceType}' must be an interface to qualify for an entity projection.");
+            if (Model.FindEntityProjectionByIterfaceType(interfaceType) != null)
+                return this;
+            var definition = new EntityProjectionDefinition((CommunicationModel)Model, interfaceType);
+            var builder = new EntityProjectionDefinitionBuilder(definition);
+            return this;
+        }
+
+        public CommunicationModelBuilder EntityProjection<TInterface>() => EntityProjection(typeof(TInterface));
     }
 }
