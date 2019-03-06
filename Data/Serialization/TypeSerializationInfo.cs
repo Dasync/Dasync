@@ -107,7 +107,7 @@ namespace Dasync.Serialization
             }
         }
 
-        public static TypeSerializationInfo ParseFromTypeFullName(string typeFullName)
+        public static TypeSerializationInfo Parse(string typeFullName)
         {
             var index = 0;
             return ParseInternal(typeFullName, ref index);

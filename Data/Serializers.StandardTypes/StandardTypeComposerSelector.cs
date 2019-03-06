@@ -6,7 +6,12 @@ namespace Dasync.Serializers.StandardTypes
 {
     public sealed class StandardTypeComposerSelector : IObjectComposerSelector
     {
-        public static readonly StandardTypeComposerSelector Instance = new StandardTypeComposerSelector();
+        private readonly ExceptionSerializer _exceptionSerializer;
+
+        public StandardTypeComposerSelector(ExceptionSerializer exceptionSerializer)
+        {
+            _exceptionSerializer = exceptionSerializer;
+        }
 
         public IObjectComposer SelectComposer(Type targetType)
         {
@@ -17,7 +22,7 @@ namespace Dasync.Serializers.StandardTypes
                 return decomposer as IObjectComposer;
 
             if (typeof(Exception).IsAssignableFrom(targetType))
-                return new ExceptionSerializer();
+                return _exceptionSerializer;
 
             if (targetType.IsPoco())
                 return PocoSerializer.Instance;

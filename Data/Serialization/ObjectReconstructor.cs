@@ -26,29 +26,23 @@ namespace Dasync.Serialization
 
         private Stack<ScopeState> _scopeStack = new Stack<ScopeState>();
         private ScopeState _scope;
-        private readonly ITypeResolver _typeResolver;
         private readonly IObjectComposerSelector _composerSelector;
-        private readonly ITypeNameShortener _typeNameShortener;
-        private readonly IAssemblyNameShortener _assemblyNameShortener;
         private Dictionary<long, object> _objectByIdMap = new Dictionary<long, object>();
         private Dictionary<string, object> _objectByNameMap;
         private IValueContainer _targetRootContainer;
+        private readonly ITypeSerializerHelper _typeSerializerHelper;
 
         public ObjectReconstructor(
-            ITypeResolver typeResolver,
             IObjectComposerSelector composerSelector,
 #warning target should be optional (deserialize vs populate) and of type "object"
             IValueContainer target,
-            ITypeNameShortener typeNameShortener,
-            IAssemblyNameShortener assemblyNameShortener,
+            ITypeSerializerHelper typeSerializerHelper,
             Dictionary<string, object> objectByNameMap = null)
         {
-            _typeResolver = typeResolver;
             _composerSelector = composerSelector;
-            _typeNameShortener = typeNameShortener;
-            _assemblyNameShortener = assemblyNameShortener;
             _objectByNameMap = objectByNameMap;
             _targetRootContainer = target;
+            _typeSerializerHelper = typeSerializerHelper;
         }
 
         public void OnValueStart(ValueInfo info)
@@ -62,7 +56,7 @@ namespace Dasync.Serialization
 
             if (info.Type != null)
             {
-                _scope.Type = ResolveType(info.Type);
+                _scope.Type = _typeSerializerHelper.ResolveType(info.Type);
                 if (_scope.Container == null)
                 {
                     _scope.Composer = _composerSelector.SelectComposer(_scope.Type);
@@ -75,7 +69,7 @@ namespace Dasync.Serialization
             if (info.IsCollection)
             {
                 _scope.ItemType = info.ItemType != null
-                    ? ResolveType(info.ItemType)
+                    ? _typeSerializerHelper.ResolveType(info.ItemType)
                     : typeof(object);
 
                 _scope.Array = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(_scope.ItemType));
@@ -201,7 +195,7 @@ namespace Dasync.Serialization
                         }
                         else if (targetType is Type && value is TypeSerializationInfo typeInfo)
                         {
-                            value = ResolveType(typeInfo);
+                            value = _typeSerializerHelper.ResolveType(typeInfo);
                         }
                         else if (targetType == typeof(Uri))
                         {
@@ -285,37 +279,6 @@ namespace Dasync.Serialization
             }
 
             return foundIndex;
-        }
-
-        private Type ResolveType(TypeSerializationInfo info)
-        {
-            if (!_typeNameShortener.TryExpand(info.Name, out Type type))
-            {
-                if (_assemblyNameShortener.TryExpand(info.Assembly?.Name, out Assembly assembly))
-                    info.Assembly = assembly.ToAssemblySerializationInfo();
-
-                var infoForResolving = info.GenericArgs?.Length > 0
-                    ? new TypeSerializationInfo
-                    {
-                        Name = info.Name,
-                        Assembly = info.Assembly
-                    }
-                    : info;
-                type = _typeResolver.Resolve(infoForResolving);
-            }
-
-            if (type.IsGenericTypeDefinition())
-            {
-                var genericArguments = new Type[info.GenericArgs.Length];
-                for (var i = 0; i < genericArguments.Length; i++)
-                {
-                    var genericArgument = ResolveType(info.GenericArgs[i]);
-                    genericArguments[i] = genericArgument;
-                }
-                type = type.MakeGenericType(genericArguments);
-            }
-
-            return type;
         }
     }
 }

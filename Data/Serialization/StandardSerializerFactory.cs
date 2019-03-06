@@ -2,22 +2,16 @@
 {
     public class StandardSerializerFactory : IStandardSerializerFactory
     {
-        private readonly ITypeNameShortener _typeNameShortener;
-        private readonly IAssemblyNameShortener _assemblyNameShortener;
-        private readonly ITypeResolver _typeResolver;
+        private readonly ITypeSerializerHelper _typeSerializerHelper;
         private readonly IObjectDecomposerSelector _decomposerSelector;
         private readonly IObjectComposerSelector _composerSelector;
 
         public StandardSerializerFactory(
-            ITypeNameShortener typeNameShortener,
-            IAssemblyNameShortener assemblyNameShortener,
-            ITypeResolver typeResolver,
+            ITypeSerializerHelper typeSerializerHelper,
             IObjectDecomposerSelector decomposerSelector,
             IObjectComposerSelector composerSelector)
         {
-            _typeNameShortener = typeNameShortener;
-            _assemblyNameShortener = assemblyNameShortener;
-            _typeResolver = typeResolver;
+            _typeSerializerHelper = typeSerializerHelper;
             _decomposerSelector = decomposerSelector;
             _composerSelector = composerSelector;
         }
@@ -31,20 +25,16 @@
                 return new StandardTextSerializer(
                     valueTextWriterFactory,
                     valueTextReaderFactory,
-                    _typeNameShortener,
-                    _assemblyNameShortener,
-                    _typeResolver,
                     _decomposerSelector,
-                    _composerSelector);
+                    _composerSelector,
+                    _typeSerializerHelper);
 
             return new StandardSerializer(
                 valueWriterFactory,
                 valueReaderFactory,
-                _typeNameShortener,
-                _assemblyNameShortener,
-                _typeResolver,
                 _decomposerSelector,
-                _composerSelector);
+                _composerSelector,
+                _typeSerializerHelper);
         }
     }
 }

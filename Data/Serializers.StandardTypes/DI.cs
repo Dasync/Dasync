@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Dasync.Serializers.StandardTypes.Runtime;
 
 namespace Dasync.Serializers.StandardTypes
 {
@@ -11,6 +12,7 @@ namespace Dasync.Serializers.StandardTypes
             [typeof(StandardAssemblyNameShortener)] = typeof(StandardAssemblyNameShortener),
             [typeof(StandardTypeDecomposerSelector)] = typeof(StandardTypeDecomposerSelector),
             [typeof(StandardTypeComposerSelector)] = typeof(StandardTypeComposerSelector),
+            [typeof(ExceptionSerializer)] = typeof(ExceptionSerializer),
         };
     }
 }
