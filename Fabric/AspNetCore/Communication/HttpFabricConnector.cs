@@ -37,30 +37,41 @@ namespace Dasync.AspNetCore.Communication
 
         public async Task<ActiveRoutineInfo> ScheduleRoutineAsync(ExecuteRoutineIntent intent, CancellationToken ct)
         {
-            var json = _dasyncJsonSerializer.SerializeToString(intent);
-            var content = new StringContent(json);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/dasync+json");
-
             var uri = _serviceHttpConfigurator.GetUrl(_serviceDefinition, intent);
-            var response = await _httpClient.PutAsync(uri, content, ct);
 
-            var statusCode = (int)response.StatusCode;
-            if (statusCode == DasyncHttpCodes.Succeeded || statusCode == DasyncHttpCodes.Faulted || statusCode == DasyncHttpCodes.Canceled)
+            var json = _dasyncJsonSerializer.SerializeToString(intent);
+            while (true)
             {
-                TaskResult taskResult;
-                using (var stream = await response.Content.ReadAsStreamAsync())
+                try
                 {
-                    taskResult = _dasyncJsonSerializer.Deserialize<TaskResult>(stream);
+                    var content = new StringContent(json);
+                    content.Headers.ContentType = new MediaTypeHeaderValue("application/dasync+json");
+
+                    var response = await _httpClient.PutAsync(uri, content, ct);
+
+                    var statusCode = (int)response.StatusCode;
+                    if (statusCode == DasyncHttpCodes.Succeeded || statusCode == DasyncHttpCodes.Faulted || statusCode == DasyncHttpCodes.Canceled)
+                    {
+                        TaskResult taskResult;
+                        using (var stream = await response.Content.ReadAsStreamAsync())
+                        {
+                            taskResult = _dasyncJsonSerializer.Deserialize<TaskResult>(stream);
+                        }
+
+                        return new ActiveRoutineInfo
+                        {
+                            Result = taskResult
+                        };
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Unexpected HTTP '{statusCode}' response:\r\n{await response.Content.ReadAsStringAsync()}");
+                    }
                 }
-
-                return new ActiveRoutineInfo
+                catch (Exception)
                 {
-                    Result = taskResult
-                };
-            }
-            else
-            {
-                throw new NotImplementedException();
+                    await Task.Delay(5_000);
+                }
             }
         }
 
