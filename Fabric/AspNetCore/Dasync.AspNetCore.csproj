@@ -50,8 +50,6 @@
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />
     <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.csproj" />
     <ProjectReference Include="..\..\Engine\Proxy\Dasync.Proxy.csproj" />
-    <ProjectReference Include="..\..\Fabric\Fabric.InMemory\Dasync.Fabric.InMemory.csproj" />
-    <ProjectReference Include="..\..\Fabric\Sample.Base\Dasync.Fabric.Sample.Base.csproj" />
     <ProjectReference Include="..\..\Modeling\Dasync.Modeling.csproj" />
   </ItemGroup>
 

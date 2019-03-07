@@ -1,18 +1,22 @@
 ﻿using System;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Dasync.AspNetCore.Platform;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
-using Dasync.Fabric.Sample.Base;
 using Dasync.Modeling;
 using Dasync.Serialization;
 
 namespace Dasync.AspNetCore.Communication
 {
-    public class HttpFabricConnector : IFabricConnector
+    public interface IPlatformHttpClient
+    {
+        Task<RoutineInfo> ScheduleRoutineAsync(ExecuteRoutineIntent intent, CancellationToken ct);
+    }
+
+    public class PlatformHttpClient : IPlatformHttpClient
     {
         private readonly IServiceDefinition _serviceDefinition;
         private readonly IServiceHttpConfigurator _serviceHttpConfigurator;
@@ -20,7 +24,7 @@ namespace Dasync.AspNetCore.Communication
         private readonly ISerializer _dasyncJsonSerializer;
         private readonly HttpClient _httpClient;
 
-        public HttpFabricConnector(
+        public PlatformHttpClient(
             IServiceDefinition serviceDefinition,
             ISerializerFactorySelector serializerFactorySelector,
             IServiceHttpConfigurator serviceHttpConfigurator)
@@ -35,7 +39,7 @@ namespace Dasync.AspNetCore.Communication
             _dasyncJsonSerializer = serializerFactorySelector.Select("dasync+json").Create();
         }
 
-        public async Task<ActiveRoutineInfo> ScheduleRoutineAsync(ExecuteRoutineIntent intent, CancellationToken ct)
+        public async Task<RoutineInfo> ScheduleRoutineAsync(ExecuteRoutineIntent intent, CancellationToken ct)
         {
             var uri = _serviceHttpConfigurator.GetUrl(_serviceDefinition, intent);
 
@@ -58,7 +62,7 @@ namespace Dasync.AspNetCore.Communication
                             taskResult = _dasyncJsonSerializer.Deserialize<TaskResult>(stream);
                         }
 
-                        return new ActiveRoutineInfo
+                        return new RoutineInfo
                         {
                             Result = taskResult
                         };
@@ -74,53 +78,5 @@ namespace Dasync.AspNetCore.Communication
                 }
             }
         }
-
-        public Task<ActiveRoutineInfo> ScheduleContinuationAsync(ContinueRoutineIntent intent, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
-
-        #region Events
-
-        public Task SubscribeForEventAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector publisherFabricConnector)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task OnEventSubscriberAddedAsync(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber, IFabricConnector subsriberFabricConnector)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task<ActiveRoutineInfo> PollRoutineResultAsync(ActiveRoutineInfo info, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task PublishEventAsync(RaiseEventIntent intent, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
-        #region Triggers
-
-        public Task RegisterTriggerAsync(RegisterTriggerIntent intent, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SubscribeToTriggerAsync(SubscribeToTriggerIntent intent, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ActivateTriggerAsync(ActivateTriggerIntent intent, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
     }
 }

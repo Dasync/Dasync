@@ -24,10 +24,5 @@ namespace Dasync.EETypes.Intents
         /// NULL when is called outside of the transitioning context.
         /// </summary>
         public CallerDescriptor Caller;
-
-        /// <summary>
-        /// A hint to notify current process on routine completion (synchronous call).
-        /// </summary>
-        public bool NotifyOnCompletion;
     }
 }

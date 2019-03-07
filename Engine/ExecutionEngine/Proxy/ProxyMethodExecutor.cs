@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Dasync.Accessors;
 using Dasync.EETypes;
@@ -89,10 +88,20 @@ namespace Dasync.ExecutionEngine.Proxy
         /// </remarks>
         public async void ExecuteAndAwaitInBackground(ExecuteRoutineIntent intent, Task proxyTask)
         {
+            // Tell platform to track the completion.
+            // Do it before commit as a routine may complete immediately.
+
+            var tcs = new TaskCompletionSource<TaskResult>();
+            _routineCompletionNotifier.NotifyCompletion(intent.Id, tcs);
+
             // Commit intent
 
-            // Set the hint about the synchronous call mode.
-            intent.NotifyOnCompletion = true;
+            var options = new TransitionCommitOptions
+            {
+                // Set the hint about the synchronous call mode.
+                NotifyOnRoutineCompletion = true
+            };
+
             var actions = new ScheduledActions
             {
                 ExecuteRoutineIntents = new List<ExecuteRoutineIntent>
@@ -100,12 +109,7 @@ namespace Dasync.ExecutionEngine.Proxy
                     intent
                 }
             };
-            await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, ct: default(CancellationToken));
-
-            // Tell platform to track the completion.
-
-            var tcs = new TaskCompletionSource<TaskResult>();
-            _routineCompletionNotifier.NotifyCompletion(intent.Id, tcs);
+            await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, options: options, ct: default);
 
             // Await for completion and set the result.
 
@@ -143,7 +147,7 @@ namespace Dasync.ExecutionEngine.Proxy
 
         public void Unsubscribe(IProxy proxy, EventInfo @event, Delegate @delegate)
         {
-            throw new NotSupportedException("Do you ever need to unsubscribe?");
+            throw new NotSupportedException("Do you ever need to unsubscribe from an event?");
         }
 
         public void RaiseEvent<TParameters>(IProxy proxy, EventInfo @event, ref TParameters parameters)
@@ -178,7 +182,10 @@ namespace Dasync.ExecutionEngine.Proxy
                     intent
                 }
             };
-            await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, ct: default(CancellationToken));
+
+            var options = new TransitionCommitOptions();
+
+            await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, options: options, ct: default);
         }
     }
 }

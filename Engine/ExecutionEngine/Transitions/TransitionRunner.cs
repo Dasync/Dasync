@@ -236,7 +236,9 @@ namespace Dasync.ExecutionEngine.Transitions
 
                 ScanForExtraIntents(scheduledActions);
 
-                await _transitionCommitter.CommitAsync(scheduledActions, transitionCarrier, ct);
+                var commitOptions = new TransitionCommitOptions();
+
+                await _transitionCommitter.CommitAsync(scheduledActions, transitionCarrier, commitOptions, ct);
             }
         }
 

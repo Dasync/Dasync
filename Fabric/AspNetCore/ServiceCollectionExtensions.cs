@@ -7,7 +7,7 @@ namespace DasyncAspNetCore
     {
         public static IServiceCollection Remove<TService>(this IServiceCollection services)
         {
-            var serviceDescriptor = services.First(sd => sd.ServiceType == typeof(TService));
+            var serviceDescriptor = services.FirstOrDefault(sd => sd.ServiceType == typeof(TService));
             if (serviceDescriptor != null)
                 services.Remove(serviceDescriptor);
             return services;
