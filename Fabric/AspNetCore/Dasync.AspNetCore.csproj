@@ -17,6 +17,7 @@
     <RepositoryType>GitHub</RepositoryType>
     <PackageTags />
     <PackageReleaseNotes>preview</PackageReleaseNotes>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

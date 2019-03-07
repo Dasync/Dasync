@@ -6,6 +6,7 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <BaseIntermediateOutputPath>obj\$(Configuration)\$(TargetFramework)\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <LangVersion>latest</LangVersion>
     <!-- <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile> -->
   </PropertyGroup>
 
