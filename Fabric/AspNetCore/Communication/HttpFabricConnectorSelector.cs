@@ -18,11 +18,12 @@ namespace Dasync.AspNetCore.Communication
         public HttpFabricConnectorSelector(
             ICommunicationModelProvider communicationModelProvider,
             ISerializerFactorySelector serializerFactorySelector,
-            IEnumerable<IServiceHttpConfigurator> serviceHttpConfigurators)
+            IEnumerable<IServiceHttpConfigurator> serviceHttpConfigurators,
+            DefaultServiceHttpConfigurator defaultServiceHttpConfigurator)
         {
             _communicationModelProvider = communicationModelProvider;
             _serializerFactorySelector = serializerFactorySelector;
-            _serviceHttpConfigurator = serviceHttpConfigurators.FirstOrDefault() ?? new DefaultServiceHttpConfigurator();
+            _serviceHttpConfigurator = serviceHttpConfigurators.FirstOrDefault() ?? defaultServiceHttpConfigurator;
         }
 
         public IFabricConnector Select(ServiceId serviceId)

@@ -2,6 +2,8 @@
 using System.Net.Http;
 using Dasync.EETypes.Intents;
 using Dasync.Modeling;
+using DasyncAspNetCore;
+using Microsoft.Extensions.Options;
 
 namespace Dasync.AspNetCore.Communication
 {
@@ -12,12 +14,21 @@ namespace Dasync.AspNetCore.Communication
         Uri GetUrl(IServiceDefinition serviceDefinition, ExecuteRoutineIntent intent);
     }
 
-    internal class DefaultServiceHttpConfigurator : IServiceHttpConfigurator
+    public class DefaultServiceHttpConfigurator : IServiceHttpConfigurator
     {
+        private readonly string _apiPath;
+
+        public DefaultServiceHttpConfigurator(IOptionsMonitor<DasyncOptions> optionsMonitor)
+        {
+            var options = optionsMonitor.CurrentValue;
+            _apiPath = options.ApiPath;
+            if (_apiPath == null)
+                _apiPath = DasyncOptions.Defaults.ApiPath;
+        }
+
         public virtual void ConfigureBase(HttpClient httpClient, IServiceDefinition serviceDefinition)
         {
-            httpClient.BaseAddress = new Uri($"http://{serviceDefinition.Name}.api");
-            //httpClient.BaseAddress = new Uri($"http://localhost:54258");
+            httpClient.BaseAddress = new Uri($"http://{serviceDefinition.Name}");
             httpClient.Timeout = TimeSpan.FromMinutes(5);
         }
 
@@ -25,8 +36,7 @@ namespace Dasync.AspNetCore.Communication
         {
             var serviceName = intent.ServiceId.ProxyName ?? intent.ServiceId.ServiceName;
             var methodName = intent.MethodId.MethodName;
-
-            return new Uri($"/api/{serviceName}/{methodName}", UriKind.Relative);
+            return new Uri($"{_apiPath}/{serviceName}/{methodName}", UriKind.Relative);
         }
     }
 }

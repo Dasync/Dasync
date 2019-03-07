@@ -18,7 +18,7 @@ namespace DasyncAspNetCore
             _options = optionsMonitor.CurrentValue;
             _httpRequestHandler = httpRequestHandler;
 
-            if (string.IsNullOrWhiteSpace(_options.ApiPath))
+            if (_options.ApiPath == null)
                 _options.ApiPath = DasyncOptions.Defaults.ApiPath;
         }
 

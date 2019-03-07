@@ -45,6 +45,7 @@ namespace DasyncAspNetCore
 
             services.Remove<IFabricConnectorSelector>();
             services.AddSingleton<IFabricConnectorSelector, HttpFabricConnectorSelector>();
+            services.AddSingleton<DefaultServiceHttpConfigurator>();
 
             return services;
         }
