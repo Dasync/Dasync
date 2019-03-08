@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Dasync.AspNetCore</id>
-    <version>0.1.6-preview</version>
+    <version>0.1.7-preview</version>
     <authors>dasync,sergiis</authors>
     <owners>dasync</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -33,12 +33,6 @@
     
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.ExecutionEngine.dll" target="lib\netcoreapp2.2\Dasync.ExecutionEngine.dll" />
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.ExecutionEngine.pdb" target="lib\netcoreapp2.2\Dasync.ExecutionEngine.pdb" />
-    
-    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Fabric.InMemory.dll" target="lib\netcoreapp2.2\Dasync.Fabric.InMemory.dll" />
-    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Fabric.InMemory.pdb" target="lib\netcoreapp2.2\Dasync.Fabric.InMemory.pdb" />
-    
-    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Fabric.Sample.Base.dll" target="lib\netcoreapp2.2\Dasync.Fabric.Sample.Base.dll" />
-    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Fabric.Sample.Base.pdb" target="lib\netcoreapp2.2\Dasync.Fabric.Sample.Base.pdb" />
     
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Modeling.dll" target="lib\netcoreapp2.2\Dasync.Modeling.dll" />
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Modeling.pdb" target="lib\netcoreapp2.2\Dasync.Modeling.pdb" />
