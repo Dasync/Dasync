@@ -11,7 +11,7 @@ namespace Dasync.AspNetCore.Communication
     {
         void ConfigureBase(HttpClient httpClient, IServiceDefinition serviceDefinition);
 
-        Uri GetUrl(IServiceDefinition serviceDefinition, ExecuteRoutineIntent intent);
+        Uri GetUrl(IServiceDefinition serviceDefinition);
     }
 
     public class DefaultServiceHttpConfigurator : IServiceHttpConfigurator
@@ -32,11 +32,9 @@ namespace Dasync.AspNetCore.Communication
             httpClient.Timeout = TimeSpan.FromMinutes(5);
         }
 
-        public virtual Uri GetUrl(IServiceDefinition serviceDefinition, ExecuteRoutineIntent intent)
+        public virtual Uri GetUrl(IServiceDefinition serviceDefinition)
         {
-            var serviceName = intent.ServiceId.ProxyName ?? intent.ServiceId.ServiceName;
-            var methodName = intent.MethodId.MethodName;
-            return new Uri($"{_apiPath}/{serviceName}/{methodName}", UriKind.Relative);
+            return new Uri($"{_apiPath}/{serviceDefinition.Name}", UriKind.Relative);
         }
     }
 }

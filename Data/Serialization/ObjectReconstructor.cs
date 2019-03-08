@@ -269,7 +269,7 @@ namespace Dasync.Serialization
             for (var i = 0; i < count; i++)
             {
                 var type = container.GetType(i);
-                if (ReferenceEquals(type, uniqueTypeToFind))
+                if (ReferenceEquals(type, uniqueTypeToFind) || (type.IsInterface && type.IsAssignableFrom(uniqueTypeToFind)))
                 {
                     if (foundIndex >= 0)
                         return -1;

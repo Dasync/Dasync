@@ -16,7 +16,9 @@ namespace Dasync.AspNetCore
             [typeof(RoutineCompletionNotifier)] = typeof(RoutineCompletionNotifier),
             [typeof(IRoutineCompletionNotifier)] = typeof(RoutineCompletionNotifier),
             [typeof(IRoutineCompletionSink)] = typeof(RoutineCompletionNotifier),
-            [typeof(IEventSubscriber)] = typeof(EventSubscriber),
+            [typeof(EventDispatcher)] = typeof(EventDispatcher),
+            [typeof(IEventDispatcher)] = typeof(EventDispatcher),
+            [typeof(IEventSubscriber)] = typeof(EventDispatcher),
 
             [typeof(IPlatformHttpClientProvider)] = typeof(PlatformHttpClientProvider),
 

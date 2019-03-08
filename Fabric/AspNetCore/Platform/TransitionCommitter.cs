@@ -15,15 +15,18 @@ namespace Dasync.AspNetCore.Platform
         private readonly ICommunicationModelProvider _communicationModelProvider;
         private readonly IPlatformHttpClientProvider _platformHttpClientProvider;
         private readonly IRoutineCompletionSink _routineCompletionSink;
+        private readonly IEventDispatcher _eventDispatcher;
 
         public TransitionCommitter(
             ICommunicationModelProvider communicationModelProvider,
             IPlatformHttpClientProvider platformHttpClientProvider,
-            IRoutineCompletionSink routineCompletionSink)
+            IRoutineCompletionSink routineCompletionSink,
+            IEventDispatcher eventDispatcher)
         {
             _communicationModelProvider = communicationModelProvider;
             _platformHttpClientProvider = platformHttpClientProvider;
             _routineCompletionSink = routineCompletionSink;
+            _eventDispatcher = eventDispatcher;
         }
 
         public async Task CommitAsync(ScheduledActions actions, ITransitionCarrier transitionCarrier, TransitionCommitOptions options, CancellationToken ct)
@@ -39,6 +42,14 @@ namespace Dasync.AspNetCore.Platform
 
                     if (options.NotifyOnRoutineCompletion && routineInfo.Result != null)
                         _routineCompletionSink.OnRoutineCompleted(intent.Id, routineInfo.Result);
+                }
+            }
+
+            if (actions.RaiseEventIntents?.Count > 0)
+            {
+                foreach (var intent in actions.RaiseEventIntents)
+                {
+                    await _eventDispatcher.PublishEvent(intent);
                 }
             }
         }
