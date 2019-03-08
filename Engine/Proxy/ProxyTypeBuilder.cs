@@ -651,9 +651,6 @@ namespace Dasync.Proxy
         {
             var delegateInvokeMethod = @event.EventHandlerType.GetMethod("Invoke");
 
-            if (delegateInvokeMethod.ReturnType != typeof(void))
-                throw new InvalidOperationException($"The delegate '{@event.EventHandlerType}' must return System.Void in order to generate proxy for event '{@event.Name}' on '{@event.DeclaringType}'.");
-
             var methodBuilder = context.TypeBuilder.DefineMethod(
                 "On" + @event.Name,
                 MethodAttributes.Private,
@@ -738,6 +735,20 @@ namespace Dasync.Proxy
             il.Emit(OpCodes.Ldloca_S, methodParamsVar.LocalIndex);
             // Call RaiseEvent<TParameters>
             il.Emit(OpCodes.Callvirt, RaiseEventProxyMethod.MakeGenericMethod(parameterSetType));
+
+            // Return empty result
+            if (delegateInvokeMethod.ReturnType != typeof(void))
+            {
+                if (delegateInvokeMethod.ReturnType.IsClass)
+                {
+                    il.Emit(OpCodes.Ldnull);
+                }
+                else
+                {
+                    throw new NotImplementedException($"The delegate of event '{@event.Name}' returns value type '{delegateInvokeMethod.ReturnType}'.");
+                }
+            }
+
             // Return
             il.Emit(OpCodes.Ret);
 
