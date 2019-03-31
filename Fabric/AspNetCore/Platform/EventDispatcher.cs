@@ -8,7 +8,6 @@ using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Platform;
 using Dasync.Modeling;
-using Dasync.ValueContainer;
 
 namespace Dasync.AspNetCore.Platform
 {
@@ -146,34 +145,14 @@ namespace Dasync.AspNetCore.Platform
                 try
                 {
                     await client.PublishEvent(intent, subscriberServiceDefinition);
+                    return;
                 }
                 catch
                 {
+                    await Task.Delay(TimeSpan.FromMinutes(2));
+                    continue;
                 }
-
-                await Task.Delay(TimeSpan.FromMinutes(2));
             }
         }
-    }
-
-    internal class UnknownExternalServiceDefinition : PropertyBag, IServiceDefinition
-    {
-        public UnknownExternalServiceDefinition(string name) : this(name, null) { }
-
-        public UnknownExternalServiceDefinition(string name, ICommunicationModel model)
-        {
-            Name = name;
-            Model = model;
-        }
-
-        public ICommunicationModel Model { get; }
-
-        public string Name { get; }
-
-        public ServiceType Type => ServiceType.External;
-
-        public Type[] Interfaces => null;
-
-        public Type Implementation => null;
     }
 }
