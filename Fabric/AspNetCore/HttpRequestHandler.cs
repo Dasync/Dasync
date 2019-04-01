@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.AspNetCore.Communication;
+using Dasync.AspNetCore.Errors;
 using Dasync.AspNetCore.Platform;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
@@ -20,6 +21,7 @@ using Dasync.Serialization;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace DasyncAspNetCore
 {
@@ -33,7 +35,16 @@ namespace DasyncAspNetCore
         private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
         {
             MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
-            NullValueHandling = NullValueHandling.Ignore
+            NullValueHandling = NullValueHandling.Ignore,
+            ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy
+                {
+                    OverrideSpecifiedNames = true,
+                    ProcessDictionaryKeys = true,
+                    ProcessExtensionDataNames = true
+                }
+            }
         };
 
         private readonly ICommunicationModelProvider _communicationModelProvider;
@@ -237,6 +248,8 @@ namespace DasyncAspNetCore
                 }
             }
 
+            var externalIntentId = context.Request.Headers.TryGetValue(DasyncHttpHeaders.RequestId, out var requestIdValues) && requestIdValues.Count > 0 ? requestIdValues[0] : null;
+
             var rfc7240Preferences = GetPreferences(context.Request.Headers);
 
             var isHttpRequestBlockingExecution = !(rfc7240Preferences.RespondAsync == true);
@@ -283,7 +296,11 @@ namespace DasyncAspNetCore
                     else
                     {
                         context.Response.ContentType = "application/json";
-                        await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taskResult.Exception, JsonSettings)));
+                        var errorEnvelope = new ErrorEnvelope
+                        {
+                            Error = ExceptionToErrorConverter.Convert(taskResult.Exception)
+                        };
+                        await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(errorEnvelope, JsonSettings)));
                     }
 
                     return;
