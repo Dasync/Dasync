@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Platform;
 
@@ -8,14 +8,14 @@ namespace Dasync.AspNetCore.Platform
 {
     public interface IRoutineCompletionSink
     {
-        void OnRoutineCompleted(long intentId, TaskResult routineResult);
+        void OnRoutineCompleted(string intentId, TaskResult routineResult);
     }
 
     public class RoutineCompletionNotifier : IRoutineCompletionNotifier, IRoutineCompletionSink
     {
-        private Dictionary<long, TaskCompletionSource<TaskResult>> _sinks = new Dictionary<long, TaskCompletionSource<TaskResult>>();
+        private Dictionary<string, TaskCompletionSource<TaskResult>> _sinks = new Dictionary<string, TaskCompletionSource<TaskResult>>();
 
-        public void NotifyCompletion(long intentId, TaskCompletionSource<TaskResult> completionSink)
+        public void NotifyCompletion(ServiceId serviceId, RoutineMethodId methodId, string intentId, TaskCompletionSource<TaskResult> completionSink)
         {
             lock (_sinks)
             {
@@ -24,7 +24,7 @@ namespace Dasync.AspNetCore.Platform
             }
         }
 
-        public void OnRoutineCompleted(long intentId, TaskResult routineResult)
+        public void OnRoutineCompleted(string intentId, TaskResult routineResult)
         {
             TaskCompletionSource<TaskResult> sink;
             lock (_sinks)

@@ -7,6 +7,6 @@ namespace Dasync.EETypes.Cancellation
     {
         CancellationTokenSourceState Register(CancellationTokenSource source);
 
-        bool TryGet(long id, out CancellationTokenSource source);
+        bool TryGet(string id, out CancellationTokenSource source);
     }
 }

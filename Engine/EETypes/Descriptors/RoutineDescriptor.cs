@@ -6,7 +6,7 @@
         /// An ID of the intent that triggered execution of this routine.
         /// Used for correlation purposes.
         /// </summary>
-        public long IntentId;
+        public string IntentId;
 
         public RoutineMethodId MethodId;
 

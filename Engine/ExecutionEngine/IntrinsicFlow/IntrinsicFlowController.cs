@@ -44,13 +44,13 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
     {
         private readonly ITaskContinuationClassifier _taskContinuationClassifier;
         private readonly IAsyncStateMachineMetadataProvider _asyncStateMachineMetadataProvider;
-        private readonly INumericIdGenerator _numericIdGenerator;
+        private readonly IUniqueIdGenerator _numericIdGenerator;
         private readonly IRoutineMethodIdProvider _routineMethodIdProvider;
 
         public IntrinsicFlowController(
             ITaskContinuationClassifier taskContinuationClassifier,
             IAsyncStateMachineMetadataProvider asyncStateMachineMetadataProvider,
-            INumericIdGenerator numericIdGenerator,
+            IUniqueIdGenerator numericIdGenerator,
             IRoutineMethodIdProvider routineMethodIdProvider)
         {
             _taskContinuationClassifier = taskContinuationClassifier;

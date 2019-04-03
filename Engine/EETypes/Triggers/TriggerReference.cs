@@ -5,9 +5,9 @@
     /// </summary>
     public class TriggerReference : IProxyTaskState
     {
-        public long Id;
+        public string Id;
 
-        long IProxyTaskState.CorellationId => Id;
+        string IProxyTaskState.CorellationId => Id;
 
 #warning Needs routing info in case a trigger (TaskCompletionSource) is used in a different service
 

@@ -9,12 +9,12 @@ namespace Dasync.ExecutionEngine.Cancellation
 {
     public class CancellationTokenSourceRegistry : ICancellationTokenSourceRegistry
     {
-        private readonly Dictionary<long, WeakReference<CancellationTokenSource>> _cache =
-            new Dictionary<long, WeakReference<CancellationTokenSource>>();
+        private readonly Dictionary<string, WeakReference<CancellationTokenSource>> _cache =
+            new Dictionary<string, WeakReference<CancellationTokenSource>>();
 
-        private readonly INumericIdGenerator _idGenerator;
+        private readonly IUniqueIdGenerator _idGenerator;
 
-        public CancellationTokenSourceRegistry(INumericIdGenerator idGenerator)
+        public CancellationTokenSourceRegistry(IUniqueIdGenerator idGenerator)
         {
             _idGenerator = idGenerator;
         }
@@ -39,7 +39,7 @@ namespace Dasync.ExecutionEngine.Cancellation
             return state;
         }
 
-        public bool TryGet(long id, out CancellationTokenSource source)
+        public bool TryGet(string id, out CancellationTokenSource source)
         {
             WeakReference<CancellationTokenSource> reference;
             lock (_cache)
@@ -52,7 +52,7 @@ namespace Dasync.ExecutionEngine.Cancellation
             return false;
         }
 
-        public bool TryAdd(long id, CancellationTokenSource source)
+        public bool TryAdd(string id, CancellationTokenSource source)
         {
             lock (_cache)
             {

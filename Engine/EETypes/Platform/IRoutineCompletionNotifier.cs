@@ -5,6 +5,6 @@ namespace Dasync.EETypes.Platform
 {
     public interface IRoutineCompletionNotifier
     {
-        void NotifyCompletion(long intentId, TaskCompletionSource<TaskResult> completionSink);
+        void NotifyCompletion(ServiceId serviceId, RoutineMethodId methodId, string intentId, TaskCompletionSource<TaskResult> completionSink);
     }
 }

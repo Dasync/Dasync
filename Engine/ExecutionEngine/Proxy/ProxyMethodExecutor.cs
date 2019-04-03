@@ -20,7 +20,7 @@ namespace Dasync.ExecutionEngine.Proxy
         private readonly ITransitionScope _transitionScope;
         private readonly IRoutineMethodIdProvider _routineMethodIdProvider;
         private readonly IEventIdProvider _eventIdProvider;
-        private readonly INumericIdGenerator _numericIdGenerator;
+        private readonly IUniqueIdGenerator _numericIdGenerator;
         private readonly ITransitionCommitter _transitionCommitter;
         private readonly IRoutineCompletionNotifier _routineCompletionNotifier;
         private readonly IEventSubscriber _eventSubscriber;
@@ -29,7 +29,7 @@ namespace Dasync.ExecutionEngine.Proxy
             ITransitionScope transitionScope,
             IRoutineMethodIdProvider routineMethodIdProvider,
             IEventIdProvider eventIdProvider,
-            INumericIdGenerator numericIdGenerator,
+            IUniqueIdGenerator numericIdGenerator,
             ITransitionCommitter transitionCommitter,
             IRoutineCompletionNotifier routineCompletionNotifier,
             IEventSubscriber eventSubscriber)
@@ -92,7 +92,7 @@ namespace Dasync.ExecutionEngine.Proxy
             // Do it before commit as a routine may complete immediately.
 
             var tcs = new TaskCompletionSource<TaskResult>();
-            _routineCompletionNotifier.NotifyCompletion(intent.Id, tcs);
+            _routineCompletionNotifier.NotifyCompletion(intent.ServiceId, intent.MethodId, intent.Id, tcs);
 
             // Commit intent
 

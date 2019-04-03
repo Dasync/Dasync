@@ -32,7 +32,7 @@ namespace Dasync.ExecutionEngine.Transitions
         private readonly IMethodInvokerFactory _methodInvokerFactory;
         //private readonly IServiceStateValueContainerProvider _serviceStateValueContainerProvider;
         private readonly IntrinsicRoutines _intrinsicRoutines;
-        private readonly INumericIdGenerator _idGenerator;
+        private readonly IUniqueIdGenerator _idGenerator;
         private readonly ITaskCompletionSourceRegistry _taskCompletionSourceRegistry;
 
         public TransitionRunner(
@@ -44,7 +44,7 @@ namespace Dasync.ExecutionEngine.Transitions
             IMethodInvokerFactory methodInvokerFactory,
             //IServiceStateValueContainerProvider serviceStateValueContainerProvider,
             IntrinsicRoutines intrinsicRoutines,
-            INumericIdGenerator idGenerator,
+            IUniqueIdGenerator idGenerator,
             ITaskCompletionSourceRegistry taskCompletionSourceRegistry)
         {
             _transitionScope = transitionScope;

@@ -4,7 +4,7 @@ namespace Dasync.EETypes.Intents
 {
     public class SubscribeToTriggerIntent
     {
-        public long TriggerId;
+        public string TriggerId;
 
         public ContinuationDescriptor Continuation;
     }

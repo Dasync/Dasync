@@ -33,7 +33,7 @@ namespace Dasync.ExecutionEngine
             [typeof(ITransitionMonitorFactory)] = typeof(TransitionMonitorFactory),
             [typeof(ITransitionRunner)] = typeof(TransitionRunner),
             [typeof(ITransitionScope)] = typeof(TransitionScope),
-            [typeof(INumericIdGenerator)] = typeof(NumericIdGenerator),
+            [typeof(IUniqueIdGenerator)] = typeof(UniqueIdGenerator),
             [typeof(IRoutineMethodResolver)] = typeof(RoutineMethodResolver),
             [typeof(IServiceStateMetadataProvider)] = typeof(ServiceStateMetadataProvider),
             [typeof(IServiceStateValueContainerProvider)] = typeof(ServiceStateValueContainerProvider),
