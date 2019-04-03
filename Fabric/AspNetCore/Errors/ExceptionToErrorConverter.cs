@@ -18,6 +18,9 @@ namespace Dasync.AspNetCore.Errors
                 ExtendedProperties = ex.Data.Count > 0 ? ex.Data : null
             };
 
+            if (error.Type.EndsWith("Exception"))
+                error.Type = error.Type.Substring(0, error.Type.Length - 9);
+
             if (ex is AggregateException aggregateException && aggregateException.InnerExceptions?.Count > 0)
             {
                 error.Errors = new List<Error>(aggregateException.InnerExceptions.Select(innerEx => Convert(innerEx)));
