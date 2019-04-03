@@ -124,12 +124,12 @@ namespace Dasync.AspNetCore.Platform
                 try
                 {
                     await client.SubscribeToEvent(eventDesc, subscriber, publisherServiceDefinition);
+                    await Task.Delay(TimeSpan.FromMinutes(2));
                 }
                 catch
                 {
+                    await Task.Delay(TimeSpan.FromSeconds(5));
                 }
-
-                await Task.Delay(TimeSpan.FromMinutes(2));
             }
         }
 
@@ -149,7 +149,7 @@ namespace Dasync.AspNetCore.Platform
                 }
                 catch
                 {
-                    await Task.Delay(TimeSpan.FromMinutes(2));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
                     continue;
                 }
             }
