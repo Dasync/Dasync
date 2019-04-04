@@ -7,5 +7,7 @@
         /// The listener must use <see cref="IRoutineCompletionNotifier.NotifyCompletion"/>.
         /// </summary>
         public bool NotifyOnRoutineCompletion;
+
+        public string CorrelationId;
     }
 }

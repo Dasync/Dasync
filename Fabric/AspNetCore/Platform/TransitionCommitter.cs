@@ -4,9 +4,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dasync.AspNetCore.Communication;
 using Dasync.EETypes;
+using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
+using Dasync.EETypes.Ioc;
 using Dasync.EETypes.Platform;
+using Dasync.ExecutionEngine;
+using Dasync.ExecutionEngine.Extensions;
 using Dasync.Modeling;
+using Dasync.Proxy;
 
 namespace Dasync.AspNetCore.Platform
 {
@@ -16,17 +21,26 @@ namespace Dasync.AspNetCore.Platform
         private readonly IPlatformHttpClientProvider _platformHttpClientProvider;
         private readonly IRoutineCompletionSink _routineCompletionSink;
         private readonly IEventDispatcher _eventDispatcher;
+        private readonly IRoutineMethodResolver _routineMethodResolver;
+        private readonly IDomainServiceProvider _domainServiceProvider;
+        private readonly IMethodInvokerFactory _methodInvokerFactory;
 
         public TransitionCommitter(
             ICommunicationModelProvider communicationModelProvider,
             IPlatformHttpClientProvider platformHttpClientProvider,
             IRoutineCompletionSink routineCompletionSink,
-            IEventDispatcher eventDispatcher)
+            IEventDispatcher eventDispatcher,
+            IRoutineMethodResolver routineMethodResolver,
+            IDomainServiceProvider domainServiceProvider,
+            IMethodInvokerFactory methodInvokerFactory)
         {
             _communicationModelProvider = communicationModelProvider;
             _platformHttpClientProvider = platformHttpClientProvider;
             _routineCompletionSink = routineCompletionSink;
             _eventDispatcher = eventDispatcher;
+            _routineMethodResolver = routineMethodResolver;
+            _domainServiceProvider = domainServiceProvider;
+            _methodInvokerFactory = methodInvokerFactory;
         }
 
         public async Task CommitAsync(ScheduledActions actions, ITransitionCarrier transitionCarrier, TransitionCommitOptions options, CancellationToken ct)
@@ -36,12 +50,20 @@ namespace Dasync.AspNetCore.Platform
                 foreach (var intent in actions.ExecuteRoutineIntents)
                 {
                     var serviceDefinition = GetServiceDefinition(intent.ServiceId);
-                    var platformHttpClient = _platformHttpClientProvider.GetClient(serviceDefinition);
 
-                    var routineInfo = await platformHttpClient.ScheduleRoutineAsync(intent, ct);
-
-                    if (options.NotifyOnRoutineCompletion && routineInfo.Result != null)
-                        _routineCompletionSink.OnRoutineCompleted(intent.Id, routineInfo.Result);
+                    if (serviceDefinition.Type == ServiceType.Local)
+                    {
+#pragma warning disable CS4014
+                        Task.Run(() => RunRoutineInBackground(serviceDefinition, intent));
+#pragma warning restore CS4014
+                    }
+                    else
+                    {
+                        var platformHttpClient = _platformHttpClientProvider.GetClient(serviceDefinition);
+                        var routineInfo = await platformHttpClient.ScheduleRoutineAsync(intent, ct);
+                        if (routineInfo.Result != null)
+                            _routineCompletionSink.OnRoutineCompleted(intent.Id, routineInfo.Result);
+                    }
                 }
             }
 
@@ -51,6 +73,36 @@ namespace Dasync.AspNetCore.Platform
                 {
                     await _eventDispatcher.PublishEvent(intent);
                 }
+            }
+        }
+
+        private async void RunRoutineInBackground(IServiceDefinition serviceDefinition, ExecuteRoutineIntent intent)
+        {
+            try
+            {
+                var serviceInstance = _domainServiceProvider.GetService(serviceDefinition.Implementation);
+                var routineMethod = _routineMethodResolver.Resolve(serviceDefinition.Implementation, intent.MethodId);
+                var methodInvoker = _methodInvokerFactory.Create(routineMethod);
+
+                Task task;
+                try
+                {
+                    task = methodInvoker.Invoke(serviceInstance, intent.Parameters);
+                    if (routineMethod.ReturnType != typeof(void))
+                    {
+                        try { await task; } catch { }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    task = Task.FromException(ex);
+                }
+                var taskResult = task?.ToTaskResult() ?? new TaskResult();
+
+                _routineCompletionSink.OnRoutineCompleted(intent.Id, taskResult);
+            }
+            catch
+            {
             }
         }
 

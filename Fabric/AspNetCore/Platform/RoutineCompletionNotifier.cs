@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
@@ -13,27 +15,66 @@ namespace Dasync.AspNetCore.Platform
 
     public class RoutineCompletionNotifier : IRoutineCompletionNotifier, IRoutineCompletionSink
     {
-        private Dictionary<string, TaskCompletionSource<TaskResult>> _sinks = new Dictionary<string, TaskCompletionSource<TaskResult>>();
+        private Dictionary<string, List<TaskCompletionSource<TaskResult>>> _sinks = new Dictionary<string, List<TaskCompletionSource<TaskResult>>>();
+        private Dictionary<string, TaskResult> _recentResults = new Dictionary<string, TaskResult>();
+        private const int MaxRecentResults = 100;
 
-        public void NotifyCompletion(ServiceId serviceId, RoutineMethodId methodId, string intentId, TaskCompletionSource<TaskResult> completionSink)
+        public void NotifyCompletion(ServiceId serviceId, RoutineMethodId methodId, string intentId, TaskCompletionSource<TaskResult> completionSink, CancellationToken ct)
         {
+            var taskResult = PollResultAsync(serviceId, methodId, intentId).Result;
+            if (taskResult != null)
+            {
+                completionSink.SetResult(taskResult);
+                return;
+            }
+
             lock (_sinks)
             {
-#warning Multiple sinks per intent?
-                _sinks.Add(intentId, completionSink);
+                if (!_sinks.TryGetValue(intentId, out var set))
+                    _sinks.Add(intentId, set = new List<TaskCompletionSource<TaskResult>>());
+                set.Add(completionSink);
+            }
+        }
+
+        private Task<TaskResult> PollResultAsync(ServiceId serviceId, RoutineMethodId methodId, string intentId)
+        {
+            lock (_recentResults)
+            {
+                _recentResults.TryGetValue(intentId, out var taskResult);
+                TrimStaleResults();
+                return Task.FromResult(taskResult);
             }
         }
 
         public void OnRoutineCompleted(string intentId, TaskResult routineResult)
         {
-            TaskCompletionSource<TaskResult> sink;
+            lock (_recentResults)
+            {
+                TrimStaleResults();
+                _recentResults[intentId] = routineResult;
+            }
+
+            List<TaskCompletionSource<TaskResult>> set;
             lock (_sinks)
             {
-                if (_sinks.TryGetValue(intentId, out sink))
+                if (_sinks.TryGetValue(intentId, out set))
                     _sinks.Remove(intentId);
             }
-            if (sink != null)
-                sink.SetResult(routineResult);
+            if (set != null)
+            {
+                foreach (var sink in set)
+                    sink.SetResult(routineResult);
+            }
+        }
+
+        private void TrimStaleResults()
+        {
+            if (_recentResults.Count > MaxRecentResults)
+            {
+                var keys = _recentResults.Keys.Take(_recentResults.Count - MaxRecentResults).ToList();
+                foreach (var key in keys)
+                    _recentResults.Remove(key);
+            }
         }
     }
 }

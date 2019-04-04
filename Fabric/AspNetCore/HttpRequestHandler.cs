@@ -11,7 +11,9 @@ using Dasync.AspNetCore.Errors;
 using Dasync.AspNetCore.Platform;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
+using Dasync.EETypes.Intents;
 using Dasync.EETypes.Ioc;
+using Dasync.EETypes.Platform;
 using Dasync.ExecutionEngine;
 using Dasync.ExecutionEngine.Extensions;
 using Dasync.Json;
@@ -22,6 +24,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using Dasync.AspNetCore;
 
 namespace DasyncAspNetCore
 {
@@ -53,6 +56,11 @@ namespace DasyncAspNetCore
         private readonly IMethodInvokerFactory _methodInvokerFactory;
         private readonly ISerializer _dasyncJsonSerializer;
         private readonly IEventDispatcher _eventDispatcher;
+        private readonly IUniqueIdGenerator _idGenerator;
+        private readonly ITransitionCommitter _transitionCommitter;
+        private readonly IRoutineCompletionNotifier _routineCompletionNotifier;
+
+        private TimeSpan MaxLongPollTime = TimeSpan.FromMinutes(2);
 
         public HttpRequestHandler(
             ICommunicationModelProvider communicationModelProvider,
@@ -60,13 +68,19 @@ namespace DasyncAspNetCore
             IRoutineMethodResolver routineMethodResolver,
             IMethodInvokerFactory methodInvokerFactory,
             ISerializerFactorySelector serializerFactorySelector,
-            IEventDispatcher eventDispatcher)
+            IEnumerable<IEventDispatcher> eventDispatchers,
+            IUniqueIdGenerator idGenerator,
+            ITransitionCommitter transitionCommitter,
+            IRoutineCompletionNotifier routineCompletionNotifier)
         {
             _communicationModelProvider = communicationModelProvider;
             _domainServiceProvider = domainServiceProvider;
             _routineMethodResolver = routineMethodResolver;
             _methodInvokerFactory = methodInvokerFactory;
-            _eventDispatcher = eventDispatcher;
+            _eventDispatcher = eventDispatchers.FirstOrDefault();
+            _idGenerator = idGenerator;
+            _transitionCommitter = transitionCommitter;
+            _routineCompletionNotifier = routineCompletionNotifier;
 
             _dasyncJsonSerializer = serializerFactorySelector.Select("dasync+json").Create();
         }
@@ -111,7 +125,7 @@ namespace DasyncAspNetCore
                 return;
             }
 
-            if (pathSegments.Length == 1 && context.Request.Query.ContainsKey("react"))
+            if (_eventDispatcher != null && pathSegments.Length == 1 && context.Request.Query.ContainsKey("react"))
             {
                 await HandleEventReactionAsync(serviceDefinition, context, ct);
                 return;
@@ -125,17 +139,26 @@ namespace DasyncAspNetCore
                 return;
             }
 
-            if (pathSegments.Length > 2)
+            if (_eventDispatcher != null && context.Request.Query.ContainsKey("subscribe"))
+            {
+                await HandleEventSubsciptionAsync(serviceDefinition, pathSegments[1], context, ct);
+                return;
+            }
+
+            var methodName = pathSegments[1];
+
+            if (pathSegments.Length == 3)
+            {
+                var intentId = pathSegments[2];
+                await HandleResultPoll(context, serviceName, methodName, intentId);
+                return;
+            }
+
+            if (pathSegments.Length > 3)
             {
                 context.Response.StatusCode = 404;
                 context.Response.ContentType = "text/plain";
                 await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes("The request URL contains extra segments"));
-                return;
-            }
-
-            if (context.Request.Query.ContainsKey("subscribe"))
-            {
-                await HandleEventSubsciptionAsync(serviceDefinition, pathSegments[1], context, ct);
                 return;
             }
 
@@ -160,8 +183,6 @@ namespace DasyncAspNetCore
                 await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes("The service method invocation must use one of these HTTP verbs: GET, POST, PUT"));
                 return;
             }
-
-            var methodName = pathSegments[1];
 
             var routineMethodId = new RoutineMethodId
             {
@@ -194,6 +215,7 @@ namespace DasyncAspNetCore
             }
 
             string parametersJson = null;
+            ContinuationDescriptor continuationDescriptor = null;
 
             if (isQueryRequest)
             {
@@ -231,6 +253,7 @@ namespace DasyncAspNetCore
                 var inputJson = await new StreamReader(context.Request.Body).ReadToEndAsync();
                 var envelope = JsonConvert.DeserializeObject<CommandEnvelope>(inputJson, JsonSettings);
                 parametersJson = envelope.Parameters;
+                continuationDescriptor = envelope.Continuation;
             }
 
             var methodInvoker = _methodInvokerFactory.Create(routineMethod);
@@ -254,7 +277,7 @@ namespace DasyncAspNetCore
 
             var isHttpRequestBlockingExecution = !(rfc7240Preferences.RespondAsync == true);
 
-            if (isHttpRequestBlockingExecution)
+            if (isQueryMethod)
             {
                 var serviceInstance = _domainServiceProvider.GetService(serviceDefinition.Implementation);
                 Task task;
@@ -272,64 +295,154 @@ namespace DasyncAspNetCore
                 }
                 var taskResult = task?.ToTaskResult() ?? new TaskResult();
 
-                if (taskResult.IsCanceled)
-                {
-                    context.Response.StatusCode = DasyncHttpCodes.Canceled;
-
-                    if (isDasyncJsonRequest)
-                    {
-                        context.Response.ContentType = "application/dasync+json";
-                        _dasyncJsonSerializer.Serialize(context.Response.Body, taskResult);
-                    }
-
-                    return;
-                }
-                else if (taskResult.IsFaulted)
-                {
-                    context.Response.StatusCode = DasyncHttpCodes.Faulted;
-
-                    if (isDasyncJsonRequest)
-                    {
-                        context.Response.ContentType = "application/dasync+json";
-                        _dasyncJsonSerializer.Serialize(context.Response.Body, taskResult);
-                    }
-                    else
-                    {
-                        context.Response.ContentType = "application/json";
-                        var errorEnvelope = new ErrorEnvelope
-                        {
-                            Error = ExceptionToErrorConverter.Convert(taskResult.Exception)
-                        };
-                        await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(errorEnvelope, JsonSettings)));
-                    }
-
-                    return;
-                }
-                else
-                {
-                    context.Response.StatusCode = DasyncHttpCodes.Succeeded;
-
-                    if (isDasyncJsonRequest)
-                    {
-                        context.Response.ContentType = "application/dasync+json";
-                        _dasyncJsonSerializer.Serialize(context.Response.Body, taskResult);
-                    }
-                    else
-                    {
-                        context.Response.ContentType = "application/json";
-                        await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taskResult.Value, JsonSettings)));
-                    }
-
-                    return;
-                }
+                await RespondWithRoutineResult(context, taskResult, isDasyncJsonRequest);
             }
             else
             {
-                context.Response.StatusCode = 202;
+                var intent = new ExecuteRoutineIntent
+                {
+                    Id = _idGenerator.NewId(),
+                    ServiceId = new ServiceId { ServiceName = serviceDefinition.Name },
+                    MethodId = routineMethodId,
+                    Parameters = parameterContainer,
+                    Continuation = continuationDescriptor
+                };
 
-                var location = basePath.ToString() + "/_routine?id=123";
+                var actions = new ScheduledActions
+                {
+                    ExecuteRoutineIntents = new List<ExecuteRoutineIntent> { intent }
+                };
+
+                var options = new TransitionCommitOptions
+                {
+                    NotifyOnRoutineCompletion = isHttpRequestBlockingExecution,
+                    CorrelationId = externalIntentId
+                };
+
+                await _transitionCommitter.CommitAsync(actions, null, options, default);
+
+                var waitTime = rfc7240Preferences.Wait;
+                if (isHttpRequestBlockingExecution || waitTime > MaxLongPollTime)
+                    waitTime = MaxLongPollTime;
+
+                if (waitTime > TimeSpan.Zero)
+                {
+                    var cts = new CancellationTokenSource();
+                    var completionSink = new TaskCompletionSource<TaskResult>();
+                    _routineCompletionNotifier.NotifyCompletion(intent.ServiceId, intent.MethodId, intent.Id, completionSink, cts.Token);
+                    try
+                    {
+                        var taskResult = await completionSink.Task.WithTimeout(waitTime);
+                        await RespondWithRoutineResult(context, taskResult, isDasyncJsonRequest);
+                        return;
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        cts.Cancel();
+                    }
+                }
+
+                var location = context.Request.Path.ToString() + "/" + intent.Id;
                 context.Response.Headers.Add("Location", location);
-                context.Response.Headers.Add("ETag", "43627480");
+                context.Response.StatusCode = DasyncHttpCodes.Scheduled;
+                return;
+            }
+        }
+
+        private async Task HandleResultPoll(HttpContext context, string serviceName, string methodName, string intentId)
+        {
+            var rfc7240Preferences = GetPreferences(context.Request.Headers);
+
+            var serviceId = new ServiceId
+            {
+                ServiceName = serviceName
+            };
+
+            var methodId = new RoutineMethodId
+            {
+                MethodName = methodName
+            };
+
+            TaskResult taskResult = null;
+
+            var cts = new CancellationTokenSource();
+            var completionSink = new TaskCompletionSource<TaskResult>();
+            _routineCompletionNotifier.NotifyCompletion(serviceId, methodId, intentId, completionSink, cts.Token);
+            try
+            {
+                var waitTime = rfc7240Preferences.Wait;
+                if (waitTime > MaxLongPollTime)
+                    waitTime = MaxLongPollTime;
+                taskResult = await completionSink.Task.WithTimeout(waitTime);
+            }
+            catch (TaskCanceledException)
+            {
+                cts.Cancel();
+            }
+
+            if (taskResult == null)
+            {
+                context.Response.Headers.Add("Date", DateTimeOffset.Now.ToString("u"));
+                context.Response.StatusCode = 304; // Not Modified
+            }
+            else
+            {
+                var isDasyncJsonRequest = string.Equals(context.Request.ContentType, "application/dasync+json", StringComparison.OrdinalIgnoreCase);
+                await RespondWithRoutineResult(context, taskResult, isDasyncJsonRequest);
+            }
+        }
+
+        private async Task RespondWithRoutineResult(HttpContext context, TaskResult taskResult, bool isDasyncJsonRequest)
+        {
+            if (taskResult.IsCanceled)
+            {
+                context.Response.StatusCode = DasyncHttpCodes.Canceled;
+
+                if (isDasyncJsonRequest)
+                {
+                    context.Response.ContentType = "application/dasync+json";
+                    _dasyncJsonSerializer.Serialize(context.Response.Body, taskResult);
+                }
+
+                return;
+            }
+            else if (taskResult.IsFaulted)
+            {
+                context.Response.StatusCode = DasyncHttpCodes.Faulted;
+
+                if (isDasyncJsonRequest)
+                {
+                    context.Response.ContentType = "application/dasync+json";
+                    _dasyncJsonSerializer.Serialize(context.Response.Body, taskResult);
+                }
+                else
+                {
+                    context.Response.ContentType = "application/json";
+                    var errorEnvelope = new ErrorEnvelope
+                    {
+                        Error = ExceptionToErrorConverter.Convert(taskResult.Exception)
+                    };
+                    await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(errorEnvelope, JsonSettings)));
+                }
+
+                return;
+            }
+            else
+            {
+                context.Response.StatusCode = DasyncHttpCodes.Succeeded;
+
+                if (isDasyncJsonRequest)
+                {
+                    context.Response.ContentType = "application/dasync+json";
+                    _dasyncJsonSerializer.Serialize(context.Response.Body, taskResult);
+                }
+                else
+                {
+                    context.Response.ContentType = "application/json";
+                    await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taskResult.Value, JsonSettings)));
+                }
+
+                return;
             }
         }
 

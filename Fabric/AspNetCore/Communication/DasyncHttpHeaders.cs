@@ -17,5 +17,8 @@
         public static readonly string ReplyPartitionKey = "X-Reply-Partition-Key";
         public static readonly string ReplySequenceKey = "X-Reply-Sequence-Key";
         public static readonly string ReplyApiVersion = "X-Reply-Api-Version";
+
+        public static readonly string RequestId = "X-Request-ID";
+        public static readonly string CorrelationId = "X-Correlation-ID";
     }
 }

@@ -1,17 +1,10 @@
-﻿using System;
-using Dasync.AspNetCore.Communication;
-using Dasync.AspNetCore.Platform;
-using Dasync.EETypes;
-using Dasync.EETypes.Ioc;
-using Dasync.EETypes.Platform;
+﻿using Dasync.EETypes;
 using Dasync.EETypes.Proxy;
 using Dasync.Modeling;
-using Microsoft.AspNetCore.Builder;
-//using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using IStartupFilter = Microsoft.AspNetCore.Hosting.IStartupFilter;
 
 namespace DasyncAspNetCore
 {
@@ -23,8 +16,7 @@ namespace DasyncAspNetCore
             services.AddTransient<DasyncMiddleware>();
             services.AddSingleton<IHttpRequestHandler, HttpRequestHandler>();
             services.AddSingleton<IHostedService, DasyncCoHost>();
-
-            services.AddSingleton<IStartupFilter, TestStartupFilter>();
+            services.AddSingleton<IStartupFilter, DasyncStartupFilter>();
 
             services.AddModules(
                 Dasync.Modeling.DI.Bindings,
@@ -39,7 +31,21 @@ namespace DasyncAspNetCore
                 Dasync.Bootstrap.DI.Bindings);
 
             services.AddModules(Dasync.AspNetCore.DI.Bindings);
+            services.AddModules(Dasync.AspNetCore.Platform.DI.Bindings);
 
+            return services;
+        }
+
+        public static IServiceCollection AddDasyncWithSimpleHttpPlatform(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddDasync(configuration);
+            services.AddModules(Dasync.AspNetCore.Platform.DI.Bindings);
+            return services;
+        }
+
+        public static IServiceCollection AddDasyncSimpleHttpPlatform(this IServiceCollection services)
+        {
+            services.AddModules(Dasync.AspNetCore.Platform.DI.Bindings);
             return services;
         }
 
@@ -76,28 +82,6 @@ namespace DasyncAspNetCore
             }
 
             return services;
-        }
-    }
-
-    public class TestStartupFilter : IStartupFilter
-    {
-        private readonly IApplicationLifetime _appLifetime;
-
-        public TestStartupFilter(IApplicationLifetime appLifetime)
-        {
-            _appLifetime = appLifetime;
-
-            appLifetime.ApplicationStarted.Register(OnAppStarted, useSynchronizationContext: false);
-        }
-
-        private void OnAppStarted()
-        {
-            return;
-        }
-
-        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
-        {
-            return next;
         }
     }
 }
