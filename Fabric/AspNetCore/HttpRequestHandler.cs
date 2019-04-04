@@ -271,7 +271,8 @@ namespace DasyncAspNetCore
                 }
             }
 
-            var externalIntentId = context.Request.Headers.TryGetValue(DasyncHttpHeaders.RequestId, out var requestIdValues) && requestIdValues.Count > 0 ? requestIdValues[0] : null;
+            var externalRequestId = context.Request.Headers.TryGetValue(DasyncHttpHeaders.RequestId, out var requestIdValues) && requestIdValues.Count > 0 ? requestIdValues[0] : null;
+            var externalCorrelationId = context.Request.Headers.TryGetValue(DasyncHttpHeaders.CorrelationId, out var correlationIdValues) && correlationIdValues.Count > 0 ? correlationIdValues[0] : null;
 
             var rfc7240Preferences = GetPreferences(context.Request.Headers);
 
@@ -316,7 +317,8 @@ namespace DasyncAspNetCore
                 var options = new TransitionCommitOptions
                 {
                     NotifyOnRoutineCompletion = isHttpRequestBlockingExecution,
-                    CorrelationId = externalIntentId
+                    RequestId = externalRequestId,
+                    CorrelationId = externalCorrelationId ?? externalRequestId
                 };
 
                 await _transitionCommitter.CommitAsync(actions, null, options, default);

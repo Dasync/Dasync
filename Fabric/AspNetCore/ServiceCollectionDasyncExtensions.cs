@@ -31,7 +31,6 @@ namespace DasyncAspNetCore
                 Dasync.Bootstrap.DI.Bindings);
 
             services.AddModules(Dasync.AspNetCore.DI.Bindings);
-            services.AddModules(Dasync.AspNetCore.Platform.DI.Bindings);
 
             return services;
         }
@@ -39,7 +38,7 @@ namespace DasyncAspNetCore
         public static IServiceCollection AddDasyncWithSimpleHttpPlatform(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDasync(configuration);
-            services.AddModules(Dasync.AspNetCore.Platform.DI.Bindings);
+            services.AddDasyncSimpleHttpPlatform();
             return services;
         }
 

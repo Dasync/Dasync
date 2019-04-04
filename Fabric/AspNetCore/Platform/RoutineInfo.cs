@@ -4,7 +4,7 @@ namespace Dasync.AspNetCore.Platform
 {
     public struct RoutineInfo
     {
-        public long RoutineId;
+        public string RoutineId;
         public TaskResult Result;
     }
 }

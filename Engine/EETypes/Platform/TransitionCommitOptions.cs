@@ -8,6 +8,8 @@
         /// </summary>
         public bool NotifyOnRoutineCompletion;
 
+        public string RequestId;
+
         public string CorrelationId;
     }
 }
