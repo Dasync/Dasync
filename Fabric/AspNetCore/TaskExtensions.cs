@@ -13,19 +13,27 @@ namespace Dasync.AspNetCore
 
             var timeoutMilliseconds = (int)timeout.TotalMilliseconds;
             if (timeoutMilliseconds <= 1)
-                return Task.FromCanceled<T>(default);
+                return CallbackHandler<T>.CanceledTask;
 
             var tcs = new TaskCompletionSource<T>();
             var timer = new Timer(CallbackHandler<T>.OnTimerTickCallback, tcs, timeoutMilliseconds, Timeout.Infinite);
-            task.ContinueWith(CallbackHandler<T>.OnTaskCompleteCallback, tcs);
+            task.ContinueWith(CallbackHandler<T>.OnTaskCompleteCallback, tcs, TaskContinuationOptions.ExecuteSynchronously);
 
             return tcs.Task;
         }
 
         private class CallbackHandler<T>
         {
+            internal static readonly Task<T> CanceledTask;
             internal static readonly TimerCallback OnTimerTickCallback = OnTimerTick;
             internal static readonly Action<Task<T>, object> OnTaskCompleteCallback = OnTaskComplete;
+
+            static CallbackHandler()
+            {
+                var tcs = new TaskCompletionSource<T>();
+                tcs.SetCanceled();
+                CanceledTask = tcs.Task;
+            }
 
             private static void OnTimerTick(object state)
             {
