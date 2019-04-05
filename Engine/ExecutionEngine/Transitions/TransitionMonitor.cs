@@ -140,7 +140,7 @@ namespace Dasync.ExecutionEngine.Transitions
             }
             else if (!Context.TransitionCompleteTask.IsCompleted)
             {
-                routineCompletionTask.ContinueWith(OnRoutineCompleted);
+                routineCompletionTask.ContinueWith(OnRoutineCompleted, TaskContinuationOptions.ExecuteSynchronously);
             }
 
             return Context.TransitionCompleteTask;
