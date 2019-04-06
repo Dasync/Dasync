@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -39,7 +40,7 @@ namespace Dasync.Serializers.StandardTypes
                         var propertyName = fi.Name.Substring(1, fi.Name.IndexOf('>') - 1);
                         var property = type.GetProperty(propertyName, flags);
                         if (property != null && property.GetMethod != null && property.SetMethod != null
-                            && property.GetMethod.IsPublic && property.SetMethod.IsPublic)
+                            && property.GetMethod.IsPublic)
                         {
                             continue;
                         }
@@ -51,8 +52,8 @@ namespace Dasync.Serializers.StandardTypes
             }
 
             // Must have 1 default constructor that does not take in any arguments.
-            var ctors = type.GetConstructors();
-            var hasDefaultCtor = ctors.Length == 0 || (ctors.Length == 1 && ctors[0].GetParameters().Length == 0);
+            var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            var hasDefaultCtor = ctors.Length == 0 || (ctors.Length >= 1 && ctors.Any(ctor => ctor.GetParameters().Length == 0));
             if (!hasDefaultCtor)
                 return false;
 
