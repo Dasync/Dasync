@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Dasync.AspNetCore;
 using Dasync.AspNetCore.Communication;
 using Dasync.AspNetCore.Errors;
 using Dasync.AspNetCore.Platform;
@@ -24,7 +26,6 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using Dasync.AspNetCore;
 
 namespace DasyncAspNetCore
 {
@@ -59,6 +60,9 @@ namespace DasyncAspNetCore
         private readonly IUniqueIdGenerator _idGenerator;
         private readonly ITransitionCommitter _transitionCommitter;
         private readonly IRoutineCompletionNotifier _routineCompletionNotifier;
+        private readonly IHttpIntentPreprocessor _intentPreprocessor;
+        private readonly IEnumerable<IRoutineTransitionAction> _transitionActions;
+        private readonly ITransitionUserContext _transitionUserContext;
 
         private TimeSpan MaxLongPollTime = TimeSpan.FromMinutes(2);
 
@@ -71,7 +75,10 @@ namespace DasyncAspNetCore
             IEnumerable<IEventDispatcher> eventDispatchers,
             IUniqueIdGenerator idGenerator,
             ITransitionCommitter transitionCommitter,
-            IRoutineCompletionNotifier routineCompletionNotifier)
+            IRoutineCompletionNotifier routineCompletionNotifier,
+            IEnumerable<IHttpIntentPreprocessor> intentPreprocessors,
+            IEnumerable<IRoutineTransitionAction> transitionActions,
+            ITransitionUserContext transitionUserContext)
         {
             _communicationModelProvider = communicationModelProvider;
             _domainServiceProvider = domainServiceProvider;
@@ -81,6 +88,9 @@ namespace DasyncAspNetCore
             _idGenerator = idGenerator;
             _transitionCommitter = transitionCommitter;
             _routineCompletionNotifier = routineCompletionNotifier;
+            _intentPreprocessor = new AggregateHttpIntentPreprocessor(intentPreprocessors);
+            _transitionActions = transitionActions;
+            _transitionUserContext = transitionUserContext;
 
             _dasyncJsonSerializer = serializerFactorySelector.Select("dasync+json").Create();
         }
@@ -149,8 +159,7 @@ namespace DasyncAspNetCore
 
             if (pathSegments.Length == 3)
             {
-                var intentId = pathSegments[2];
-                await HandleResultPoll(context, serviceName, methodName, intentId);
+                await HandleResultPoll(context, serviceName, methodName, intentId: pathSegments[2]);
                 return;
             }
 
@@ -278,9 +287,21 @@ namespace DasyncAspNetCore
 
             var isHttpRequestBlockingExecution = !(rfc7240Preferences.RespondAsync == true);
 
+            _transitionUserContext.Current = GetUserContext(context);
+
+            if (await _intentPreprocessor.PreprocessAsync(context, serviceDefinition, routineMethodId, parameterContainer))
+                return;
+
+            var serviceId = new ServiceId { ServiceName = serviceDefinition.Name };
+            var intentId = _idGenerator.NewId();
+
             if (isQueryMethod)
             {
                 var serviceInstance = _domainServiceProvider.GetService(serviceDefinition.Implementation);
+
+                foreach (var postAction in _transitionActions)
+                    await postAction.OnRoutineStartAsync(serviceDefinition, serviceId, routineMethodId, intentId);
+
                 Task task;
                 try
                 {
@@ -296,13 +317,16 @@ namespace DasyncAspNetCore
                 }
                 var taskResult = task?.ToTaskResult() ?? new TaskResult();
 
+                foreach (var postAction in _transitionActions)
+                    await postAction.OnRoutineCompleteAsync(serviceDefinition, serviceId, routineMethodId, intentId, taskResult);
+
                 await RespondWithRoutineResult(context, taskResult, isDasyncJsonRequest);
             }
             else
             {
                 var intent = new ExecuteRoutineIntent
                 {
-                    Id = _idGenerator.NewId(),
+                    Id = intentId,
                     ServiceId = new ServiceId { ServiceName = serviceDefinition.Name },
                     MethodId = routineMethodId,
                     Parameters = parameterContainer,
@@ -547,6 +571,8 @@ namespace DasyncAspNetCore
 
             var results = new List<RaiseEventResult>();
 
+            _transitionUserContext.Current = GetUserContext(context);
+
             foreach (var subscriber in eventHandlers)
             {
                 if (serviceDefinitionFilter != null && !string.Equals(subscriber.ServiceId.ServiceName, serviceDefinitionFilter.Name, StringComparison.OrdinalIgnoreCase))
@@ -576,6 +602,14 @@ namespace DasyncAspNetCore
                     }
                 }
 
+                var intentId = _idGenerator.NewId();
+
+                if (await _intentPreprocessor.PreprocessAsync(context, subscriberServiceDefinition, subscriber.MethodId, parameterContainer))
+                    return;
+
+                foreach (var postAction in _transitionActions)
+                    await postAction.OnRoutineStartAsync(subscriberServiceDefinition, subscriber.ServiceId, subscriber.MethodId, intentId);
+
                 var serviceInstance = _domainServiceProvider.GetService(subscriberServiceDefinition.Implementation);
                 Task task;
                 try
@@ -592,9 +626,12 @@ namespace DasyncAspNetCore
                 }
                 var taskResult = task?.ToTaskResult() ?? new TaskResult();
 
+                foreach (var postAction in _transitionActions)
+                    await postAction.OnRoutineCompleteAsync(subscriberServiceDefinition, subscriber.ServiceId, subscriber.MethodId, intentId, taskResult);
+
                 results.Add(new RaiseEventResult
                 {
-                    ServiceName= subscriber.ServiceId.ServiceName,
+                    ServiceName = subscriber.ServiceId.ServiceName,
                     MethodName = subscriber.MethodId.MethodName,
                     Result = taskResult
                 });
@@ -619,6 +656,16 @@ namespace DasyncAspNetCore
             public string ServiceName;
             public string MethodName;
             public TaskResult Result;
+        }
+
+        private static NameValueCollection GetUserContext(HttpContext context)
+        {
+            if (!context.Request.Headers.TryGetValue(DasyncHttpHeaders.Context, out var contextstrings))
+                return null;
+            var userContext = new NameValueCollection();
+            foreach (var contextString in contextstrings)
+                userContext = userContext.Load(contextString);
+            return userContext;
         }
 
         private static Route GetSelfRoute(IHeaderDictionary headers)

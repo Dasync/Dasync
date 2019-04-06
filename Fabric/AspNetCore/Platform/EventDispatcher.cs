@@ -24,6 +24,7 @@ namespace Dasync.AspNetCore.Platform
     {
         private readonly ICommunicationModelProvider _communicationModelProvider;
         private readonly IPlatformHttpClientProvider _platformHttpClientProvider;
+        private readonly ITransitionUserContext _transitionUserContext;
 
         private readonly Dictionary<EventDescriptor, List<EventSubscriberDescriptor>> _eventHandlers =
             new Dictionary<EventDescriptor, List<EventSubscriberDescriptor>>();
@@ -33,10 +34,12 @@ namespace Dasync.AspNetCore.Platform
 
         public EventDispatcher(
             ICommunicationModelProvider communicationModelProvider,
-            IPlatformHttpClientProvider platformHttpClientProvider)
+            IPlatformHttpClientProvider platformHttpClientProvider,
+            ITransitionUserContext transitionUserContext)
         {
             _communicationModelProvider = communicationModelProvider;
             _platformHttpClientProvider = platformHttpClientProvider;
+            _transitionUserContext = transitionUserContext;
         }
 
         public IReadOnlyCollection<EventSubscriberDescriptor> GetEventHandlers(EventDescriptor eventDesc)
@@ -144,7 +147,7 @@ namespace Dasync.AspNetCore.Platform
 
                 try
                 {
-                    await client.PublishEvent(intent, subscriberServiceDefinition);
+                    await client.PublishEvent(intent, subscriberServiceDefinition, _transitionUserContext.Current);
                     return;
                 }
                 catch

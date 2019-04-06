@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,8 @@ namespace Dasync.AspNetCore.Platform
         private readonly IRoutineMethodResolver _routineMethodResolver;
         private readonly IDomainServiceProvider _domainServiceProvider;
         private readonly IMethodInvokerFactory _methodInvokerFactory;
+        private readonly IEnumerable<IRoutineTransitionAction> _transitionActions;
+        private readonly ITransitionUserContext _transitionUserContext;
 
         public TransitionCommitter(
             ICommunicationModelProvider communicationModelProvider,
@@ -32,7 +35,9 @@ namespace Dasync.AspNetCore.Platform
             IEventDispatcher eventDispatcher,
             IRoutineMethodResolver routineMethodResolver,
             IDomainServiceProvider domainServiceProvider,
-            IMethodInvokerFactory methodInvokerFactory)
+            IMethodInvokerFactory methodInvokerFactory,
+            IEnumerable<IRoutineTransitionAction> transitionActions,
+            ITransitionUserContext transitionUserContext)
         {
             _communicationModelProvider = communicationModelProvider;
             _platformHttpClientProvider = platformHttpClientProvider;
@@ -41,6 +46,8 @@ namespace Dasync.AspNetCore.Platform
             _routineMethodResolver = routineMethodResolver;
             _domainServiceProvider = domainServiceProvider;
             _methodInvokerFactory = methodInvokerFactory;
+            _transitionActions = transitionActions;
+            _transitionUserContext = transitionUserContext;
         }
 
         public async Task CommitAsync(ScheduledActions actions, ITransitionCarrier transitionCarrier, TransitionCommitOptions options, CancellationToken ct)
@@ -60,7 +67,7 @@ namespace Dasync.AspNetCore.Platform
                     else
                     {
                         var platformHttpClient = _platformHttpClientProvider.GetClient(serviceDefinition);
-                        var routineInfo = await platformHttpClient.ScheduleRoutineAsync(intent, ct);
+                        var routineInfo = await platformHttpClient.ScheduleRoutineAsync(intent, _transitionUserContext.Current, ct);
                         if (routineInfo.Result != null)
                             _routineCompletionSink.OnRoutineCompleted(intent.Id, routineInfo.Result);
                     }
@@ -84,6 +91,9 @@ namespace Dasync.AspNetCore.Platform
                 var routineMethod = _routineMethodResolver.Resolve(serviceDefinition.Implementation, intent.MethodId);
                 var methodInvoker = _methodInvokerFactory.Create(routineMethod);
 
+                foreach (var postAction in _transitionActions)
+                    await postAction.OnRoutineStartAsync(serviceDefinition, intent.ServiceId, intent.MethodId, intent.Id);
+
                 Task task;
                 try
                 {
@@ -98,6 +108,9 @@ namespace Dasync.AspNetCore.Platform
                     task = Task.FromException(ex);
                 }
                 var taskResult = task?.ToTaskResult() ?? new TaskResult();
+
+                foreach (var postAction in _transitionActions)
+                    await postAction.OnRoutineCompleteAsync(serviceDefinition, intent.ServiceId, intent.MethodId, intent.Id, taskResult);
 
                 _routineCompletionSink.OnRoutineCompleted(intent.Id, taskResult);
             }

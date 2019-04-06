@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -14,11 +15,11 @@ namespace Dasync.AspNetCore.Communication
 {
     public interface IPlatformHttpClient
     {
-        Task<RoutineInfo> ScheduleRoutineAsync(ExecuteRoutineIntent intent, CancellationToken ct);
+        Task<RoutineInfo> ScheduleRoutineAsync(ExecuteRoutineIntent intent, NameValueCollection context, CancellationToken ct);
 
         Task SubscribeToEvent(EventDescriptor eventDesc, ServiceId subscriber, IServiceDefinition publisherServiceDefinition);
 
-        Task PublishEvent(RaiseEventIntent intent, IServiceDefinition subscriberServiceDefinition);
+        Task PublishEvent(RaiseEventIntent intent, IServiceDefinition subscriberServiceDefinition, NameValueCollection context);
     }
 
     public class PlatformHttpClient : IPlatformHttpClient
@@ -44,7 +45,7 @@ namespace Dasync.AspNetCore.Communication
             _dasyncJsonSerializer = serializerFactorySelector.Select("dasync+json").Create();
         }
 
-        public async Task<RoutineInfo> ScheduleRoutineAsync(ExecuteRoutineIntent intent, CancellationToken ct)
+        public async Task<RoutineInfo> ScheduleRoutineAsync(ExecuteRoutineIntent intent, NameValueCollection context, CancellationToken ct)
         {
             var uri = string.Concat(_serviceHttpConfigurator.GetUrl(_serviceDefinition), "/", intent.MethodId.MethodName);
 
@@ -55,6 +56,9 @@ namespace Dasync.AspNetCore.Communication
                 {
                     var content = new StringContent(json);
                     content.Headers.ContentType = new MediaTypeHeaderValue("application/dasync+json");
+
+                    if (context?.Count > 0)
+                        content.Headers.TryAddWithoutValidation(DasyncHttpHeaders.Context, context.Serialize());
 
                     var response = await _httpClient.PutAsync(uri, content, ct);
 
@@ -98,7 +102,7 @@ namespace Dasync.AspNetCore.Communication
                 throw new InvalidOperationException($"Unexpected HTTP {statusCode} response:\r\n{await response.Content.ReadAsStringAsync()}");
         }
 
-        public async Task PublishEvent(RaiseEventIntent intent, IServiceDefinition subscriberServiceDefinition)
+        public async Task PublishEvent(RaiseEventIntent intent, IServiceDefinition subscriberServiceDefinition, NameValueCollection context)
         {
             var uri = string.Concat(_serviceHttpConfigurator.GetUrl(subscriberServiceDefinition), "?react&event=", intent.EventId.EventName, "&service=", intent.ServiceId.ServiceName);
 
@@ -106,6 +110,9 @@ namespace Dasync.AspNetCore.Communication
 
             var content = new StringContent(json);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/dasync+json");
+
+            if (context?.Count > 0)
+                content.Headers.TryAddWithoutValidation(DasyncHttpHeaders.Context, context.Serialize());
 
             var response = await _httpClient.PutAsync(uri, content);
 

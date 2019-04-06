@@ -13,6 +13,7 @@ namespace Dasync.AspNetCore
             [typeof(IPlatformHttpClientProvider)] = typeof(PlatformHttpClientProvider),
             [typeof(IDomainServiceProvider)] = typeof(DomainServiceProvider),
             [typeof(DefaultServiceHttpConfigurator)] = typeof(DefaultServiceHttpConfigurator),
+            [typeof(ITransitionUserContext)] = typeof(TransitionUserContext),
         };
     }
 }

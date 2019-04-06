@@ -20,5 +20,7 @@
 
         public static readonly string RequestId = "X-Request-ID";
         public static readonly string CorrelationId = "X-Correlation-ID";
+
+        public static readonly string Context = "X-Context";
     }
 }
