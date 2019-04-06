@@ -42,7 +42,44 @@ namespace Dasync.Serializers.DomainTypes.Projections
             {
                 foreach (var pair in c.Properties)
                 {
-                    EntityProjection.SetValue(result, pair.Key, pair.Value);
+                    // BAD CODE
+                    // The problem is in JSON serialization, so we have to perform some extra type checks and conversion.
+                    // I know, it's bad, just need to make it work as a quick-fix without going back to the drawing board.
+                    var value = pair.Value;
+                    if (value != null)
+                    {
+                        var expectedValueType = projetionInterface.GetProperty(pair.Key).PropertyType;
+                        var actualValueType = value.GetType();
+                        if (actualValueType != expectedValueType)
+                        {
+                            if ((expectedValueType == typeof(Guid) || expectedValueType == typeof(Guid?)) && actualValueType == typeof(string))
+                            {
+                                value = Guid.Parse((string)value);
+                            }
+                            else if (expectedValueType == typeof(Uri) && actualValueType == typeof(string))
+                            {
+                                value = new Uri((string)value);
+                            }
+                            else if (expectedValueType.IsEnum)
+                            {
+                                value = Enum.ToObject(expectedValueType, value);
+                            }
+                            else if (expectedValueType.IsGenericType && !expectedValueType.IsClass && expectedValueType.Name == "Nullable`1")
+                            {
+                                var nullableValueType = expectedValueType.GetGenericArguments()[0];
+                                if (nullableValueType != actualValueType)
+                                    value = Convert.ChangeType(value, nullableValueType);
+                                value = Activator.CreateInstance(expectedValueType, value);
+                            }
+                            else
+                            {
+                                value = Convert.ChangeType(value, expectedValueType);
+                            }
+                        }
+                    }
+                    // BAD CODE
+
+                    EntityProjection.SetValue(result, pair.Key, value);
                 }
             }
             return result;

@@ -63,6 +63,7 @@ namespace Dasync.Serialization.Json
                 type == typeof(string) ||
                 type == typeof(Uri) ||
                 type == typeof(Guid) ||
+                type == typeof(Guid?) ||
                 type == typeof(Type) ||
                 type == typeof(TypeSerializationInfo);
 #warning Check if the type has JSON attributes on it or its properties/fields

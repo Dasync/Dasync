@@ -189,7 +189,7 @@ namespace Dasync.Serialization
                         {
                             value = Enum.ToObject(targetType, value);
                         }
-                        else if (targetType == typeof(Guid) && value is string strGuid)
+                        else if ((targetType == typeof(Guid) || targetType == typeof(Guid?)) && value is string strGuid)
                         {
                             value = Guid.Parse(strGuid);
                         }
@@ -200,6 +200,13 @@ namespace Dasync.Serialization
                         else if (targetType == typeof(Uri))
                         {
                             value = new Uri((string)Convert.ChangeType(value, typeof(string)));
+                        }
+                        else if (targetType.IsGenericType && !targetType.IsClass && targetType.Name == "Nullable`1")
+                        {
+                            var nullableValueType = targetType.GetGenericArguments()[0];
+                            if (!nullableValueType.IsAssignableFrom(value.GetType()))
+                                value = Convert.ChangeType(value, nullableValueType);
+                            value = Activator.CreateInstance(targetType, value);
                         }
                         else
                         {
