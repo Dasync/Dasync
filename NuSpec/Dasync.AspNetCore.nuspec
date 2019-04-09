@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Dasync.AspNetCore</id>
-    <version>0.2.3-preview</version>
+    <version>0.2.4-preview</version>
     <authors>dasync,sergiis</authors>
     <owners>dasync</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
