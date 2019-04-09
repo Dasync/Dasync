@@ -289,7 +289,8 @@ namespace DasyncAspNetCore
 
             _transitionUserContext.Current = GetUserContext(context);
 
-            if (await _intentPreprocessor.PreprocessAsync(context, serviceDefinition, routineMethodId, parameterContainer))
+            _intentPreprocessor.PrepareContext(context);
+            if (await _intentPreprocessor.PreprocessAsync(context, serviceDefinition, routineMethodId, parameterContainer).ConfigureAwait(false))
                 return;
 
             var serviceId = new ServiceId { ServiceName = serviceDefinition.Name };
@@ -612,7 +613,8 @@ namespace DasyncAspNetCore
 
                 var intentId = _idGenerator.NewId();
 
-                if (await _intentPreprocessor.PreprocessAsync(context, subscriberServiceDefinition, subscriber.MethodId, parameterContainer))
+                _intentPreprocessor.PrepareContext(context);
+                if (await _intentPreprocessor.PreprocessAsync(context, subscriberServiceDefinition, subscriber.MethodId, parameterContainer).ConfigureAwait(false))
                     return;
 
                 foreach (var postAction in _transitionActions)

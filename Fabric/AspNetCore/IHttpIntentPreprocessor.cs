@@ -9,7 +9,9 @@ namespace Dasync.AspNetCore
 {
     public interface IHttpIntentPreprocessor
     {
-        Task<bool> PreprocessAsync(HttpContext context, IServiceDefinition serviceDefinition, RoutineMethodId methodId, IValueContainer parameters);
+        void PrepareContext(HttpContext context);
+
+        ValueTask<bool> PreprocessAsync(HttpContext context, IServiceDefinition serviceDefinition, RoutineMethodId methodId, IValueContainer parameters);
     }
 
     internal class AggregateHttpIntentPreprocessor : IHttpIntentPreprocessor
@@ -19,7 +21,13 @@ namespace Dasync.AspNetCore
         public AggregateHttpIntentPreprocessor(IEnumerable<IHttpIntentPreprocessor> intentPreprocessors) =>
             _intentPreprocessors = intentPreprocessors;
 
-        public async Task<bool> PreprocessAsync(HttpContext context, IServiceDefinition serviceDefinition, RoutineMethodId methodId, IValueContainer parameters)
+        public void PrepareContext(HttpContext context)
+        {
+            foreach (var preprocessor in _intentPreprocessors)
+                preprocessor.PrepareContext(context);
+        }
+
+        public async ValueTask<bool> PreprocessAsync(HttpContext context, IServiceDefinition serviceDefinition, RoutineMethodId methodId, IValueContainer parameters)
         {
             if (_intentPreprocessors == null)
                 return false;
