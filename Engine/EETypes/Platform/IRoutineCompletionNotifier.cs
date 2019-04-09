@@ -6,6 +6,12 @@ namespace Dasync.EETypes.Platform
 {
     public interface IRoutineCompletionNotifier
     {
+        Task<TaskResult> TryPollCompletionAsync(
+            ServiceId serviceId,
+            RoutineMethodId methodId,
+            string intentId,
+            CancellationToken ct);
+
         void NotifyCompletion(
             ServiceId serviceId,
             RoutineMethodId methodId,

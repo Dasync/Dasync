@@ -391,19 +391,27 @@ namespace DasyncAspNetCore
 
             TaskResult taskResult = null;
 
-            var cts = new CancellationTokenSource();
-            var completionSink = new TaskCompletionSource<TaskResult>();
-            _routineCompletionNotifier.NotifyCompletion(serviceId, methodId, intentId, completionSink, cts.Token);
-            try
+            var waitTime = rfc7240Preferences.Wait;
+            if (waitTime > MaxLongPollTime)
+                waitTime = MaxLongPollTime;
+
+            if (waitTime <= TimeSpan.Zero)
             {
-                var waitTime = rfc7240Preferences.Wait;
-                if (waitTime > MaxLongPollTime)
-                    waitTime = MaxLongPollTime;
-                taskResult = await completionSink.Task.WithTimeout(waitTime);
+                taskResult = await _routineCompletionNotifier.TryPollCompletionAsync(serviceId, methodId, intentId, default);
             }
-            catch (TaskCanceledException)
+            else
             {
-                cts.Cancel();
+                var cts = new CancellationTokenSource();
+                try
+                {
+                    var completionSink = new TaskCompletionSource<TaskResult>();
+                    _routineCompletionNotifier.NotifyCompletion(serviceId, methodId, intentId, completionSink, cts.Token);
+                    taskResult = await completionSink.Task.WithTimeout(waitTime);
+                }
+                catch (TaskCanceledException)
+                {
+                    cts.Cancel();
+                }
             }
 
             if (taskResult == null)

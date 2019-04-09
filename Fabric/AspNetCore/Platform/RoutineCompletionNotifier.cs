@@ -19,9 +19,28 @@ namespace Dasync.AspNetCore.Platform
         private Dictionary<string, TaskResult> _recentResults = new Dictionary<string, TaskResult>();
         private const int MaxRecentResults = 100;
 
-        public void NotifyCompletion(ServiceId serviceId, RoutineMethodId methodId, string intentId, TaskCompletionSource<TaskResult> completionSink, CancellationToken ct)
+        public Task<TaskResult> TryPollCompletionAsync(
+            ServiceId serviceId,
+            RoutineMethodId methodId,
+            string intentId,
+            CancellationToken ct)
         {
-            var taskResult = PollResultAsync(serviceId, methodId, intentId).Result;
+            lock (_recentResults)
+            {
+                _recentResults.TryGetValue(intentId, out var taskResult);
+                TrimStaleResults();
+                return Task.FromResult(taskResult);
+            }
+        }
+
+        public void NotifyCompletion(
+            ServiceId serviceId,
+            RoutineMethodId methodId,
+            string intentId,
+            TaskCompletionSource<TaskResult> completionSink,
+            CancellationToken ct)
+        {
+            var taskResult = TryPollCompletionAsync(serviceId, methodId, intentId, default).Result;
             if (taskResult != null)
             {
                 completionSink.SetResult(taskResult);
@@ -33,16 +52,6 @@ namespace Dasync.AspNetCore.Platform
                 if (!_sinks.TryGetValue(intentId, out var set))
                     _sinks.Add(intentId, set = new List<TaskCompletionSource<TaskResult>>());
                 set.Add(completionSink);
-            }
-        }
-
-        private Task<TaskResult> PollResultAsync(ServiceId serviceId, RoutineMethodId methodId, string intentId)
-        {
-            lock (_recentResults)
-            {
-                _recentResults.TryGetValue(intentId, out var taskResult);
-                TrimStaleResults();
-                return Task.FromResult(taskResult);
             }
         }
 
