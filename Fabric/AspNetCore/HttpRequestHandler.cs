@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Dasync.AspNetCore;
 using Dasync.AspNetCore.Communication;
 using Dasync.AspNetCore.Errors;
+using Dasync.AspNetCore.Json;
 using Dasync.AspNetCore.Platform;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
@@ -36,7 +37,7 @@ namespace DasyncAspNetCore
 
     public class HttpRequestHandler : IHttpRequestHandler
     {
-        private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
+        private readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
         {
             MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
             NullValueHandling = NullValueHandling.Ignore,
@@ -93,6 +94,8 @@ namespace DasyncAspNetCore
             _transitionUserContext = transitionUserContext;
 
             _dasyncJsonSerializer = serializerFactorySelector.Select("dasync+json").Create();
+
+            JsonSettings.Converters.Add(new EntityProjectionConverter(communicationModelProvider.Model));
         }
 
         public async Task HandleAsync(PathString basePath, HttpContext context, CancellationToken ct)
