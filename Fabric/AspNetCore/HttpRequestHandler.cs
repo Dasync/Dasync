@@ -317,6 +317,8 @@ namespace DasyncAspNetCore
                 }
                 catch (Exception ex)
                 {
+                    if (ex is TargetInvocationException)
+                        ex = ex.InnerException;
                     task = Task.FromException(ex);
                 }
                 var taskResult = task?.ToTaskResult() ?? new TaskResult();
@@ -635,6 +637,8 @@ namespace DasyncAspNetCore
                 }
                 catch (Exception ex)
                 {
+                    if (ex is TargetInvocationException)
+                        ex = ex.InnerException;
                     task = Task.FromException(ex);
                 }
                 var taskResult = task?.ToTaskResult() ?? new TaskResult();

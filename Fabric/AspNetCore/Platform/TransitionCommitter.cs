@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.AspNetCore.Communication;
@@ -105,6 +106,8 @@ namespace Dasync.AspNetCore.Platform
                 }
                 catch (Exception ex)
                 {
+                    if (ex is TargetInvocationException)
+                        ex = ex.InnerException;
                     task = Task.FromException(ex);
                 }
                 var taskResult = task?.ToTaskResult() ?? new TaskResult();
