@@ -22,6 +22,7 @@ namespace Dasync.Serializers.DomainTypes
                 .Where(i => EntityProjection.IsProjectionInterface(i)));
 
             _entityProjectionSerializer = entityProjectionSerializer;
+            _entityProjectionSerializer.KnownEntityProjectionInterfaces = _knownEntityProjectionInterfaces;
         }
 
         public IObjectDecomposer SelectDecomposer(Type valueType)

@@ -15,10 +15,15 @@ namespace Dasync.Serializers.DomainTypes.Projections
             _typeSerializerHelper = typeSerializerHelper;
         }
 
+        internal HashSet<Type> KnownEntityProjectionInterfaces { get; set; }
+
         public IValueContainer Decompose(object value)
         {
 #warning Add support for multi-projection. Need to know the variable/result type - a bigger serializer problem :( Also possibly need to know if it's a cross-domain derialization to keep the entity instance.
-            var projetionInterface = value.GetType().GetInterfaces().First(i => EntityProjection.IsProjectionInterface(i));
+            var projetionInterface = value.GetType().GetInterfaces()
+                .First(i => KnownEntityProjectionInterfaces != null
+                    ? KnownEntityProjectionInterfaces.Contains(i)
+                    : EntityProjection.IsProjectionInterface(i));
 
             var container = new EntityProjectionContainer
             {
