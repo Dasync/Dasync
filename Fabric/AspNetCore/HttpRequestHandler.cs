@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using System.Net.Mime;
 
 namespace DasyncAspNetCore
 {
@@ -176,9 +177,9 @@ namespace DasyncAspNetCore
 
             var isQueryRequest = context.Request.Method == "GET";
             var isCommandRequest = context.Request.Method == "PUT" || context.Request.Method == "POST";
-#warning Content-Type may contain the charset, e.g.  'application/json; charset=utf-8'
-            var isJsonRequest = string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase);
-            var isDasyncJsonRequest = string.Equals(context.Request.ContentType, "application/dasync+json", StringComparison.OrdinalIgnoreCase);
+            var contentType = context.Request.GetContentType();
+            var isJsonRequest = string.Equals(contentType.MediaType, "application/json", StringComparison.OrdinalIgnoreCase);
+            var isDasyncJsonRequest = string.Equals(contentType.MediaType, "application/dasync+json", StringComparison.OrdinalIgnoreCase);
 
             if (!isQueryRequest && !isJsonRequest && !isDasyncJsonRequest)
             {
@@ -258,11 +259,11 @@ namespace DasyncAspNetCore
             }
             else if (isJsonRequest)
             {
-                parametersJson = await new StreamReader(context.Request.Body).ReadToEndAsync();
+                parametersJson = await context.Request.ReadBodyAsStringAsync(contentType);
             }
             else
             {
-                var inputJson = await new StreamReader(context.Request.Body).ReadToEndAsync();
+                var inputJson = await context.Request.ReadBodyAsStringAsync(contentType);
                 var envelope = JsonConvert.DeserializeObject<CommandEnvelope>(inputJson, JsonSettings);
                 parametersJson = envelope.Parameters;
                 continuationDescriptor = envelope.Continuation;
@@ -427,7 +428,8 @@ namespace DasyncAspNetCore
             }
             else
             {
-                var isDasyncJsonRequest = string.Equals(context.Request.ContentType, "application/dasync+json", StringComparison.OrdinalIgnoreCase);
+                var contentType = context.Request.GetContentType();
+                var isDasyncJsonRequest = string.Equals(contentType.MediaType, "application/dasync+json", StringComparison.OrdinalIgnoreCase);
                 await RespondWithRoutineResult(context, taskResult, isDasyncJsonRequest);
             }
         }
@@ -560,8 +562,9 @@ namespace DasyncAspNetCore
                 return;
             }
 
-            var isJsonRequest = string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase);
-            var isDasyncJsonRequest = string.Equals(context.Request.ContentType, "application/dasync+json", StringComparison.OrdinalIgnoreCase);
+            var contentType = context.Request.GetContentType();
+            var isJsonRequest = string.Equals(contentType.MediaType, "application/json", StringComparison.OrdinalIgnoreCase);
+            var isDasyncJsonRequest = string.Equals(contentType.MediaType, "application/dasync+json", StringComparison.OrdinalIgnoreCase);
 
             if (!isJsonRequest && !isDasyncJsonRequest)
             {
@@ -574,11 +577,11 @@ namespace DasyncAspNetCore
             string parametersJson = null;
             if (isJsonRequest)
             {
-                parametersJson = await new StreamReader(context.Request.Body).ReadToEndAsync();
+                parametersJson = await context.Request.ReadBodyAsStringAsync(contentType);
             }
             else if (isDasyncJsonRequest)
             {
-                var envelopeJson = await new StreamReader(context.Request.Body).ReadToEndAsync();
+                var envelopeJson = await context.Request.ReadBodyAsStringAsync(contentType);
                 var envelope = JsonConvert.DeserializeObject<EventEnvelope>(envelopeJson, JsonSettings);
                 parametersJson = envelope.Parameters;
             }
@@ -792,5 +795,26 @@ namespace DasyncAspNetCore
         }
 
         // Prefer: respond-async, wait=10
+    }
+
+    internal static class HttpRequestExtensions
+    {
+        private static readonly ContentType UnknownContentType = new ContentType();
+
+        public static ContentType GetContentType(this HttpRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.ContentType))
+                return UnknownContentType;
+            return new ContentType(request.ContentType);
+        }
+
+        public static async Task<string> ReadBodyAsStringAsync(this HttpRequest request, ContentType contentType = null)
+        {
+#warning TODO: use content encoding for the charset
+            //if (contentType == null)
+            //    contentType = request.GetContentType();
+
+            return await new StreamReader(request.Body).ReadToEndAsync();
+        }
     }
 }
