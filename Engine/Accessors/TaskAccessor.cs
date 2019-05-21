@@ -151,7 +151,7 @@ namespace Dasync.Accessors
             }
             else
             {
-                throw new Exception();
+                throw new Exception($"Failed to match type [{taskType.FullName}] as a known 'Task' type.");
             }
         }
 
