@@ -2,6 +2,8 @@
 
 ## What is D·ASYNC?
 
+What if you don't need to write API controllers? How about you don't need to write message handlers? Imagine if you can just create services and completely skip non-functional boilerplate code for inter-service communication.
+
 You can think of D-ASYNC like EntityFramework but for inter-service communication and stateful workflows. Instead of focusing on domain entities and their mapping to data transfer objects, D-ASYNC framework targets domain commands, responses, queries, and events. The key feature of D-ASYNC framework is the ability to use C# language and .NET abstractions without a need to manually craft service clients or to define hierarchical state machines for persisted workflows.
 
 D-ASYNC engine uses a combination of conventional object proxies and an innovative technology that controls the execution of `async` methods, which are compiled into state machines. The capability to save state of underlying state machines allows a Cloud/Edge service platform to be message-oriented and event-driven, what works much better in a distributed system than a traditional synchronous communication mechanism.
