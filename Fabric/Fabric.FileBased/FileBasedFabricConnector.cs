@@ -17,7 +17,7 @@ namespace Dasync.Fabric.FileBased
 {
     public class FileBasedFabricConnector : IFabricConnector, IFabricConnectorWithConfiguration
     {
-        private readonly INumericIdGenerator _numericIdGenerator;
+        private readonly IUniqueIdGenerator _idGenerator;
         private readonly string _transitionsDirectory;
         private readonly string _routinesDirectory;
         private readonly string _eventsDirectory;
@@ -27,7 +27,7 @@ namespace Dasync.Fabric.FileBased
         private readonly Action<EventDescriptor, EventSubscriberDescriptor> _addEventListener;
 
         public FileBasedFabricConnector(
-            INumericIdGenerator numericIdGenerator,
+            IUniqueIdGenerator idGenerator,
             string transitionsDirectory,
             string routinesDirectory,
             string eventsDirectory,
@@ -35,7 +35,7 @@ namespace Dasync.Fabric.FileBased
             ISerializer serializer,
             string serializerFormat)
         {
-            _numericIdGenerator = numericIdGenerator;
+            _idGenerator = idGenerator;
             _transitionsDirectory = transitionsDirectory;
             _routinesDirectory = routinesDirectory;
             _eventsDirectory = eventsDirectory;
@@ -237,7 +237,7 @@ namespace Dasync.Fabric.FileBased
 
         internal void ScheduleRoutineFromEvent(EventSubscriberDescriptor eventSubscriberDescriptor, RoutineEventData raisedEventData)
         {
-            var intentId = _numericIdGenerator.NewId();
+            var intentId = _idGenerator.NewId();
 
             var pregeneratedRoutineId = intentId.ToString();
 

@@ -30,9 +30,8 @@ namespace Dasync.Fabric.FileBased
 
         public FileBasedFabric(
             ITransitionRunner transitionRunner,
-            INumericIdGenerator numericIdGenerator,
             IFileBasedFabricSerializerFactoryAdvisor serializerFactoryAdvisor,
-            INumericIdGenerator idGenerator)
+            IUniqueIdGenerator idGenerator)
         {
             _transitionRunner = transitionRunner;
 
@@ -46,7 +45,7 @@ namespace Dasync.Fabric.FileBased
             Serializer = serializerFactory.Create();
 
             Connector = new FileBasedFabricConnector(
-                numericIdGenerator,
+                idGenerator,
                 TransitionsDirectory,
                 RoutinesDirectory,
                 EventsDirectory,

@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.csproj" />
     <ProjectReference Include="..\..\Modeling\Dasync.Modeling.csproj" />
     <ProjectReference Include="..\Sample.Base\Dasync.Fabric.Sample.Base.csproj" />
+    <ProjectReference Include="..\ServiceRegistry\Dasync.ServiceRegistry.csproj" />
   </ItemGroup>
 
 </Project>
