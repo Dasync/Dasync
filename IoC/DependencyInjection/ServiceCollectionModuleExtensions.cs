@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DasyncFeatures
+namespace Dasync.DependencyInjection
 {
     public static class ServiceCollectionModuleExtensions
     {
@@ -20,12 +20,12 @@ namespace DasyncFeatures
             IEnumerable<(Type InterfaceType, Type ImplementationType)> module,
             ServiceLifetime lifetime = ServiceLifetime.Singleton)
         {
-            var servicesWithMultimpleInterfaces =
+            var servicesWithMultimpleInterfaces = new HashSet<Type>(
                 module
                 .GroupBy(tuple => tuple.ImplementationType)
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
-                .ToHashSet();
+            );
 
             foreach (var (InterfaceType, ImplementationType) in module)
             {

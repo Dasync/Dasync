@@ -1,6 +1,4 @@
-﻿using Dasync.EETypes;
-using Dasync.EETypes.Proxy;
-using Dasync.Modeling;
+﻿using Dasync.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,41 +43,6 @@ namespace DasyncAspNetCore
         public static IServiceCollection AddDasyncSimpleHttpPlatform(this IServiceCollection services)
         {
             services.AddModules(Dasync.AspNetCore.Platform.DI.Bindings);
-            return services;
-        }
-
-        public static IServiceCollection AddDomainServicesViaDasync(this IServiceCollection services, ICommunicationModel model)
-        {
-            foreach (var serviceDefinition in model.Services)
-            {
-                if (serviceDefinition.Implementation != null)
-                {
-                    services.Add(new ServiceDescriptor(
-                        serviceDefinition.Implementation,
-                        serviceProvider =>
-                            serviceProvider
-                            .GetService<IServiceProxyBuilder>()
-                            .Build(new ServiceId { ServiceName = serviceDefinition.Name }),
-                        ServiceLifetime.Singleton));
-                }
-
-                if (serviceDefinition.Interfaces != null)
-                {
-                    foreach (var interfaceType in serviceDefinition.Interfaces)
-                    {
-                        services.Add(new ServiceDescriptor(
-                            interfaceType,
-                            serviceProvider =>
-                                serviceDefinition.Implementation != null
-                                ? serviceProvider.GetService(serviceDefinition.Implementation)
-                                : serviceProvider
-                                .GetService<IServiceProxyBuilder>()
-                                .Build(new ServiceId { ServiceName = serviceDefinition.Name }),
-                            ServiceLifetime.Singleton));
-                    }
-                }
-            }
-
             return services;
         }
     }

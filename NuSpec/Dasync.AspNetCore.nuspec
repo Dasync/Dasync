@@ -22,6 +22,9 @@
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.AspNetCore.dll" target="lib\netcoreapp2.2\Dasync.AspNetCore.dll" />
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.AspNetCore.pdb" target="lib\netcoreapp2.2\Dasync.AspNetCore.pdb" />
     
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.DependencyInjection.dll" target="lib\netcoreapp2.2\Dasync.DependencyInjection.dll" />
+    <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.DependencyInjection.pdb" target="lib\netcoreapp2.2\Dasync.DependencyInjection.pdb" />
+    
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Accessors.dll" target="lib\netcoreapp2.2\Dasync.Accessors.dll" />
     <file src="..\Fabric\AspNetCore\bin\Debug\netcoreapp2.2\Dasync.Accessors.pdb" target="lib\netcoreapp2.2\Dasync.Accessors.pdb" />
     

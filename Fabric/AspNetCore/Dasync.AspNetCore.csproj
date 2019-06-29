@@ -50,6 +50,7 @@
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />
     <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.csproj" />
     <ProjectReference Include="..\..\Engine\Proxy\Dasync.Proxy.csproj" />
+    <ProjectReference Include="..\..\IoC\DependencyInjection\Dasync.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\Modeling\Dasync.Modeling.csproj" />
   </ItemGroup>
 

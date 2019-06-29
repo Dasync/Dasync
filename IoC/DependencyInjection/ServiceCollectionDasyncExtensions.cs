@@ -3,29 +3,10 @@ using Dasync.EETypes.Proxy;
 using Dasync.Modeling;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DasyncFeatures
+namespace Dasync.DependencyInjection
 {
     public static class ServiceCollectionDasyncExtensions
     {
-        public static IServiceCollection AddDasyncCore(this IServiceCollection services)
-        {
-            services.AddModules(
-                Dasync.Modeling.DI.Bindings,
-                Dasync.Serialization.DI.Bindings,
-                Dasync.Serialization.Json.DI.Bindings,
-                Dasync.Serializers.StandardTypes.DI.Bindings,
-                Dasync.Serializers.EETypes.DI.Bindings,
-                Dasync.Serializers.DomainTypes.DI.Bindings,
-                Dasync.Proxy.DI.Bindings,
-                Dasync.AsyncStateMachine.DI.Bindings,
-                Dasync.ExecutionEngine.DI.Bindings,
-                Dasync.Bootstrap.DI.Bindings);
-
-            services.AddSingleton<Dasync.ExecutionEngine.IntrinsicFlow.IntrinsicRoutines>();
-
-            return services;
-        }
-
         public static IServiceCollection AddDomainServicesViaDasync(this IServiceCollection services, ICommunicationModel model)
         {
             foreach (var serviceDefinition in model.Services)
@@ -60,5 +41,6 @@ namespace DasyncFeatures
 
             return services;
         }
+
     }
 }

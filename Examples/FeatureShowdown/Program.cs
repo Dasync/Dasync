@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Dasync.DependencyInjection;
 using Dasync.EETypes.Ioc;
 using Dasync.Fabric.Sample.Base;
 using Dasync.Modeling;
@@ -80,7 +81,18 @@ namespace DasyncFeatures
 
         static void PlugInDasync(IServiceCollection services, IFeatureDemo feature, bool inMemoryEmulation)
         {
-            services.AddDasyncCore();
+            services.AddModules(
+                Dasync.Modeling.DI.Bindings,
+                Dasync.Serialization.DI.Bindings,
+                Dasync.Serialization.Json.DI.Bindings,
+                Dasync.Serializers.StandardTypes.DI.Bindings,
+                Dasync.Serializers.EETypes.DI.Bindings,
+                Dasync.Serializers.DomainTypes.DI.Bindings,
+                Dasync.Proxy.DI.Bindings,
+                Dasync.AsyncStateMachine.DI.Bindings,
+                Dasync.ExecutionEngine.DI.Bindings,
+                Dasync.Bootstrap.DI.Bindings);
+
             services.AddSingleton<IDomainServiceProvider, DomainServiceProvider>();
 
             services.AddModule(Dasync.Fabric.Sample.Base.DI.Bindings);
@@ -121,16 +133,5 @@ namespace DasyncFeatures
                 }
             }
         }
-    }
-
-    public interface IFeatureDemo
-    {
-        string Name { get; }
-
-        ICommunicationModel Model { get; }
-
-        Dictionary<Type, Type> Bindings { get; }
-
-        Task Run(IServiceProvider services);
     }
 }
