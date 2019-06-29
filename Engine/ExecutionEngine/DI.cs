@@ -26,7 +26,6 @@ namespace Dasync.ExecutionEngine
             [typeof(ITaskContinuationTracker)] = typeof(TaskContinuationTracker),
             [typeof(ITaskContinuationClassifier)] = typeof(TaskContinuationClassifier),
             [typeof(ICancellationTokenSourceRegistry)] = typeof(CancellationTokenSourceRegistry),
-            [typeof(ICancellationTokenSourceIdGenerator)] = typeof(CancellationTokenSourceIdGenerator),
             [typeof(IRoutineMethodIdProvider)] = typeof(RoutineMethodIdProvider),
             [typeof(IEventIdProvider)] = typeof(EventIdProvider),
             [typeof(IIntrinsicFlowController)] = typeof(IntrinsicFlowController),
@@ -34,13 +33,14 @@ namespace Dasync.ExecutionEngine
             [typeof(ITransitionMonitorFactory)] = typeof(TransitionMonitorFactory),
             [typeof(ITransitionRunner)] = typeof(TransitionRunner),
             [typeof(ITransitionScope)] = typeof(TransitionScope),
-            [typeof(INumericIdGenerator)] = typeof(NumericIdGenerator),
+            [typeof(IUniqueIdGenerator)] = typeof(UniqueIdGenerator),
             [typeof(IRoutineMethodResolver)] = typeof(RoutineMethodResolver),
             [typeof(IServiceStateMetadataProvider)] = typeof(ServiceStateMetadataProvider),
             [typeof(IServiceStateValueContainerProvider)] = typeof(ServiceStateValueContainerProvider),
             [typeof(ISerializedServiceProxyBuilder)] = typeof(SerializedServiceProxyBuilderHolder),
             [typeof(SerializedServiceProxyBuilderHolder)] = typeof(SerializedServiceProxyBuilderHolder),
-            [typeof(ITaskCompletionSourceRegistry)] = typeof(TaskCompletionSourceRegistry)
+            [typeof(ITaskCompletionSourceRegistry)] = typeof(TaskCompletionSourceRegistry),
+            [typeof(IntrinsicRoutines)] = typeof(IntrinsicRoutines)
         };
     }
 }

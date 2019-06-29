@@ -10,6 +10,6 @@ namespace Dasync.EETypes
         /// <summary>
         /// Used to associate the result of a routine or a trigger with the serialized Task in a routine.
         /// </summary>
-        long CorellationId { get; }
+        string CorellationId { get; }
     }
 }

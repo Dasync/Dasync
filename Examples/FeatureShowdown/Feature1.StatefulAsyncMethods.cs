@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Dasync.Ioc.Ninject;
-using Ninject;
+using Dasync.Modeling;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DasyncFeatures.Feature1
 {
@@ -16,16 +17,13 @@ namespace DasyncFeatures.Feature1
     {
         public string Name { get; } = "Stateful Async Methods";
 
-        public IKernel AppKernel { get; } = new StandardKernel();
+        public ICommunicationModel Model { get; } = CommunicationModelBuilder.Build(m => m.Service<BaristaWorker>(s => { }));
 
-        public Demo()
-        {
-            AppKernel.Bind<IBaristaWorker>().To<BaristaWorker>().AsService();
-        }
+        public Dictionary<Type, Type> Bindings { get; } = new Dictionary<Type, Type>();
 
-        public async Task Run()
+        public async Task Run(IServiceProvider services)
         {
-            var baristaWorker = AppKernel.Get<IBaristaWorker>();
+            var baristaWorker = services.GetService<IBaristaWorker>();
             await baristaWorker.PerformDuties();
         }
     }

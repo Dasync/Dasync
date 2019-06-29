@@ -14,7 +14,7 @@ namespace Dasync.Serialization
         public Type Resolve(TypeSerializationInfo info)
         {
             if (string.IsNullOrEmpty(info.Name))
-                throw new ArgumentException();
+                throw new ArgumentException($"Empty {nameof(TypeSerializationInfo)}.{nameof(TypeSerializationInfo.Name)}");
 
 #warning Cache results
 

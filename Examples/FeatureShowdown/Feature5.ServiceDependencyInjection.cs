@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Dasync.Ioc.Ninject;
-using Ninject;
+using Dasync.Modeling;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DasyncFeatures.Feature5
 {
@@ -13,22 +14,18 @@ namespace DasyncFeatures.Feature5
     {
         public string Name { get; } = "Service Dependency Injection";
 
-        public IKernel AppKernel { get; } = new StandardKernel();
+        public ICommunicationModel Model { get; } = CommunicationModelBuilder.Build(m => m
+            .Service<CoffeeShopManager>(s => { })
+            .Service<BaristaWorker>(s => { }));
 
-        public Demo()
+        public Dictionary<Type, Type> Bindings { get; } = new Dictionary<Type, Type>
         {
-            // !!! LOOK HERE !!!
-            // BaristaWorker is defined as a distributed service.
-            // CoffeeMachine is not a service (such an overloaded term).
+            [typeof(ICoffeeMachine)] = typeof(CoffeeMachine)
+        };
 
-            AppKernel.Bind<ICoffeeShopManager>().To<CoffeeShopManager>().AsService();
-            AppKernel.Bind<IBaristaWorker>().To<BaristaWorker>().AsService();
-            AppKernel.Bind<ICoffeeMachine>().To<CoffeeMachine>();
-        }
-
-        public async Task Run()
+        public async Task Run(IServiceProvider services)
         {
-            var manager = AppKernel.Get<ICoffeeShopManager>();
+            var manager = services.GetService<ICoffeeShopManager>();
             await manager.SolveComplaint();
         }
     }

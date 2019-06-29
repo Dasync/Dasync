@@ -88,6 +88,8 @@ namespace Dasync.Serialization.Json
                                 }
                                 else if (name == "$itemType")
                                 {
+                                    state.Info.IsCollection = true;
+
                                     state.Info.ItemType = ReadTypeInfo();
                                 }
                                 else if (name == "$items")

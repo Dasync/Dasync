@@ -13,6 +13,7 @@ namespace Dasync.EETypes.Platform
             ScheduledActions actions,
             // Carrier is NULL when call is made outside of a transition scope, e.g. from entry point of a console app.
             ITransitionCarrier transitionCarrier,
+            TransitionCommitOptions options,
             CancellationToken ct);
     }
 }

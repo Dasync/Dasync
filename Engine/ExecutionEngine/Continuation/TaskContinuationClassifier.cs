@@ -40,8 +40,21 @@ namespace Dasync.ExecutionEngine.Continuation
 
                 if (continuationObject is Task task)
                 {
-                    continuationObject = task.GetContinuationObject();
-                    continue;
+                    // AsyncStateMachineBox`1 class derives from the Task`1
+                    if (AsyncStateMachineBoxAccessor.IsAsyncStateMachineBox(continuationObject.GetType()))
+                    {
+                        return new TaskContinuationInfo
+                        {
+                            Type = TaskContinuationType.AsyncStateMachine,
+                            Target = AsyncStateMachineBoxAccessor.GetStateMachine(continuationObject),
+                            CapturedContext = AsyncStateMachineBoxAccessor.GetContext(continuationObject) ?? capturedContext
+                        };
+                    }
+                    else
+                    {
+                        continuationObject = task.GetContinuationObject();
+                        continue;
+                    }
                 }
 
                 if (continuationObject is List<object> continuationList)

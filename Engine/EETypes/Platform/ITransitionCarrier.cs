@@ -19,7 +19,7 @@ namespace Dasync.EETypes.Platform
 
         Task<List<ContinuationDescriptor>> GetContinuationsAsync(CancellationToken ct);
 
-        Task ReadServiceStateAsync(IValueContainer target, CancellationToken ct);
+        //Task ReadServiceStateAsync(IValueContainer target, CancellationToken ct);
 
         Task ReadRoutineParametersAsync(IValueContainer target, CancellationToken ct);
 

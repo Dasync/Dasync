@@ -140,7 +140,7 @@ namespace Dasync.ExecutionEngine.Transitions
             }
             else if (!Context.TransitionCompleteTask.IsCompleted)
             {
-                routineCompletionTask.ContinueWith(OnRoutineCompleted);
+                routineCompletionTask.ContinueWith(OnRoutineCompleted, TaskContinuationOptions.ExecuteSynchronously);
             }
 
             return Context.TransitionCompleteTask;
@@ -193,7 +193,9 @@ namespace Dasync.ExecutionEngine.Transitions
         public void AwaitTrigger(TriggerReference triggerReference)
         {
             Context.ScheduledActions.SaveRoutineState = true;
-            Context.ScheduledActions.SubscribeToTriggerIntent = new SubscribeToTriggerIntent
+            if (Context.ScheduledActions.SubscribeToTriggerIntents == null)
+                Context.ScheduledActions.SubscribeToTriggerIntents = new List<SubscribeToTriggerIntent>();
+            Context.ScheduledActions.SubscribeToTriggerIntents.Add(new SubscribeToTriggerIntent
             {
                 TriggerId = triggerReference.Id,
                 Continuation = new ContinuationDescriptor
@@ -201,7 +203,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     ServiceId = Context.ServiceId,
                     Routine = Context.RoutineDescriptor
                 }
-            };
+            });
             CompleteTransition();
         }
 
@@ -250,9 +252,11 @@ namespace Dasync.ExecutionEngine.Transitions
             }
             else
             {
+                var intent = (ExecuteRoutineIntent)userData;
+
                 throw new NotImplementedException(
-                    $"Need to await for the result in process for:" +
-                    $" {continuationInfo.Type} / {continuationObject.GetType()}");
+                    $"Need to await for the result in process for '{intent.ServiceId.ServiceName}.{intent.MethodId.MethodName}' " +
+                    $"when called by {continuationInfo.Type} '{continuationObject.GetType()}'.");
             }
         }
 

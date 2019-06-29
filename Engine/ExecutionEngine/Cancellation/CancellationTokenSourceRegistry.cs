@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.Threading;
 using Dasync.Accessors;
+using Dasync.EETypes;
 using Dasync.EETypes.Cancellation;
 
 namespace Dasync.ExecutionEngine.Cancellation
 {
     public class CancellationTokenSourceRegistry : ICancellationTokenSourceRegistry
     {
-        private readonly Dictionary<Guid, WeakReference<CancellationTokenSource>> _cache =
-            new Dictionary<Guid, WeakReference<CancellationTokenSource>>();
+        private readonly Dictionary<string, WeakReference<CancellationTokenSource>> _cache =
+            new Dictionary<string, WeakReference<CancellationTokenSource>>();
 
-        private readonly ICancellationTokenSourceIdGenerator _idGenerator;
+        private readonly IUniqueIdGenerator _idGenerator;
 
-        public CancellationTokenSourceRegistry(ICancellationTokenSourceIdGenerator idGenerator)
+        public CancellationTokenSourceRegistry(IUniqueIdGenerator idGenerator)
         {
             _idGenerator = idGenerator;
         }
@@ -25,7 +26,7 @@ namespace Dasync.ExecutionEngine.Cancellation
             {
                 state = new CancellationTokenSourceState
                 {
-                    Id = _idGenerator.GenerateNewId(),
+                    Id = _idGenerator.NewId(),
                     CancelTime = source.GetCancellationTime()
                 };
                 source.SetState(state);
@@ -38,7 +39,7 @@ namespace Dasync.ExecutionEngine.Cancellation
             return state;
         }
 
-        public bool TryGet(Guid id, out CancellationTokenSource source)
+        public bool TryGet(string id, out CancellationTokenSource source)
         {
             WeakReference<CancellationTokenSource> reference;
             lock (_cache)
@@ -51,7 +52,7 @@ namespace Dasync.ExecutionEngine.Cancellation
             return false;
         }
 
-        public bool TryAdd(Guid id, CancellationTokenSource source)
+        public bool TryAdd(string id, CancellationTokenSource source)
         {
             lock (_cache)
             {

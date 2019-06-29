@@ -132,10 +132,10 @@ namespace Dasync.Fabric.FileBased
 
             public Task SaveStateAsync(SaveStateIntent intent, CancellationToken ct)
             {
-                if (intent.ServiceState != null)
-                {
-                    throw new NotImplementedException("Service state is not implemented yet due to non-finalized design.");
-                }
+                //if (intent.ServiceState != null)
+                //{
+                //    throw new NotImplementedException("Service state is not implemented yet due to non-finalized design.");
+                //}
 
                 if (intent.RoutineState != null || intent.RoutineResult != null)
                 {

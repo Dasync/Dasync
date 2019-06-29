@@ -20,6 +20,7 @@ namespace Dasync.Serializers.StandardTypes
             RegisterType(typeof(TypeSerializationInfo), "$type");
             RegisterType(typeof(Type), "Type");
             RegisterType(typeof(void), "void");
+            RegisterType(typeof(object), "object");
             RegisterType(typeof(byte), "byte");
             RegisterType(typeof(byte?), "byte?");
             RegisterType(typeof(sbyte), "sbyte");
@@ -91,6 +92,34 @@ namespace Dasync.Serializers.StandardTypes
             RegisterType(typeof(IDictionary), "IDictionary");
             RegisterType(typeof(IDictionary<,>), "IDictionary`2");
             RegisterType(typeof(EventArgs), "EventArgs");
+
+            RegisterType(typeof(Exception), nameof(Exception));
+            RegisterType(typeof(ArgumentNullException), nameof(ArgumentNullException));
+            RegisterType(typeof(ArgumentException), nameof(ArgumentException));
+            RegisterType(typeof(InvalidOperationException), nameof(InvalidOperationException));
+            RegisterType(typeof(AggregateException), nameof(AggregateException));
+            RegisterType(typeof(ApplicationException), nameof(ApplicationException));
+            RegisterType(typeof(ArgumentOutOfRangeException), nameof(ArgumentOutOfRangeException));
+            RegisterType(typeof(ArithmeticException), nameof(ArithmeticException));
+            RegisterType(typeof(DivideByZeroException), nameof(DivideByZeroException));
+            RegisterType(typeof(IndexOutOfRangeException), nameof(IndexOutOfRangeException));
+            RegisterType(typeof(InvalidCastException), nameof(InvalidCastException));
+            RegisterType(typeof(InvalidTimeZoneException), nameof(InvalidTimeZoneException));
+            RegisterType(typeof(KeyNotFoundException), nameof(KeyNotFoundException));
+            RegisterType(typeof(NotFiniteNumberException), nameof(NotFiniteNumberException));
+            RegisterType(typeof(NotImplementedException), nameof(NotImplementedException));
+            RegisterType(typeof(NotSupportedException), nameof(NotSupportedException));
+            RegisterType(typeof(NullReferenceException), nameof(NullReferenceException));
+            RegisterType(typeof(ObjectDisposedException), nameof(ObjectDisposedException));
+            RegisterType(typeof(OperationCanceledException), nameof(OperationCanceledException));
+            RegisterType(typeof(OutOfMemoryException), nameof(OutOfMemoryException));
+            RegisterType(typeof(OverflowException), nameof(OverflowException));
+            RegisterType(typeof(SystemException), nameof(SystemException));
+            RegisterType(typeof(TargetException), nameof(TargetException));
+            RegisterType(typeof(TaskCanceledException), nameof(TaskCanceledException));
+            RegisterType(typeof(ThreadAbortException), nameof(ThreadAbortException));
+            RegisterType(typeof(TimeoutException), nameof(TimeoutException));
+            RegisterType(typeof(UnauthorizedAccessException), nameof(UnauthorizedAccessException));
         }
 
         static void RegisterType(Type type, string shortName)

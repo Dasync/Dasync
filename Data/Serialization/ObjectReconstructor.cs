@@ -26,29 +26,23 @@ namespace Dasync.Serialization
 
         private Stack<ScopeState> _scopeStack = new Stack<ScopeState>();
         private ScopeState _scope;
-        private readonly ITypeResolver _typeResolver;
         private readonly IObjectComposerSelector _composerSelector;
-        private readonly ITypeNameShortener _typeNameShortener;
-        private readonly IAssemblyNameShortener _assemblyNameShortener;
         private Dictionary<long, object> _objectByIdMap = new Dictionary<long, object>();
         private Dictionary<string, object> _objectByNameMap;
         private IValueContainer _targetRootContainer;
+        private readonly ITypeSerializerHelper _typeSerializerHelper;
 
         public ObjectReconstructor(
-            ITypeResolver typeResolver,
             IObjectComposerSelector composerSelector,
 #warning target should be optional (deserialize vs populate) and of type "object"
             IValueContainer target,
-            ITypeNameShortener typeNameShortener,
-            IAssemblyNameShortener assemblyNameShortener,
+            ITypeSerializerHelper typeSerializerHelper,
             Dictionary<string, object> objectByNameMap = null)
         {
-            _typeResolver = typeResolver;
             _composerSelector = composerSelector;
-            _typeNameShortener = typeNameShortener;
-            _assemblyNameShortener = assemblyNameShortener;
             _objectByNameMap = objectByNameMap;
             _targetRootContainer = target;
+            _typeSerializerHelper = typeSerializerHelper;
         }
 
         public void OnValueStart(ValueInfo info)
@@ -62,7 +56,7 @@ namespace Dasync.Serialization
 
             if (info.Type != null)
             {
-                _scope.Type = ResolveType(info.Type);
+                _scope.Type = _typeSerializerHelper.ResolveType(info.Type);
                 if (_scope.Container == null)
                 {
                     _scope.Composer = _composerSelector.SelectComposer(_scope.Type);
@@ -75,7 +69,7 @@ namespace Dasync.Serialization
             if (info.IsCollection)
             {
                 _scope.ItemType = info.ItemType != null
-                    ? ResolveType(info.ItemType)
+                    ? _typeSerializerHelper.ResolveType(info.ItemType)
                     : typeof(object);
 
                 _scope.Array = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(_scope.ItemType));
@@ -111,7 +105,7 @@ namespace Dasync.Serialization
                 _scope.ValueReceived = true;
             }
 
-            if (!_scope.ValueReceived)
+            if (!_scope.ValueReceived && !_scope.ValueInfo.IsCollection)
             {
                 if (_scope.ValueInfo.ReferenceId.HasValue)
                 {
@@ -177,41 +171,7 @@ namespace Dasync.Serialization
 
                 if (value != null && targetType != null)
                 {
-                    // TODO: converter
-                    if (!targetType.IsAssignableFrom(value.GetType()))
-                    {
-                        if (targetType.IsArray || ((value is IList) && targetType == typeof(object)))
-                        {
-#warning This byte[] conversion is a quick-fix. Do it properly by adding type during serialization?
-                            if (targetType == typeof(byte[]) && value is string)
-                                value = Convert.FromBase64String((string)value);
-                            else
-                                value = this.GetType()
-                                    .GetMethod(nameof(ToArray), BindingFlags.Static | BindingFlags.NonPublic)
-                                    .MakeGenericMethod(targetType.GetElementType() ?? value.GetType().GetGenericArguments()[0])
-                                    .Invoke(null, new object[] { value });
-                        }
-                        else if (targetType.IsEnum())
-                        {
-                            value = Enum.ToObject(targetType, value);
-                        }
-                        else if (targetType == typeof(Guid) && value is string strGuid)
-                        {
-                            value = Guid.Parse(strGuid);
-                        }
-                        else if (targetType is Type && value is TypeSerializationInfo typeInfo)
-                        {
-                            value = ResolveType(typeInfo);
-                        }
-                        else if (targetType == typeof(Uri))
-                        {
-                            value = new Uri((string)Convert.ChangeType(value, typeof(string)));
-                        }
-                        else
-                        {
-                            value = Convert.ChangeType(value, targetType);
-                        }
-                    }
+                    value = EnsureValueType(targetType, value);
 
                     if (valueScope.ValueInfo.ReferenceId.HasValue)
                     {
@@ -238,6 +198,54 @@ namespace Dasync.Serialization
                     }
                 }
             }
+        }
+
+        private object EnsureValueType(Type targetType, object value)
+        {
+            // TODO: converter
+            if (!targetType.IsAssignableFrom(value.GetType()))
+            {
+                if (targetType.IsArray || ((value is IList) && targetType == typeof(object)))
+                {
+#warning This byte[] conversion is a quick-fix. Do it properly by adding type during serialization?
+                    if (targetType == typeof(byte[]) && value is string)
+                        value = Convert.FromBase64String((string)value);
+                    else
+                        value = typeof(ObjectReconstructor)
+                            .GetMethod(nameof(ToArray), BindingFlags.Static | BindingFlags.NonPublic)
+                            .MakeGenericMethod(targetType.GetElementType() ?? value.GetType().GetGenericArguments()[0])
+                            .Invoke(null, new object[] { value });
+                }
+                else if (targetType.IsEnum())
+                {
+                    value = Enum.ToObject(targetType, value);
+                }
+                else if ((targetType == typeof(Guid) || targetType == typeof(Guid?)) && value is string strGuid)
+                {
+                    value = Guid.Parse(strGuid);
+                }
+                else if (targetType is Type && value is TypeSerializationInfo typeInfo)
+                {
+                    value = _typeSerializerHelper.ResolveType(typeInfo);
+                }
+                else if (targetType == typeof(Uri))
+                {
+                    value = new Uri((string)Convert.ChangeType(value, typeof(string)));
+                }
+                else if (targetType.IsGenericType && !targetType.IsClass && targetType.Name == "Nullable`1")
+                {
+                    var nullableValueType = targetType.GetGenericArguments()[0];
+                    if (!nullableValueType.IsAssignableFrom(value.GetType()))
+                        value = EnsureValueType(nullableValueType, value);
+                    value = Activator.CreateInstance(targetType, value);
+                }
+                else
+                {
+                    value = Convert.ChangeType(value, targetType);
+                }
+            }
+
+            return value;
         }
 
         static T[] ToArray<T>(IList list) => list.Cast<T>().ToArray();
@@ -275,7 +283,7 @@ namespace Dasync.Serialization
             for (var i = 0; i < count; i++)
             {
                 var type = container.GetType(i);
-                if (ReferenceEquals(type, uniqueTypeToFind))
+                if (ReferenceEquals(type, uniqueTypeToFind) || (type.IsInterface && type.IsAssignableFrom(uniqueTypeToFind)))
                 {
                     if (foundIndex >= 0)
                         return -1;
@@ -285,37 +293,6 @@ namespace Dasync.Serialization
             }
 
             return foundIndex;
-        }
-
-        private Type ResolveType(TypeSerializationInfo info)
-        {
-            if (!_typeNameShortener.TryExpand(info.Name, out Type type))
-            {
-                if (_assemblyNameShortener.TryExpand(info.Assembly?.Name, out Assembly assembly))
-                    info.Assembly = assembly.ToAssemblySerializationInfo();
-
-                var infoForResolving = info.GenericArgs?.Length > 0
-                    ? new TypeSerializationInfo
-                    {
-                        Name = info.Name,
-                        Assembly = info.Assembly
-                    }
-                    : info;
-                type = _typeResolver.Resolve(infoForResolving);
-            }
-
-            if (type.IsGenericTypeDefinition())
-            {
-                var genericArguments = new Type[info.GenericArgs.Length];
-                for (var i = 0; i < genericArguments.Length; i++)
-                {
-                    var genericArgument = ResolveType(info.GenericArgs[i]);
-                    genericArguments[i] = genericArgument;
-                }
-                type = type.MakeGenericType(genericArguments);
-            }
-
-            return type;
         }
     }
 }

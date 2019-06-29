@@ -7,7 +7,7 @@ namespace Dasync.EETypes.Intents
         /// <summary>
         /// An intent ID, which must be unique within a scope of a routine being executed.
         /// </summary>
-        public long Id;
+        public string Id;
 
         /// <summary>
         /// A service that published the event, or null if the event is not raised by a service.

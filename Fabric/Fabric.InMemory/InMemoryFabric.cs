@@ -16,14 +16,14 @@ namespace Dasync.Fabric.InMemory
         private readonly ITransitionRunner _transitionRunner;
         private string _serializationFormat;
         private readonly ExecutionContext _nonTransitionExecutionContext = ExecutionContext.Capture();
-        private readonly INumericIdGenerator _numericIdGenerator;
+        private readonly IUniqueIdGenerator _uniqueIdGenerator;
 
         public InMemoryFabric(ITransitionRunner transitionRunner,
             IInMemoryFabricSerializerFactoryAdvisor serializerFactoryAdvisor,
-            INumericIdGenerator numericIdGenerator)
+            IUniqueIdGenerator numericIdGenerator)
         {
             _transitionRunner = transitionRunner;
-            _numericIdGenerator = numericIdGenerator;
+            _uniqueIdGenerator = numericIdGenerator;
 
             DataStore = InMemoryDataStore.Create(ScheduleMessage);
             var serializerFactory = serializerFactoryAdvisor.Advise();
@@ -110,7 +110,7 @@ namespace Dasync.Fabric.InMemory
                     var routineDescriptor = new RoutineDescriptor
                     {
                         MethodId = subscriber.MethodId,
-                        IntentId = _numericIdGenerator.NewId(),
+                        IntentId = _uniqueIdGenerator.NewId(),
                         RoutineId = routineRecord.Id,
                         ETag = routineRecord.ETag
                     };
@@ -180,18 +180,18 @@ namespace Dasync.Fabric.InMemory
 
         private Task SaveStateAsync(SaveStateIntent intent, CancellationToken ct)
         {
-            if (intent.ServiceState != null)
-            {
-                var serviceStateRecord = GetOrCreateServiceStateRecord(intent.ServiceId);
-                serviceStateRecord.State = Serializer.SerializeToString(intent.ServiceState);
-            }
+            //if (intent.ServiceState != null)
+            //{
+            //    var serviceStateRecord = GetOrCreateServiceStateRecord(intent.ServiceId);
+            //    serviceStateRecord.State = Serializer.SerializeToString(intent.ServiceState);
+            //}
 
             if (intent.RoutineState != null || intent.RoutineResult != null)
             {
                 var routineRecord = DataStore.GetRoutineRecord(intent.Routine.RoutineId);
                 string stateData = null;
                 string resultData = null;
-                if (intent.RoutineState != null)
+                if (intent.RoutineResult == null && intent.RoutineState != null)
                     stateData = Serializer.SerializeToString(intent.RoutineState);
                 if (intent.RoutineResult != null)
                     resultData = Serializer.SerializeToString(intent.RoutineResult);

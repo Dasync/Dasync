@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Dasync.Ioc.Ninject;
-using Ninject;
+using Dasync.Modeling;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DasyncFeatures.Feature7
 {
@@ -13,21 +14,16 @@ namespace DasyncFeatures.Feature7
     {
         public string Name { get; } = "Events";
 
-        public IKernel AppKernel { get; } = new StandardKernel();
+        public ICommunicationModel Model { get; } = CommunicationModelBuilder.Build(m => m
+            .Service<CustomerManagementService>(s => { })
+            .Service<NewsletterService>(s => { })
+            .Service<RewardProgramService>(s => { }));
 
-        public Demo()
-        {
-            AppKernel.Bind<ICustomerManagementService>().To<CustomerManagementService>().AsService();
-            AppKernel.Bind<NewsletterService>().ToSelf().AsService();
-            AppKernel.Bind<RewardProgramService>().ToSelf().AsService();
-        }
+        public Dictionary<Type, Type> Bindings { get; } = new Dictionary<Type, Type>();
 
-        public async Task Run()
+        public async Task Run(IServiceProvider services)
         {
-            var customerManagementService = AppKernel.Get<ICustomerManagementService>();
-            // Initialize all services on startup to subscribe to events.
-            AppKernel.Get<NewsletterService>();
-            AppKernel.Get<RewardProgramService>();
+            var customerManagementService = services.GetService<ICustomerManagementService>();
 
             var customerInfo = new CustomerInfo
             {

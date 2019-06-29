@@ -7,28 +7,22 @@ namespace Dasync.Serialization
     {
         private readonly IValueWriterFactory _valueWriterFactory;
         private readonly IValueReaderFactory _valueReaderFactory;
-        private readonly ITypeNameShortener _typeNameShortener;
-        private readonly IAssemblyNameShortener _assemblyNameShortener;
-        private readonly ITypeResolver _typeResolver;
         private readonly IObjectDecomposerSelector _decomposerSelector;
         private readonly IObjectComposerSelector _composerSelector;
+        private readonly ITypeSerializerHelper _typeSerializerHelper;
 
         public StandardSerializer(
             IValueWriterFactory valueWriterFactory,
             IValueReaderFactory valueReaderFactory,
-            ITypeNameShortener typeNameShortener,
-            IAssemblyNameShortener assemblyNameShortener,
-            ITypeResolver typeResolver,
             IObjectDecomposerSelector decomposerSelector,
-            IObjectComposerSelector composerSelector)
+            IObjectComposerSelector composerSelector,
+            ITypeSerializerHelper typeSerializerHelper)
         {
             _valueWriterFactory = valueWriterFactory;
             _valueReaderFactory = valueReaderFactory;
-            _typeNameShortener = typeNameShortener;
-            _assemblyNameShortener = assemblyNameShortener;
-            _typeResolver = typeResolver;
             _decomposerSelector = decomposerSelector;
             _composerSelector = composerSelector;
+            _typeSerializerHelper = typeSerializerHelper;
         }
 
         public void Serialize(Stream stream, object @object)
@@ -38,11 +32,7 @@ namespace Dasync.Serialization
 
             using (var valueWriter = _valueWriterFactory.Create(stream))
             {
-                var serializer = new ValueContainerSerializer(
-                    _decomposerSelector,
-                    _typeNameShortener,
-                    _assemblyNameShortener);
-
+                var serializer = new ValueContainerSerializer(_decomposerSelector, _typeSerializerHelper);
                 serializer.Serialize(@object, valueWriter);
             }
         }
@@ -51,13 +41,7 @@ namespace Dasync.Serialization
         {
             using (var valueReader = _valueReaderFactory.Create(stream))
             {
-                var reconstructor = new ObjectReconstructor(
-                    _typeResolver,
-                    _composerSelector,
-                    target,
-                    _typeNameShortener,
-                    _assemblyNameShortener);
-
+                var reconstructor = new ObjectReconstructor(_composerSelector, target, _typeSerializerHelper);
                 valueReader.Read(reconstructor);
             }
         }

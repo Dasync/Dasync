@@ -11,6 +11,7 @@ namespace Dasync.Serialization
             [typeof(ITypeResolver)] = typeof(TypeResolver),
             [typeof(ISerializerFactorySelector)] = typeof(SerializerFactorySelector),
             [typeof(IStandardSerializerFactory)] = typeof(StandardSerializerFactory),
+            [typeof(ITypeSerializerHelper)] = typeof(TypeSerializerHelper),
         };
     }
 }

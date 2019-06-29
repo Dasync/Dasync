@@ -4,7 +4,7 @@ namespace Dasync.EETypes.Intents
 {
     public class ActivateTriggerIntent
     {
-        public long TriggerId;
+        public string TriggerId;
 
         public TaskResult Value;
     }

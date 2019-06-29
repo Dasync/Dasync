@@ -30,9 +30,9 @@ namespace Dasync.ExecutionEngine.Transitions
         private readonly IRoutineMethodResolver _routineMethodResolver;
         private readonly IAsyncStateMachineMetadataProvider _asyncStateMachineMetadataProvider;
         private readonly IMethodInvokerFactory _methodInvokerFactory;
-        private readonly IServiceStateValueContainerProvider _serviceStateValueContainerProvider;
+        //private readonly IServiceStateValueContainerProvider _serviceStateValueContainerProvider;
         private readonly IntrinsicRoutines _intrinsicRoutines;
-        private readonly INumericIdGenerator _idGenerator;
+        private readonly IUniqueIdGenerator _idGenerator;
         private readonly ITaskCompletionSourceRegistry _taskCompletionSourceRegistry;
 
         public TransitionRunner(
@@ -42,9 +42,9 @@ namespace Dasync.ExecutionEngine.Transitions
             IRoutineMethodResolver routineMethodResolver,
             IAsyncStateMachineMetadataProvider asyncStateMachineMetadataProvider,
             IMethodInvokerFactory methodInvokerFactory,
-            IServiceStateValueContainerProvider serviceStateValueContainerProvider,
+            //IServiceStateValueContainerProvider serviceStateValueContainerProvider,
             IntrinsicRoutines intrinsicRoutines,
-            INumericIdGenerator idGenerator,
+            IUniqueIdGenerator idGenerator,
             ITaskCompletionSourceRegistry taskCompletionSourceRegistry)
         {
             _transitionScope = transitionScope;
@@ -53,7 +53,7 @@ namespace Dasync.ExecutionEngine.Transitions
             _routineMethodResolver = routineMethodResolver;
             _asyncStateMachineMetadataProvider = asyncStateMachineMetadataProvider;
             _methodInvokerFactory = methodInvokerFactory;
-            _serviceStateValueContainerProvider = serviceStateValueContainerProvider;
+            //_serviceStateValueContainerProvider = serviceStateValueContainerProvider;
             _intrinsicRoutines = intrinsicRoutines;
             _idGenerator = idGenerator;
             _taskCompletionSourceRegistry = taskCompletionSourceRegistry;
@@ -72,7 +72,7 @@ namespace Dasync.ExecutionEngine.Transitions
             }
             else
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException($"Unknown transition type '{transitionDescriptor.Type}'.");
             }
         }
 
@@ -100,15 +100,15 @@ namespace Dasync.ExecutionEngine.Transitions
                 var serviceType = (serviceInstance as IProxy)?.ObjectType ?? serviceInstance.GetType();
                 var routineMethod = _routineMethodResolver.Resolve(serviceType, routineDescriptor.MethodId);
 
-                var serviceStateContainer = _serviceStateValueContainerProvider.CreateContainer(serviceInstance);
-                var isStatefullService = serviceStateContainer.GetCount() > 0;
-                if (isStatefullService)
-                    await transitionCarrier.ReadServiceStateAsync(serviceStateContainer, ct);
+                //var serviceStateContainer = _serviceStateValueContainerProvider.CreateContainer(serviceInstance);
+                //var isStatefullService = serviceStateContainer.GetCount() > 0;
+                //if (isStatefullService)
+                //    await transitionCarrier.ReadServiceStateAsync(serviceStateContainer, ct);
 
                 Task completionTask;
                 IValueContainer asmValueContainer = null;
 
-                if (TryCreateAsyncStateMachine(routineMethod, out var asmInstance, out var asmMetadata, out completionTask))
+                if (TryCreateAsyncStateMachine(routineMethod, out var asmInstance, out var asmMetadata))
                 {
                     var isContinuation = transitionDescriptor.Type == TransitionType.ContinueRoutine;
                     asmValueContainer = await LoadRoutineStateAsync(transitionCarrier, asmInstance, asmMetadata, isContinuation, ct);
@@ -126,6 +126,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     {
 #warning possibly need to create a proxy? on a sealed ASM class? How to capture Task.Delay if it's not immediate after first MoveNext?
                         asmInstance.MoveNext();
+                        completionTask = GetCompletionTask(asmInstance, asmMetadata);
                     }
                     catch (Exception ex)
                     {
@@ -178,12 +179,12 @@ namespace Dasync.ExecutionEngine.Transitions
 
                 var scheduledActions = await transitionMonitor.TrackRoutineCompletion(completionTask);
 
-                if (scheduledActions.SaveRoutineState || isStatefullService)
+                if (scheduledActions.SaveRoutineState /*|| isStatefullService*/)
                 {
                     scheduledActions.SaveStateIntent = new SaveStateIntent
                     {
                         ServiceId = serviceId,
-                        ServiceState = isStatefullService ? serviceStateContainer : null,
+                        //ServiceState = isStatefullService ? serviceStateContainer : null,
                         Routine = scheduledActions.SaveRoutineState ? routineDescriptor : null,
                         RoutineState = scheduledActions.SaveRoutineState ? asmValueContainer : null,
                         AwaitedRoutine = scheduledActions.ExecuteRoutineIntents?.FirstOrDefault(
@@ -236,7 +237,9 @@ namespace Dasync.ExecutionEngine.Transitions
 
                 ScanForExtraIntents(scheduledActions);
 
-                await _transitionCommitter.CommitAsync(scheduledActions, transitionCarrier, ct);
+                var commitOptions = new TransitionCommitOptions();
+
+                await _transitionCommitter.CommitAsync(scheduledActions, transitionCarrier, commitOptions, ct);
             }
         }
 
@@ -253,29 +256,32 @@ namespace Dasync.ExecutionEngine.Transitions
         private bool TryCreateAsyncStateMachine(
             MethodInfo methodInfo,
             out IAsyncStateMachine asyncStateMachine,
-            out AsyncStateMachineMetadata metadata,
-            out Task completionTask)
+            out AsyncStateMachineMetadata metadata)
         {
             if (!methodInfo.IsAsyncStateMachine())
             {
                 asyncStateMachine = null;
                 metadata = null;
-                completionTask = null;
                 return false;
             }
 
             metadata = _asyncStateMachineMetadataProvider.GetMetadata(methodInfo);
+            // ASM is a struct in 'release' mode, thus need to box it.
             asyncStateMachine = (IAsyncStateMachine)Activator.CreateInstance(metadata.StateMachineType);
-
             metadata.State.FieldInfo?.SetValue(asyncStateMachine, -1);
-
-            var createBuilderMethod = metadata.Builder.FieldInfo.FieldType.GetMethod("Create", BindingFlags.Public | BindingFlags.Static);
-            var taskBuilder = createBuilderMethod.Invoke(null, null);
-            var taskField = metadata.Builder.FieldInfo.FieldType.GetProperty("Task", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            completionTask = (Task)taskField.GetValue(taskBuilder); // builder is a struct, need to initialize the Task here!
-            metadata.Builder.FieldInfo.SetValue(asyncStateMachine, taskBuilder);
-
             return true;
+        }
+
+        private Task GetCompletionTask(IAsyncStateMachine asyncStateMachine, AsyncStateMachineMetadata metadata)
+        {
+            // For some reason, a completion Task retrieved right after the creation of an ASM can be a different
+            // than the one you get after first ASM transition. Debugger showed that the Task may get overwritten
+            // in the AsyncTaskMethodBuilder.
+
+            var taskBuilder = metadata.Builder.FieldInfo.GetValue(asyncStateMachine);
+            var taskField = metadata.Builder.FieldInfo.FieldType.GetProperty("Task", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            var completionTask = (Task)taskField.GetValue(taskBuilder); // builder is a struct, need to initialize the Task here!
+            return completionTask;
         }
 
         private async Task<IValueContainer> LoadRoutineStateAsync(

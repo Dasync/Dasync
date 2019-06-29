@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Dasync.Bootstrap;
-using Dasync.Ioc;
-using Dasync.Ioc.Ninject;
-using Ninject;
+using Dasync.EETypes.Ioc;
+using Dasync.Fabric.Sample.Base;
+using Dasync.Modeling;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DasyncFeatures
 {
@@ -43,9 +44,11 @@ namespace DasyncFeatures
             //    this console app, it will pick up any unfinished work. [DEFAULT]
             //    Where does it store the data? In the 'data' folder :)
             //    It should be under '/bin/Debug/netcoreapp2.0' directory.
-            await PlugInDasync(feature.AppKernel, inMemoryEmulation: false);
-
-            await feature.Run();
+            var services = new ServiceCollection();
+            PlugInDasync(services, feature, inMemoryEmulation: false);
+            var sp = services.BuildServiceProvider();
+            StartFabric(sp);
+            await feature.Run(sp);
         }
 
         static IFeatureDemo SelectFeature(IFeatureDemo[] features)
@@ -75,28 +78,48 @@ namespace DasyncFeatures
             return features[featureIndex];
         }
 
-        static async Task PlugInDasync(IKernel appKernel, bool inMemoryEmulation)
+        static void PlugInDasync(IServiceCollection services, IFeatureDemo feature, bool inMemoryEmulation)
         {
-            var engineContainer = new BasicIocContainer()
-                .Load(Dasync.Ioc.DI.Bindings)
-                .Load(Dasync.Serialization.DI.Bindings)
-                .Load(Dasync.Serialization.Json.DI.Bindings)
-                .Load(Dasync.ServiceRegistry.DI.Bindings)
-                .Load(Dasync.Proxy.DI.Bindings)
-                .Load(Dasync.AsyncStateMachine.DI.Bindings)
-                .Load(Dasync.ExecutionEngine.DI.Bindings)
-                .Load(Dasync.Fabric.Sample.Base.DI.Bindings)
-                .Load(Dasync.Bootstrap.DI.Bindings);
+            services.AddDasyncCore();
+            services.AddSingleton<IDomainServiceProvider, DomainServiceProvider>();
 
-            if (inMemoryEmulation)
-                engineContainer.Load(Dasync.Fabric.InMemory.DI.Bindings);
-            else
-                engineContainer.Load(Dasync.Fabric.FileBased.DI.Bindings);
+            services.AddModule(Dasync.Fabric.Sample.Base.DI.Bindings);
+            //if (inMemoryEmulation)
+                services.AddModule(Dasync.Fabric.InMemory.DI.Bindings);
+            //else
+            //    engineContainer.Load(Dasync.Fabric.FileBased.DI.Bindings);
 
-            engineContainer.Bind(typeof(IAppIocContainerProvider),
-                new ConstantAppIocContainerProvider(appKernel.ToIocContainer()));
+            services.Rebind<ICommunicationModelProvider>().To(new CommunicationModelProvider(
+                new CommunicationModelProvider.Holder { Model = feature.Model }));
 
-            await engineContainer.Resolve<Bootstrapper>().BootstrapAsync(default);
+            services.AddModule(feature.Bindings);
+            services.AddDomainServicesViaDasync(feature.Model);
+        }
+
+        static void StartFabric(IServiceProvider services)
+        {
+            var communicationModelProvider = services.GetService<ICommunicationModelProvider>();
+            var domainServiceProvider = services.GetService<IDomainServiceProvider>();
+
+            services.GetService<ICurrentFabricSetter>().SetInstance(services.GetService<IFabric>());
+
+            // ResolveAllDomainServices
+            var communicationModel = communicationModelProvider.Model;
+            foreach (var serviceDefinition in communicationModel.Services)
+            {
+                if (serviceDefinition.Implementation != null)
+                {
+                    domainServiceProvider.GetService(serviceDefinition.Implementation);
+                }
+
+                if (serviceDefinition.Interfaces?.Length > 0)
+                {
+                    foreach (var interfaceType in serviceDefinition.Interfaces)
+                    {
+                        domainServiceProvider.GetService(interfaceType);
+                    }
+                }
+            }
         }
     }
 
@@ -104,8 +127,10 @@ namespace DasyncFeatures
     {
         string Name { get; }
 
-        IKernel AppKernel { get; }
+        ICommunicationModel Model { get; }
 
-        Task Run();
+        Dictionary<Type, Type> Bindings { get; }
+
+        Task Run(IServiceProvider services);
     }
 }

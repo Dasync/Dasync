@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Dasync.Serialization;
 
@@ -13,7 +14,7 @@ namespace Dasync.Fabric.InMemory
     {
         private readonly ISerializerFactory _factory;
 
-        public InMemoryFabricSerializerFactoryAdvisor(ISerializerFactory[] factories)
+        public InMemoryFabricSerializerFactoryAdvisor(IEnumerable<ISerializerFactory> factories)
         {
             _factory = factories?.FirstOrDefault();
         }

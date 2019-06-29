@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Dasync.Ioc.Ninject;
-using Ninject;
+using Dasync.Modeling;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DasyncFeatures.Feature6
 {
@@ -13,18 +14,16 @@ namespace DasyncFeatures.Feature6
     {
         public string Name { get; } = "Saga";
 
-        public IKernel AppKernel { get; } = new StandardKernel();
+        public ICommunicationModel Model { get; } = CommunicationModelBuilder.Build(m => m
+            .Service<OrderPlacement>(s => { })
+            .Service<PaymentProcessor>(s => { })
+            .Service<Warehouse>(s => { }));
 
-        public Demo()
-        {
-            AppKernel.Bind<IOrderPlacement>().To<OrderPlacement>().AsService();
-            AppKernel.Bind<IPaymentProcessor>().To<PaymentProcessor>().AsService();
-            AppKernel.Bind<IWarehouse>().To<Warehouse>().AsService();
-        }
+        public Dictionary<Type, Type> Bindings { get; } = new Dictionary<Type, Type>();
 
-        public async Task Run()
+        public async Task Run(IServiceProvider services)
         {
-            var orderPlacement = AppKernel.Get<IOrderPlacement>();
+            var orderPlacement = services.GetService<IOrderPlacement>();
             await orderPlacement.PlaceOrder();
         }
     }

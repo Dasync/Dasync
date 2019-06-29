@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.4</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <BaseIntermediateOutputPath>obj\$(Configuration)\$(TargetFramework)\</BaseIntermediateOutputPath>
@@ -28,9 +28,8 @@
     <ProjectReference Include="..\..\Engine\Accessors\Dasync.Accessors.csproj" />
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />
     <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.csproj" />
-    <ProjectReference Include="..\..\IoC\IoC\Dasync.Ioc.csproj" />
+    <ProjectReference Include="..\..\Modeling\Dasync.Modeling.csproj" />
     <ProjectReference Include="..\Sample.Base\Dasync.Fabric.Sample.Base.csproj" />
-    <ProjectReference Include="..\ServiceRegistry\Dasync.ServiceRegistry.csproj" />
   </ItemGroup>
 
 </Project>

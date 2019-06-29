@@ -21,10 +21,12 @@ namespace Dasync.Fabric.Sample.Base
 
         public async Task CommitAsync(
             ScheduledActions actions,
+            // Carrier is NULL when call is made outside of a transition scope, e.g. from entry point of a console app.
             ITransitionCarrier transitionCarrier,
+            TransitionCommitOptions options,
             CancellationToken ct)
         {
-#warning This need deep thinking on how to achieve transictionality
+#warning This need deep thinking on how to achieve consistency
 
             if (actions.SaveStateIntent != null)
             {
@@ -43,7 +45,7 @@ namespace Dasync.Fabric.Sample.Base
                     var info = await connector.ScheduleRoutineAsync(intent, ct);
 #warning TODO: check if routine is already done - it's possible on retry to run the transition, or under some special circumstances.
 #warning TODO: save scheduled routine info into current routine's state - needed for dynamic subscription.
-                    if (intent.NotifyOnCompletion)
+                    if (options.NotifyOnRoutineCompletion)
                         ((IInternalRoutineCompletionNotifier)_routineCompletionNotifier).RegisterComittedRoutine(intent.Id, connector, info);
                 }
             }
@@ -91,10 +93,11 @@ namespace Dasync.Fabric.Sample.Base
                     await connector.ActivateTriggerAsync(intent, ct);
             }
 
-            if (actions.SubscribeToTriggerIntent != null)
+            if (actions.SubscribeToTriggerIntents?.Count > 0)
             {
                 var connector = ((ICurrentConnectorProvider)transitionCarrier).Connector;
-                await connector.SubscribeToTriggerAsync(actions.SubscribeToTriggerIntent, ct);
+                foreach (var intent in actions.SubscribeToTriggerIntents)
+                    await connector.SubscribeToTriggerAsync(intent, ct);
             }
         }
     }

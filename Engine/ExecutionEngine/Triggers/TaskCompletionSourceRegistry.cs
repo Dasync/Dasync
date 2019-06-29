@@ -9,11 +9,11 @@ namespace Dasync.ExecutionEngine.Triggers
 {
     public class TaskCompletionSourceRegistry : ITaskCompletionSourceRegistry
     {
-        private readonly INumericIdGenerator _numericIdGenerator;
+        private readonly IUniqueIdGenerator _numericIdGenerator;
         private readonly ITransitionScope _transitionScope;
 
         public TaskCompletionSourceRegistry(
-            INumericIdGenerator numericIdGenerator,
+            IUniqueIdGenerator numericIdGenerator,
             ITransitionScope transitionScope)
         {
             _numericIdGenerator = numericIdGenerator;

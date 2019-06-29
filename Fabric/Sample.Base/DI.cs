@@ -10,7 +10,9 @@ namespace Dasync.Fabric.Sample.Base
         {
             [typeof(IFabricConnectorFactorySelector)] = typeof(FabricConnectorFactorySelector),
             [typeof(IFabricConnectorSelector)] = typeof(FabricConnectorSelector),
+            [typeof(CurrentFabricHolder)] = typeof(CurrentFabricHolder),
             [typeof(ICurrentFabric)] = typeof(CurrentFabricHolder),
+            [typeof(ICurrentFabricSetter)] = typeof(CurrentFabricHolder),
             [typeof(ITransitionCommitter)] = typeof(TransitionCommitter),
             [typeof(IRoutineCompletionNotifier)] = typeof(RoutineCompletionNotifier),
             [typeof(IEventSubscriber)] = typeof(EventSubscriber)

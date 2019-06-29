@@ -7,7 +7,7 @@ namespace Dasync.ExecutionEngine.Proxy
     /// Created to bypass limitations of accessing non-fully initialized proxy during event subscription,
     /// because the proxy is in constructor execution and is being built by an IoC container.
     /// </summary>
-    internal class ServiceProxyBuildingContext
+    public class ServiceProxyBuildingContext
     {
         private static AsyncLocal<ServiceProxyBuildingContext> _current = new AsyncLocal<ServiceProxyBuildingContext>();
 

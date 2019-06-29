@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Platform;
 
@@ -9,7 +10,7 @@ namespace Dasync.Fabric.Sample.Base
 {
     internal interface IInternalRoutineCompletionNotifier
     {
-        void RegisterComittedRoutine(long routineIntentId, IFabricConnector fabricConnector, ActiveRoutineInfo routineInfo);
+        void RegisterComittedRoutine(string routineIntentId, IFabricConnector fabricConnector, ActiveRoutineInfo routineInfo);
     }
 
     public class RoutineCompletionNotifier : IRoutineCompletionNotifier, IInternalRoutineCompletionNotifier
@@ -21,15 +22,17 @@ namespace Dasync.Fabric.Sample.Base
         }
 
         private readonly IFabricConnectorSelector _fabricConnectorSelector;
-        private readonly Dictionary<long, FabricConnectorAndRoutineInfo> _committedRoutines =
-            new Dictionary<long, FabricConnectorAndRoutineInfo>();
+        private readonly Dictionary<string, FabricConnectorAndRoutineInfo> _committedRoutines =
+            new Dictionary<string, FabricConnectorAndRoutineInfo>();
+        private readonly Dictionary<string, TaskResult> _routineResults
+            = new Dictionary<string, TaskResult>();
 
         public RoutineCompletionNotifier(IFabricConnectorSelector fabricConnectorSelector)
         {
             _fabricConnectorSelector = fabricConnectorSelector;
         }
 
-        public void RegisterComittedRoutine(long routineIntentId, IFabricConnector fabricConnector, ActiveRoutineInfo routineInfo)
+        public void RegisterComittedRoutine(string routineIntentId, IFabricConnector fabricConnector, ActiveRoutineInfo routineInfo)
         {
             lock (_committedRoutines)
             {
@@ -37,22 +40,44 @@ namespace Dasync.Fabric.Sample.Base
             }
         }
 
-        public async void NotifyCompletion(long routineIntentId, TaskCompletionSource<TaskResult> completionSink)
+        public Task<TaskResult> TryPollCompletionAsync(
+            ServiceId serviceId,
+            RoutineMethodId methodId,
+            string intentId,
+            CancellationToken ct)
+        {
+            lock (_routineResults)
+            {
+                _routineResults.TryGetValue(intentId, out var taskResult);
+                return Task.FromResult(taskResult);
+            }
+        }
+
+        public async void NotifyCompletion(
+            ServiceId serviceId,
+            RoutineMethodId methodId,
+            string intentId,
+            TaskCompletionSource<TaskResult> completionSink,
+            CancellationToken ct)
         {
             FabricConnectorAndRoutineInfo fabricConnectorAndRoutineInfo;
 
-            lock (_committedRoutines)
+            while (true)
             {
-                fabricConnectorAndRoutineInfo = _committedRoutines[routineIntentId];
-                _committedRoutines.Remove(routineIntentId);
+                lock (_committedRoutines)
+                {
+                    if (_committedRoutines.TryGetValue(intentId, out fabricConnectorAndRoutineInfo))
+                    {
+                        _committedRoutines.Remove(intentId);
+                        break;
+                    }
+                }
+                await Task.Delay(5);
             }
 
 #warning Add infrastructure exception handling
 
-#warning need to associate a routine with a cancellaion token, and abandon polling when canceled?
-            var ct = CancellationToken.None;
-
-            for (var i = 0; ; i++)
+            for (var i = 0; fabricConnectorAndRoutineInfo.RoutineInfo.Result == null; i++)
             {
 #warning Ideally need to handle 'fire an forget' cases - the continuation is never set?
                 //if (!proxyTask.continuation == null after 1 min?)
@@ -75,6 +100,9 @@ namespace Dasync.Fabric.Sample.Base
 
                 await Task.Delay(delayInterval);
             }
+
+            lock (_routineResults)
+                _routineResults.Add(intentId, fabricConnectorAndRoutineInfo.RoutineInfo.Result);
 
             Task.Run(() =>
                 completionSink.SetResult(fabricConnectorAndRoutineInfo.RoutineInfo.Result)

@@ -102,20 +102,53 @@ namespace Dasync.Accessors
 
         public static bool TrySetResult(this Task task, object result)
         {
-#warning pre-compile accessor for Task.TrySetResult
-#warning make sure that the result type matches
-            var method = task.GetType().GetMethod("TrySetResult",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-
             var taskResultType = task.GetResultType();
             if (taskResultType == VoidTaskResultType)
                 result = null;
 
-            // Quick Fix: JSON serializer deserializes integers as Long
-            if (result != null && !taskResultType.IsAssignableFrom(result.GetType()))
-                result = Convert.ChangeType(result, taskResultType);
+            if (result != null)
+                result = EnsureResultType(taskResultType, result);
+
+#warning pre-compile accessor for Task.TrySetResult
+#warning make sure that the result type matches
+            var method = task.GetType().GetMethod("TrySetResult",
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null, new[] { taskResultType }, null);
 
             return (bool)method.Invoke(task, new[] { result });
+        }
+
+        // Quick Fix: JSON serializer deserializes integers as Long, enums as long, URIs as string, GUIDs as string.
+        private static object EnsureResultType(Type targetType, object value)
+        {
+            if (targetType.IsAssignableFrom(value.GetType()))
+                return value;
+
+            if (targetType.IsEnum)
+            {
+                value = Enum.ToObject(targetType, value);
+            }
+            else if ((targetType == typeof(Guid) || targetType == typeof(Guid?)) && value is string strGuid)
+            {
+                value = Guid.Parse(strGuid);
+            }
+            else if (targetType == typeof(Uri))
+            {
+                value = new Uri((string)Convert.ChangeType(value, typeof(string)));
+            }
+            else if (targetType.IsGenericType && !targetType.IsClass && targetType.Name == "Nullable`1")
+            {
+                var nullableValueType = targetType.GetGenericArguments()[0];
+                if (!nullableValueType.IsAssignableFrom(value.GetType()))
+                    value = EnsureResultType(nullableValueType, value);
+                value = Activator.CreateInstance(targetType, value);
+            }
+            else
+            {
+                value = Convert.ChangeType(value, targetType);
+            }
+
+            return value;
         }
 
         public static Type GetResultType(this Task task)
@@ -129,7 +162,8 @@ namespace Dasync.Accessors
             {
                 return VoidTaskResultType;
             }
-            else if (taskType.IsGenericType() && taskType.GetGenericTypeDefinition() == typeof(Task<>))
+            else if (taskType.IsGenericType() && taskType.GetGenericTypeDefinition() == typeof(Task<>)
+                || AsyncStateMachineBoxAccessor.IsAsyncStateMachineBox(taskType))
             {
                 return taskType.GetGenericArguments()[0];
             }
@@ -151,7 +185,7 @@ namespace Dasync.Accessors
             }
             else
             {
-                throw new Exception();
+                throw new Exception($"Failed to match type [{taskType}] as a known 'Task' type.");
             }
         }
 
@@ -173,7 +207,10 @@ namespace Dasync.Accessors
             {
                 return null;
             }
-            else if (taskType.IsGenericType() && taskType.GetGenericTypeDefinition() == typeof(Task<>))
+            else if (
+                (taskType.IsGenericType() && taskType.GetGenericTypeDefinition() == typeof(Task<>)) ||
+                AsyncStateMachineBoxAccessor.IsAsyncStateMachineBox(taskType) ||
+                (taskType.BaseType.IsGenericType() && taskType.BaseType.GetGenericTypeDefinition() == typeof(Task<>)))
             {
 #warning pre-compile accessor for Task.GetResult
                 var pi = taskType.GetProperty(nameof(Task<object>.Result));
@@ -184,7 +221,7 @@ namespace Dasync.Accessors
             }
             else
             {
-                throw new Exception();
+                throw new Exception($"Unknown Task type '{taskType}'.");
             }
         }
 

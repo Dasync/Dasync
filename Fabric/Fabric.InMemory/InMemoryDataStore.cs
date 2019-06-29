@@ -127,9 +127,9 @@ namespace Dasync.Fabric.InMemory
             }
         }
 
-        private readonly Dictionary<long, object> _triggers = new Dictionary<long, object>();
+        private readonly Dictionary<string, object> _triggers = new Dictionary<string, object>();
 
-        public void AddTrigger(long id, Type valueType)
+        public void AddTrigger(string id, Type valueType)
         {
             var taskCompletionSource = TaskCompletionSourceAccessor.Create(valueType);
             lock (_triggers)
@@ -138,7 +138,7 @@ namespace Dasync.Fabric.InMemory
             }
         }
 
-        public void ActivateTrigger(long id, TaskResult value)
+        public void ActivateTrigger(string id, TaskResult value)
         {
             object taskCompletionSource;
             lock (_triggers)
@@ -149,7 +149,7 @@ namespace Dasync.Fabric.InMemory
             task.TrySetResult(value);
         }
 
-        public void SubscribeToTrigger(long id, Action<TaskResult> action)
+        public void SubscribeToTrigger(string id, Action<TaskResult> action)
         {
             object taskCompletionSource;
             lock (_triggers)

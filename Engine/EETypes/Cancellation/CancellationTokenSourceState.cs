@@ -4,7 +4,7 @@ namespace Dasync.EETypes.Cancellation
 {
     public class CancellationTokenSourceState
     {
-        public Guid Id;
+        public string Id;
         public DateTime? CancelTime;
     }
 }

@@ -49,7 +49,7 @@ namespace Dasync.ExecutionEngine.Continuation
 
         public bool CancelTracking(Task task)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Cannot cancel Task completion tracking");
         }
 
         private async void TrackInBackground()

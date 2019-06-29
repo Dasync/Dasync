@@ -8,7 +8,7 @@ namespace Dasync.EETypes.Intents
         /// <summary>
         /// An intent ID, which must be unique within a scope of a routine being executed.
         /// </summary>
-        public long Id;
+        public string Id;
 
         public ServiceId ServiceId;
 
@@ -24,10 +24,5 @@ namespace Dasync.EETypes.Intents
         /// NULL when is called outside of the transitioning context.
         /// </summary>
         public CallerDescriptor Caller;
-
-        /// <summary>
-        /// A hint to notify current process on routine completion (synchronous call).
-        /// </summary>
-        public bool NotifyOnCompletion;
     }
 }

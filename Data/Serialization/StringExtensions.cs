@@ -13,7 +13,7 @@ namespace Dasync.Serialization
                 return new byte[0];
 
             if ((value.Length & 1) != 0)
-                throw new ArgumentException();
+                throw new ArgumentException($"The length of a hexadecimal string must be even, but got {value.Length}.");
 
             var result = new byte[value.Length >> 1];
 

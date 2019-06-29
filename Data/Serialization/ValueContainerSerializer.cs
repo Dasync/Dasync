@@ -12,19 +12,16 @@ namespace Dasync.Serialization
     public class ValueContainerSerializer : IValueContainerSerializer
     {
         private readonly IObjectDecomposerSelector _decomposerSelector;
-        private readonly ITypeNameShortener _typeNameShortener;
-        private readonly IAssemblyNameShortener _assemblyNameShortener;
+        private readonly ITypeSerializerHelper _typeSerializerHelper;
         private readonly ObjectIDGenerator _idGenerator = new ObjectIDGenerator();
         private readonly Dictionary<long, string> _specialIds = new Dictionary<long, string>();
 
         public ValueContainerSerializer(
             IObjectDecomposerSelector decomposerSelector,
-            ITypeNameShortener typeNameShortener,
-            IAssemblyNameShortener assemblyNameShortener)
+            ITypeSerializerHelper typeSerializerHelper)
         {
             _decomposerSelector = decomposerSelector;
-            _typeNameShortener = typeNameShortener;
-            _assemblyNameShortener = assemblyNameShortener;
+            _typeSerializerHelper = typeSerializerHelper;
         }
 
         public void Serialize(
@@ -107,7 +104,7 @@ namespace Dasync.Serialization
 
             if (value is Type valueAsType)
             {
-                valueInfo.Type = GetTypeSerializationInfo(valueAsType);
+                valueInfo.Type = _typeSerializerHelper.GetTypeSerializationInfo(valueAsType);
                 type = typeof(Type);
             }
 
@@ -149,7 +146,7 @@ namespace Dasync.Serialization
                 valueInfo.IsCollection = true;
 #warning Write collection type
                 //valueInfo.Type = 
-                valueInfo.ItemType = itemType == typeof(object) || itemType == collectionItemType ? null : GetTypeSerializationInfo(itemType);
+                valueInfo.ItemType = itemType == typeof(object) || itemType == collectionItemType ? null : _typeSerializerHelper.GetTypeSerializationInfo(itemType);
                 valueInfo.ItemCount = items.Count;
 
                 writer.WriteStartValue(valueInfo);
@@ -202,48 +199,8 @@ namespace Dasync.Serialization
             if (container is IValueContainerWithTypeInfo typeInfoProvider)
                 type = typeInfoProvider.GetObjectType();
 
-            typeInfo = GetTypeSerializationInfo(type);
+            typeInfo = _typeSerializerHelper.GetTypeSerializationInfo(type);
             return true;
-        }
-
-        private TypeSerializationInfo GetTypeSerializationInfo(Type type)
-        {
-#warning Ignore types from dynamic assemblies
-
-            if (_typeNameShortener.TryShorten(type, out var typeShortName))
-            {
-                return new TypeSerializationInfo
-                {
-                    Name = typeShortName
-                };
-            }
-            else if (type.IsGenericType() && _typeNameShortener.TryShorten(
-                type.GetGenericTypeDefinition(), out typeShortName))
-            {
-                return new TypeSerializationInfo
-                {
-                    Name = typeShortName,
-                    GenericArgs = type.GetGenericArguments().Select(t => GetTypeSerializationInfo(t)).ToArray()
-                };
-            }
-            else if (_assemblyNameShortener.TryShorten(type.GetAssembly(), out string assemblyShortName))
-            {
-                return new TypeSerializationInfo
-                {
-                    Name = type.GetFullName(),
-                    Assembly = new AssemblySerializationInfo
-                    {
-                        Name = assemblyShortName
-                    },
-                    GenericArgs = type.IsGenericType()
-                        ? type.GetGenericArguments().Select(t => GetTypeSerializationInfo(t)).ToArray()
-                        : null
-                };
-            }
-            else
-            {
-                return type.ToTypeSerializationInfo();
-            }
         }
     }
 }

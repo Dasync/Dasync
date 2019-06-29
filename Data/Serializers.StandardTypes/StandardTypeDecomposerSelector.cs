@@ -18,11 +18,17 @@ namespace Dasync.Serializers.StandardTypes
                 { typeof(DateTimeOffset), new DateTimeOffsetSerializer() },
                 { typeof(Version), new VersionSerializer() },
                 { typeof(List<>), new ListSerializer() },
+                { typeof(HashSet<>), new HashsetSerializer() },
                 { typeof(KeyValuePair<,>), new KeyValuePairSerializer() },
                 { typeof(Dictionary<,>), new DictionarySerializer() }
             };
 
-        public static readonly StandardTypeDecomposerSelector Instance = new StandardTypeDecomposerSelector();
+        private readonly ExceptionSerializer _exceptionSerializer;
+
+        public StandardTypeDecomposerSelector(ExceptionSerializer exceptionSerializer)
+        {
+            _exceptionSerializer = exceptionSerializer;
+        }
 
         public IObjectDecomposer SelectDecomposer(Type type)
         {
@@ -33,7 +39,7 @@ namespace Dasync.Serializers.StandardTypes
                 return decomposer;
 
             if (typeof(Exception).IsAssignableFrom(type))
-                return new ExceptionSerializer();
+                return _exceptionSerializer;
 
             if (type.IsPoco())
                 return PocoSerializer.Instance;

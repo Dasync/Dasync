@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Dasync.Accessors;
+using Dasync.AsyncStateMachine;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
@@ -21,7 +22,7 @@ namespace Dasync.ExecutionEngine.Proxy
         private readonly ITransitionScope _transitionScope;
         private readonly IRoutineMethodIdProvider _routineMethodIdProvider;
         private readonly IEventIdProvider _eventIdProvider;
-        private readonly INumericIdGenerator _numericIdGenerator;
+        private readonly IUniqueIdGenerator _numericIdGenerator;
         private readonly ITransitionCommitter _transitionCommitter;
         private readonly IRoutineCompletionNotifier _routineCompletionNotifier;
         private readonly IEventSubscriber _eventSubscriber;
@@ -30,7 +31,7 @@ namespace Dasync.ExecutionEngine.Proxy
             ITransitionScope transitionScope,
             IRoutineMethodIdProvider routineMethodIdProvider,
             IEventIdProvider eventIdProvider,
-            INumericIdGenerator numericIdGenerator,
+            IUniqueIdGenerator numericIdGenerator,
             ITransitionCommitter transitionCommitter,
             IRoutineCompletionNotifier routineCompletionNotifier,
             IEventSubscriber eventSubscriber)
@@ -72,13 +73,19 @@ namespace Dasync.ExecutionEngine.Proxy
 
             var proxyTask = TaskAccessor.CreateTask(taskState, taskResultType);
 
-            if (_transitionScope.IsActive)
+            bool executeInline = !_transitionScope.IsActive || !IsCalledByRoutine(
+                    _transitionScope.CurrentMonitor.Context,
+                    // Skip 2 stack frames: current method and dynamically-generated proxy.
+                    // WARNING! DO NOT PUT 'new StackFrame()' into a helper method!
+                    new StackFrame(skipFrames: 2, fNeedFileInfo: false));
+
+            if (executeInline)
             {
-                _transitionScope.CurrentMonitor.RegisterIntent(intent, proxyTask);
+                ExecuteAndAwaitInBackground(intent, proxyTask);
             }
             else
             {
-                ExecuteAndAwaitInBackground(intent, proxyTask);
+                _transitionScope.CurrentMonitor.RegisterIntent(intent, proxyTask);
             }
 
             return proxyTask;
@@ -89,10 +96,20 @@ namespace Dasync.ExecutionEngine.Proxy
         /// </remarks>
         public async void ExecuteAndAwaitInBackground(ExecuteRoutineIntent intent, Task proxyTask)
         {
+            // Tell platform to track the completion.
+            // Do it before commit as a routine may complete immediately.
+
+            var tcs = new TaskCompletionSource<TaskResult>();
+            _routineCompletionNotifier.NotifyCompletion(intent.ServiceId, intent.MethodId, intent.Id, tcs, default);
+
             // Commit intent
 
-            // Set the hint about the synchronous call mode.
-            intent.NotifyOnCompletion = true;
+            var options = new TransitionCommitOptions
+            {
+                // Set the hint about the synchronous call mode.
+                NotifyOnRoutineCompletion = true
+            };
+
             var actions = new ScheduledActions
             {
                 ExecuteRoutineIntents = new List<ExecuteRoutineIntent>
@@ -100,12 +117,7 @@ namespace Dasync.ExecutionEngine.Proxy
                     intent
                 }
             };
-            await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, ct: default(CancellationToken));
-
-            // Tell platform to track the completion.
-
-            var tcs = new TaskCompletionSource<TaskResult>();
-            _routineCompletionNotifier.NotifyCompletion(intent.Id, tcs);
+            await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, options: options, ct: default);
 
             // Await for completion and set the result.
 
@@ -143,7 +155,7 @@ namespace Dasync.ExecutionEngine.Proxy
 
         public void Unsubscribe(IProxy proxy, EventInfo @event, Delegate @delegate)
         {
-            throw new NotSupportedException("Do you ever need to unsubscribe?");
+            throw new NotSupportedException("Do you ever need to unsubscribe from an event?");
         }
 
         public void RaiseEvent<TParameters>(IProxy proxy, EventInfo @event, ref TParameters parameters)
@@ -159,13 +171,19 @@ namespace Dasync.ExecutionEngine.Proxy
                 Parameters = parameters
             };
 
-            if (_transitionScope.IsActive)
+            bool executeInline = !_transitionScope.IsActive || !IsCalledByRoutine(
+                    _transitionScope.CurrentMonitor.Context,
+                    // Skip 2 stack frames: current method and dynamically-generated proxy.
+                    // WARNING! DO NOT PUT 'new StackFrame()' into a helper method!
+                    new StackFrame(skipFrames: 2, fNeedFileInfo: false));
+
+            if (executeInline)
             {
-                _transitionScope.CurrentMonitor.RegisterIntent(intent);
+                RaiseEventInBackground(intent);
             }
             else
             {
-                RaiseEventInBackground(intent);
+                _transitionScope.CurrentMonitor.RegisterIntent(intent);
             }
         }
 
@@ -178,7 +196,28 @@ namespace Dasync.ExecutionEngine.Proxy
                     intent
                 }
             };
-            await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, ct: default(CancellationToken));
+
+            var options = new TransitionCommitOptions();
+
+            await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, options: options, ct: default);
+        }
+
+        private static bool IsCalledByRoutine(TransitionContext context, StackFrame callerStackFrame)
+        {
+            var callerMethodInfo = callerStackFrame.GetMethod();
+
+            bool isCalledByRoutine;
+
+            if (context.RoutineStateMachine != null)
+            {
+                isCalledByRoutine = ReferenceEquals(context.RoutineStateMachine.GetType(), callerMethodInfo.DeclaringType);
+            }
+            else
+            {
+                isCalledByRoutine = ReferenceEquals(context.RoutineMethod, callerMethodInfo);
+            }
+
+            return isCalledByRoutine;
         }
     }
 }

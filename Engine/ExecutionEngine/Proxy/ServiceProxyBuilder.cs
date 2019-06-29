@@ -1,55 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
+using Dasync.EETypes.Ioc;
 using Dasync.EETypes.Proxy;
-using Dasync.Ioc;
+using Dasync.Modeling;
 using Dasync.Proxy;
-using Dasync.ServiceRegistry;
 
 namespace Dasync.ExecutionEngine.Proxy
 {
     public class ServiceProxyBuilder : IServiceProxyBuilder, ISerializedServiceProxyBuilder
     {
-        private readonly IServiceRegistry _serviceRegistry;
+        private readonly ICommunicationModelProvider _communicationModelProvider;
         private readonly IProxyTypeBuilder _proxyTypeBuilder;
         private readonly IProxyMethodExecutor _proxyMethodExecutor;
-        private readonly IAppServiceIocContainer _appServiceIocContainer;
+        private readonly IDomainServiceProvider _domainServiceProvider;
 
         public ServiceProxyBuilder(
-            IServiceRegistry serviceRegistry,
+            ICommunicationModelProvider communicationModelProvider,
             IProxyTypeBuilder proxyTypeBuilder,
             IProxyMethodExecutor proxyMethodExecutor,
-            IAppServiceIocContainer appServiceIocContainer,
+            IDomainServiceProvider domainServiceProvider,
             ISerializedServiceProxyBuilder holder)
         {
             ((SerializedServiceProxyBuilderHolder)holder).Builder = this;
-            _serviceRegistry = serviceRegistry;
+            _communicationModelProvider = communicationModelProvider;
             _proxyTypeBuilder = proxyTypeBuilder;
             _proxyMethodExecutor = proxyMethodExecutor;
-            _appServiceIocContainer = appServiceIocContainer;
+            _domainServiceProvider = domainServiceProvider;
         }
 
         public object Build(ServiceId serviceId) => Build(serviceId, null);
 
         public object Build(ServiceId serviceId, string[] additionalInterfaces)
         {
-            var registration = _serviceRegistry.AllRegistrations
-                .SingleOrDefault(r => r.ServiceName == serviceId.ServiceName);
+            var serviceDefinition = _communicationModelProvider.Model.FindServiceByName(serviceId.ServiceName);
+            if (serviceDefinition == null)
+                throw new InvalidOperationException($"The service '{serviceId.ServiceName}' is not registered.");
 
+            return CreateServiceProxy(serviceDefinition, additionalInterfaces);
+        }
+
+
+        private object CreateServiceProxy(IServiceDefinition serviceDefinition, string[] additionalInterfaces)
+        {
             Type proxyType;
 
-            if (registration?.ImplementationType != null)
+            if (serviceDefinition.Implementation != null)
             {
-                proxyType = _proxyTypeBuilder.Build(registration.ImplementationType);
+                proxyType = _proxyTypeBuilder.Build(serviceDefinition.Implementation);
             }
             else
             {
-                var interfacesTypes = new List<Type>(additionalInterfaces?.Length ?? 1);
+                var interfacesTypes = new HashSet<Type>();
 
-                if (registration?.ServiceType != null)
-                    interfacesTypes.Add(registration.ServiceType);
+                if (serviceDefinition.Interfaces?.Length > 0)
+                {
+                    foreach (var interfaceType in serviceDefinition.Interfaces)
+                    {
+                        interfacesTypes.Add(interfaceType);
+                    }
+                }
 
                 if (additionalInterfaces != null)
                 {
@@ -77,7 +90,7 @@ namespace Dasync.ExecutionEngine.Proxy
             {
                 Service = new ServiceDescriptor
                 {
-                    Id = serviceId,
+                    Id = new ServiceId { ServiceName = serviceDefinition.Name },
                     Interfaces = allInterfaces.ToArray()
                 }
             };
@@ -85,8 +98,7 @@ namespace Dasync.ExecutionEngine.Proxy
             var buildingContext = ServiceProxyBuildingContext.EnterScope(serviceProxyContext);
             try
             {
-#warning Needs ability to inject services with different Service IDs (parent Service ID?) as a part of service mesh framework.
-                var proxy = (IProxy)_appServiceIocContainer.Resolve(proxyType);
+                var proxy = (IProxy)ActivateServiceProxyInstance(proxyType);
                 proxy.Executor = _proxyMethodExecutor;
                 proxy.Context = serviceProxyContext;
                 return proxy;
@@ -95,6 +107,33 @@ namespace Dasync.ExecutionEngine.Proxy
             {
                 buildingContext.ExitScope();
             }
+        }
+
+        private object ActivateServiceProxyInstance(Type type)
+        {
+            var ctorInfo = SelectConstructor(type);
+            var parametersInfo = ctorInfo.GetParameters();
+            var parameterValues = new object[parametersInfo.Length];
+
+            for (var i = 0; i < parametersInfo.Length; i++)
+            {
+                var parameterInfo = parametersInfo[i];
+                var parameterValue = _domainServiceProvider.GetService(parameterInfo.ParameterType);
+                parameterValues[i] = parameterValue;
+            }
+
+            return ctorInfo.Invoke(parameterValues);
+        }
+
+        protected virtual ConstructorInfo SelectConstructor(Type type)
+        {
+            foreach (var ctorInfo in type.GetTypeInfo().DeclaredConstructors)
+            {
+                if (ctorInfo.IsPublic)
+                    return ctorInfo;
+            }
+            throw new InvalidOperationException(
+                $"Could not find a constructor to create an instance of '{type}'.");
         }
     }
 
@@ -115,7 +154,7 @@ namespace Dasync.ExecutionEngine.Proxy
         public object Build(ServiceId serviceId, string[] additionalInterfaces)
         {
             if (Builder == null)
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("The engine is not properly initialized.");
             return Builder.Build(serviceId, additionalInterfaces);
         }
     }

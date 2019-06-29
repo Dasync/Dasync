@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Dasync.Serialization
 {
@@ -71,22 +73,151 @@ namespace Dasync.Serialization
 
         public override string ToString()
         {
-            var sb = new StringBuilder(Name);
+            var sb = new StringBuilder();
+            ToStringInternal(sb);
+            return sb.ToString();
+        }
+
+        internal void ToStringInternal(StringBuilder sb)
+        {
+            sb.Append(Name);
             if (GenericArgs?.Length > 0)
             {
-                sb.Append("[[");
-                sb.Append(GenericArgs[0].ToString());
-                sb.Append(']');
-                for (var i = 1; i < GenericArgs.Length; i++)
+                sb.Append("[");
+
+                for (var i = 0; i < GenericArgs.Length; i++)
                 {
-                    sb.Append(",[");
-                    sb.Append(GenericArgs[i].ToString());
+                    if (i > 0)
+                        sb.Append(",");
+
+                    if (GenericArgs[i].Assembly != null)
+                        sb.Append("[");
+
+                    GenericArgs[i].ToStringInternal(sb);
+
+                    if (GenericArgs[i].Assembly != null)
+                        sb.Append(']');
                 }
                 sb.Append(']');
             }
             if (Assembly != null)
-                sb.Append(", ").Append(Assembly.ToString());
-            return sb.ToString();
+            {
+                sb.Append(", ");
+                Assembly.ToStringInternal(sb);
+            }
+        }
+
+        public static TypeSerializationInfo Parse(string typeFullName)
+        {
+            var index = 0;
+            return ParseInternal(typeFullName, ref index);
+        }
+
+        internal static TypeSerializationInfo ParseInternal(string typeFullName, ref int startIndex)
+        {
+            var result = new TypeSerializationInfo();
+
+            // Skip whitespace
+            while (startIndex < typeFullName.Length && typeFullName[startIndex] == ' ') startIndex++;
+
+            // Parse Name
+            var nameEndIndex = startIndex;
+            for ( ; nameEndIndex < typeFullName.Length; nameEndIndex++)
+            {
+                if (typeFullName[nameEndIndex] == '[' ||
+                    typeFullName[nameEndIndex] == ']' ||
+                    typeFullName[nameEndIndex] == ',' ||
+                    typeFullName[nameEndIndex] == ' ')
+                    break;
+            }
+            result.Name = typeFullName.Substring(startIndex, nameEndIndex - startIndex);
+            startIndex = nameEndIndex;
+
+            // Skip whitespace
+            while (startIndex < typeFullName.Length && typeFullName[startIndex] == ' ') startIndex++;
+
+            // Generic arguments
+            if (startIndex < typeFullName.Length && typeFullName[startIndex] == '[')
+            {
+                startIndex++;
+
+                // Skip whitespace
+                while (startIndex < typeFullName.Length && typeFullName[startIndex] == ' ') startIndex++;
+
+                var genericArgs = new List<TypeSerializationInfo>(capacity: 2);
+
+                var hasMoreGenericArgs = true;
+
+                while (hasMoreGenericArgs)
+                {
+                    bool isTypeNameQuoted = false;
+                    if (typeFullName[startIndex] == '[')
+                    {
+                        isTypeNameQuoted = true;
+                        startIndex++;
+                    }
+
+                    // Skip whitespace
+                    while (startIndex < typeFullName.Length && typeFullName[startIndex] == ' ') startIndex++;
+
+                    var genericArg = ParseInternal(typeFullName, ref startIndex);
+                    genericArgs.Add(genericArg);
+
+                    // Skip whitespace
+                    while (startIndex < typeFullName.Length && typeFullName[startIndex] == ' ') startIndex++;
+
+                    if (isTypeNameQuoted)
+                    {
+                        if (typeFullName[startIndex] != ']')
+                            throw new InvalidOperationException("Type full name format error");
+                        startIndex++;
+
+                        // Skip whitespace
+                        while (startIndex < typeFullName.Length && typeFullName[startIndex] == ' ') startIndex++;
+                    }
+
+                    if (typeFullName[startIndex] == ']')
+                    {
+                        hasMoreGenericArgs = false;
+
+                        startIndex++;
+
+                        // Skip whitespace
+                        while (startIndex < typeFullName.Length && typeFullName[startIndex] == ' ') startIndex++;
+                    }
+                    else if (typeFullName[startIndex] == ',')
+                    {
+                        startIndex++;
+
+                        // Skip whitespace
+                        while (startIndex < typeFullName.Length && typeFullName[startIndex] == ' ') startIndex++;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Type full name format error");
+                    }
+                }
+
+                result.GenericArgs = genericArgs.ToArray();
+            }
+
+            // Assembly name
+            if (startIndex < typeFullName.Length && typeFullName[startIndex] == ',')
+            {
+                startIndex++;
+
+                // Skip whitespace
+                while (startIndex < typeFullName.Length && typeFullName[startIndex] == ' ') startIndex++;
+
+                var endIndex = typeFullName.IndexOf(']', startIndex);
+                if (endIndex < 0)
+                    endIndex = typeFullName.Length;
+
+                result.Assembly = AssemblySerializationInfo.ParseInternal(typeFullName, startIndex, endIndex);
+                startIndex = endIndex;
+            }
+
+            return result;
         }
     }
 }

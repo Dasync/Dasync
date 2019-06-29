@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Dasync.ValueContainer
@@ -53,7 +54,7 @@ namespace Dasync.ValueContainer
             return (IValueContainer)Activator.CreateInstance(containerType);
         }
 
-        private static IEnumerable<MemberInfo> GetDelegatedMembers(Type type)
+        private static IEnumerable<KeyValuePair<string,MemberInfo>> GetDelegatedMembers(Type type)
         {
             foreach (var mi in type.GetMembers(BindingFlags.Instance | BindingFlags.Public))
             {
@@ -61,7 +62,7 @@ namespace Dasync.ValueContainer
                 if (fieldInfo != null)
                 {
                     if (!fieldInfo.IsInitOnly)
-                        yield return fieldInfo;
+                        yield return new KeyValuePair<string, MemberInfo>(fieldInfo.Name, fieldInfo);
                     continue;
                 }
 
@@ -69,7 +70,14 @@ namespace Dasync.ValueContainer
                 if (propertyInfo != null)
                 {
                     if (propertyInfo.CanRead && propertyInfo.CanWrite)
-                        yield return propertyInfo;
+                    {
+                        MemberInfo resultMi = propertyInfo;
+                        if (!propertyInfo.SetMethod.IsPublic)
+                        {
+                            resultMi = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic).First(fi => fi.Name.Contains($"<{propertyInfo.Name}>"));
+                        }
+                        yield return new KeyValuePair<string, MemberInfo>(propertyInfo.Name, resultMi);
+                    }
                     continue;
                 }
             }

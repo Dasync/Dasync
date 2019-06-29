@@ -16,13 +16,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ninject" Version="3.3.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Data\CloudEvents\Dasync.CloudEvents.csproj" />
     <ProjectReference Include="..\..\Data\Serialization.Json\Dasync.Serialization.Json.csproj" />
     <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.csproj" />
+    <ProjectReference Include="..\..\Data\Serializers.DomainTypes\Dasync.Serializers.DomainTypes.csproj" />
     <ProjectReference Include="..\..\Data\Serializers.EETypes\Dasync.Serializers.EETypes.csproj" />
     <ProjectReference Include="..\..\Data\Serializers.StandardTypes\Dasync.Serializers.StandardTypes.csproj" />
     <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.csproj" />
@@ -32,12 +32,9 @@
     <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.csproj" />
     <ProjectReference Include="..\..\Engine\Proxy\Dasync.Proxy.csproj" />
     <ProjectReference Include="..\..\Fabric\Bootstrap\Dasync.Bootstrap.csproj" />
-    <ProjectReference Include="..\..\Fabric\Fabric.FileBased\Dasync.Fabric.FileBased.csproj" />
     <ProjectReference Include="..\..\Fabric\Fabric.InMemory\Dasync.Fabric.InMemory.csproj" />
     <ProjectReference Include="..\..\Fabric\Sample.Base\Dasync.Fabric.Sample.Base.csproj" />
-    <ProjectReference Include="..\..\Fabric\ServiceRegistry\Dasync.ServiceRegistry.csproj" />
-    <ProjectReference Include="..\..\IoC\IoC.Ninject\Dasync.Ioc.Ninject.csproj" />
-    <ProjectReference Include="..\..\IoC\IoC\Dasync.Ioc.csproj" />
+    <ProjectReference Include="..\..\Modeling\Dasync.Modeling.csproj" />
   </ItemGroup>
 
 </Project>

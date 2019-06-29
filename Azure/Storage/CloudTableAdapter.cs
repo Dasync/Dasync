@@ -36,7 +36,7 @@ namespace Dasync.AzureStorage
             catch (StorageException se)
             {
                 if (se.RequestInformation?.HttpStatusCode == 409)
-                    throw new TableRowAlreadyExistsException();
+                    throw new TableRowAlreadyExistsException($"{entity.PartitionKey}|{entity.RowKey}");
                 HandleException(se);
                 throw;
             }
@@ -55,7 +55,7 @@ namespace Dasync.AzureStorage
             catch (StorageException se)
             {
                 if (se.RequestInformation?.HttpStatusCode == 412)
-                    throw new TableRowETagMismatchException();
+                    throw new TableRowETagMismatchException($"{entity.PartitionKey}|{entity.RowKey}|{entity.ETag}");
                 HandleException(se);
                 throw;
             }
@@ -74,7 +74,7 @@ namespace Dasync.AzureStorage
             catch (StorageException se)
             {
                 if (se.RequestInformation?.HttpStatusCode == 412)
-                    throw new TableRowETagMismatchException();
+                    throw new TableRowETagMismatchException($"{entity.PartitionKey}|{entity.RowKey}|{entity.ETag}");
                 HandleException(se);
                 throw;
             }
