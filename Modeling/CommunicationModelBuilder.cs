@@ -57,7 +57,7 @@ namespace Dasync.Modeling
             if (defaultInterfaceType != null && Model.FindServiceByInterface(defaultInterfaceType) == null)
                 serviceDefinition.AddInterface(defaultInterfaceType);
 
-            return new ServiceDefinitionBuilder(serviceDefinition);
+            return ServiceDefinitionBuilder.CreateByImplementationType(implementationType, serviceDefinition);
         }
 
         public ServiceDefinitionBuilder Service(Type interfaceType, Type implementationType)
@@ -67,7 +67,7 @@ namespace Dasync.Modeling
             {
                 if (existingServiceDefinition.Type != ServiceType.Local)
                     throw new InvalidOperationException($"The service '{existingServiceDefinition.Name}' is already defined as '{existingServiceDefinition.Type}' and should not be re-defined as '{ServiceType.Local}'. Use a different builder method.");
-                return new ServiceDefinitionBuilder((IMutableServiceDefinition)existingServiceDefinition);
+                return ServiceDefinitionBuilder.CreateByImplementationType(implementationType, (IMutableServiceDefinition)existingServiceDefinition);
             }
 
             var serviceDefinitionBuilder = Service(implementationType);
@@ -75,10 +75,11 @@ namespace Dasync.Modeling
             return serviceDefinitionBuilder;
         }
 
-        public ServiceDefinitionBuilder Service<TImplementation>() => Service(typeof(TImplementation));
+        public ServiceDefinitionBuilder<TImplementation> Service<TImplementation>() =>
+            (ServiceDefinitionBuilder<TImplementation>)Service(typeof(TImplementation));
 
-        public ServiceDefinitionBuilder Service<TInterface, TImplementation>() =>
-            Service(typeof(TInterface), typeof(TImplementation));
+        public ServiceDefinitionBuilder<TImplementation> Service<TInterface, TImplementation>() =>
+            (ServiceDefinitionBuilder<TImplementation>)Service(typeof(TInterface), typeof(TImplementation));
 
         public CommunicationModelBuilder Service(Type implementationType, Action<ServiceDefinitionBuilder> buildAction)
         {
@@ -94,11 +95,19 @@ namespace Dasync.Modeling
             return this;
         }
 
-        public CommunicationModelBuilder Service<TImplementation>(Action<ServiceDefinitionBuilder> buildAction) =>
-            Service(typeof(TImplementation), buildAction);
+        public CommunicationModelBuilder Service<TImplementation>(Action<ServiceDefinitionBuilder<TImplementation>> buildAction)
+        {
+            var serviceBuilder = Service<TImplementation>();
+            buildAction(serviceBuilder);
+            return this;
+        }
 
-        public CommunicationModelBuilder Service<TInterface, TImplementation>(Action<ServiceDefinitionBuilder> buildAction) =>
-            Service(typeof(TInterface), typeof(TImplementation), buildAction);
+        public CommunicationModelBuilder Service<TInterface, TImplementation>(Action<ServiceDefinitionBuilder<TImplementation>> buildAction)
+        {
+            var serviceBuilder = Service<TInterface, TImplementation>();
+            buildAction(serviceBuilder);
+            return this;
+        }
 
         public ExternalServiceDefinitionBuilder ExternalService(string serviceName)
         {
@@ -123,7 +132,7 @@ namespace Dasync.Modeling
             {
                 if (existingServiceDefinition.Type != ServiceType.External)
                     throw new InvalidOperationException($"The service '{existingServiceDefinition.Name}' is already defined as '{existingServiceDefinition.Type}' and should not be re-defined as '{ServiceType.External}'. Use a different builder method.");
-                return new ExternalServiceDefinitionBuilder((IMutableServiceDefinition)existingServiceDefinition);
+                return ExternalServiceDefinitionBuilder.CreateByInterfaceType(interfaceType, (IMutableServiceDefinition)existingServiceDefinition);
             }
 
             var serviceDefinition = new ServiceDefinition((CommunicationModel)Model);
@@ -134,7 +143,7 @@ namespace Dasync.Modeling
             if (Model.FindServiceByName(generatedServiceName) == null)
                 serviceDefinition.Name = generatedServiceName;
 
-            return new ExternalServiceDefinitionBuilder(serviceDefinition);
+            return ExternalServiceDefinitionBuilder.CreateByInterfaceType(interfaceType, serviceDefinition);
         }
 
         public CommunicationModelBuilder ExternalService(Type interfaceType, Action<ExternalServiceDefinitionBuilder> buildAction)
@@ -144,11 +153,15 @@ namespace Dasync.Modeling
             return this;
         }
 
-        public ExternalServiceDefinitionBuilder ExternalService<TImplementation>() =>
-            ExternalService(typeof(TImplementation));
+        public ExternalServiceDefinitionBuilder<TInterface> ExternalService<TInterface>() =>
+            (ExternalServiceDefinitionBuilder<TInterface>)ExternalService(typeof(TInterface));
 
-        public CommunicationModelBuilder ExternalService<TImplementation>(Action<ExternalServiceDefinitionBuilder> buildAction) =>
-            ExternalService(typeof(TImplementation), buildAction);
+        public CommunicationModelBuilder ExternalService<TInterface>(Action<ExternalServiceDefinitionBuilder<TInterface>> buildAction)
+        {
+            var builder = ExternalService<TInterface>();
+            buildAction(builder);
+            return this;
+        }
 
         public CommunicationModelBuilder EntityProjection(Type interfaceType)
         {
