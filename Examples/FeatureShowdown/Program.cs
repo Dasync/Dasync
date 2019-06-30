@@ -47,9 +47,10 @@ namespace DasyncFeatures
             //    It should be under '/bin/Debug/netcoreapp2.0' directory.
             var services = new ServiceCollection();
             PlugInDasync(services, feature, inMemoryEmulation: false);
-            var sp = services.BuildServiceProvider();
-            StartFabric(sp);
-            await feature.Run(sp);
+
+            var serviceProvider = services.BuildServiceProvider();
+            StartFabric(serviceProvider);
+            await feature.Run(serviceProvider);
         }
 
         static IFeatureDemo SelectFeature(IFeatureDemo[] features)
@@ -96,10 +97,10 @@ namespace DasyncFeatures
             services.AddSingleton<IDomainServiceProvider, DomainServiceProvider>();
 
             services.AddModule(Dasync.Fabric.Sample.Base.DI.Bindings);
-            //if (inMemoryEmulation)
+            if (inMemoryEmulation)
                 services.AddModule(Dasync.Fabric.InMemory.DI.Bindings);
-            //else
-            //    engineContainer.Load(Dasync.Fabric.FileBased.DI.Bindings);
+            else
+                services.AddModule(Dasync.Fabric.FileBased.DI.Bindings);
 
             services.Rebind<ICommunicationModelProvider>().To(new CommunicationModelProvider(
                 new CommunicationModelProvider.Holder { Model = feature.Model }));
@@ -113,7 +114,10 @@ namespace DasyncFeatures
             var communicationModelProvider = services.GetService<ICommunicationModelProvider>();
             var domainServiceProvider = services.GetService<IDomainServiceProvider>();
 
-            services.GetService<ICurrentFabricSetter>().SetInstance(services.GetService<IFabric>());
+            var fabric = services.GetService<IFabric>();
+            fabric.InitializeAsync(default).Wait();
+
+            services.GetService<ICurrentFabricSetter>().SetInstance(fabric);
 
             // ResolveAllDomainServices
             var communicationModel = communicationModelProvider.Model;
@@ -132,6 +136,8 @@ namespace DasyncFeatures
                     }
                 }
             }
+
+            fabric.StartAsync(default).Wait();
         }
     }
 }

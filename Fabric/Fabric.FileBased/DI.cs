@@ -9,6 +9,7 @@ namespace Dasync.Fabric.FileBased
     {
         public static readonly Dictionary<Type, Type> Bindings = new Dictionary<Type, Type>
         {
+            [typeof(FileBasedFabric)] = typeof(FileBasedFabric),
             [typeof(IFabric)] = typeof(FileBasedFabric),
             [typeof(IFabricConnectorFactory)] = typeof(FileBasedFabricConnectorFactory),
             [typeof(IFileBasedFabricSerializerFactoryAdvisor)] = typeof(FileBasedFabricSerializerFactoryAdvisor),

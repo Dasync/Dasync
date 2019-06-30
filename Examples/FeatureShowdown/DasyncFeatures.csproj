@@ -32,6 +32,7 @@
     <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.csproj" />
     <ProjectReference Include="..\..\Engine\Proxy\Dasync.Proxy.csproj" />
     <ProjectReference Include="..\..\Fabric\Bootstrap\Dasync.Bootstrap.csproj" />
+    <ProjectReference Include="..\..\Fabric\Fabric.FileBased\Dasync.Fabric.FileBased.csproj" />
     <ProjectReference Include="..\..\Fabric\Fabric.InMemory\Dasync.Fabric.InMemory.csproj" />
     <ProjectReference Include="..\..\Fabric\Sample.Base\Dasync.Fabric.Sample.Base.csproj" />
     <ProjectReference Include="..\..\IoC\DependencyInjection\Dasync.DependencyInjection.csproj" />
