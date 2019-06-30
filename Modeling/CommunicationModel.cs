@@ -47,6 +47,16 @@ namespace Dasync.Modeling
             }
         }
 
+        internal void OnServiceAlternativeNameAdding(ServiceDefinition serviceDefinition, string newAltName)
+        {
+            var existingService = FindServiceByName(newAltName);
+            if (existingService != null && !ReferenceEquals(existingService, serviceDefinition))
+                throw new InvalidOperationException($"Cannot use the alternative name '{newAltName}' for service '{serviceDefinition.Name}', because the name is already used by service '{existingService.Name}'.");
+
+            _services.Add(serviceDefinition);
+            _servicesByName.Add(newAltName, serviceDefinition);
+        }
+
         internal void OnServiceImplementaionChanging(ServiceDefinition serviceDefinition, Type newImplementationType)
         {
             if (FindServiceByImplementation(newImplementationType) != null)

@@ -22,6 +22,13 @@ namespace Dasync.Modeling
             ServiceDefinition.Name = serviceName;
             return this;
         }
+
+        public ExternalServiceDefinitionBuilder AlternativeName(params string[] alternativeServiceNames)
+        {
+            foreach (var altName in alternativeServiceNames)
+                ServiceDefinition.AddAlternativeName(altName);
+            return this;
+        }
     }
 
     public class ExternalServiceDefinitionBuilder<TInterface> : ExternalServiceDefinitionBuilder

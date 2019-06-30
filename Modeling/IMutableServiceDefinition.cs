@@ -8,6 +8,8 @@ namespace Dasync.Modeling
 
         new string Name { get; set; }
 
+        bool AddAlternativeName(string name);
+
         new ServiceType Type { get; set; }
 
         bool AddInterface(Type interfaceType);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Dasync.Modeling
@@ -9,6 +10,7 @@ namespace Dasync.Modeling
         private ServiceType _type;
         private Type _implementation;
         private Type[] _interfaces = new Type[0];
+        private string[] _alternativeNames = new string[0];
 
         public ServiceDefinition(CommunicationModel model)
         {
@@ -29,6 +31,17 @@ namespace Dasync.Modeling
                 Model.OnServiceNameChanging(this, value);
                 _name = value;
             }
+        }
+
+        public string[] AlternativeNames => _alternativeNames;
+
+        public bool AddAlternativeName(string name)
+        {
+            if (_alternativeNames.Contains(name, StringComparer.OrdinalIgnoreCase))
+                return false;
+            Model.OnServiceAlternativeNameAdding(this, name);
+            _alternativeNames = _alternativeNames.Concat(new[] { name }).ToArray();
+            return true;
         }
 
         public ServiceType Type
