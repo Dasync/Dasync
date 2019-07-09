@@ -132,5 +132,11 @@ namespace Dasync.Modeling
                 throw new ArgumentException($"Could not find method '{name}' in service '{Name}'.");
             }
         }
+
+        public IMethodDefinition FindMethod(string methodName)
+        {
+            _methodsByName.TryGetValue(methodName, out var methodDefinition);
+            return methodDefinition;
+        }
     }
 }

@@ -17,6 +17,8 @@ namespace Dasync.Modeling
 
         public MethodInfo MethodInfo { get; }
 
+        public bool IsRoutine { get; set; }
+
         IServiceDefinition IMethodDefinition.Service => ServiceDefinition;
 
         IServiceDefinition IRoutineDefinition.Service => ServiceDefinition;

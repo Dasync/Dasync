@@ -15,5 +15,7 @@ namespace Dasync.Modeling
         Type[] Interfaces { get; }
 
         Type Implementation { get; }
+
+        IMethodDefinition FindMethod(string methodName);
     }
 }

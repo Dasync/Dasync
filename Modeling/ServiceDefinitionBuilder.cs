@@ -42,6 +42,19 @@ namespace Dasync.Modeling
             buildAction(Method(methodName));
             return this;
         }
+
+        public RoutineDefinitionBuilder Routine(string methodName)
+        {
+            var methodDefinition = ServiceDefinition.GetMethod(methodName);
+            methodDefinition.IsRoutine = true;
+            return new RoutineDefinitionBuilder((IMutableRoutineDefinition)methodDefinition);
+        }
+
+        public ServiceDefinitionBuilder Routine(string methodName, Action<RoutineDefinitionBuilder> buildAction)
+        {
+            buildAction(Routine(methodName));
+            return this;
+        }
     }
 
     public class ServiceDefinitionBuilder<TImplementation> : ServiceDefinitionBuilder
@@ -67,6 +80,25 @@ namespace Dasync.Modeling
         {
             var methodName = (string)((ConstantExpression)methodNameSelector.Body).Value;
             buildAction(Method(methodName));
+            return this;
+        }
+
+        public RoutineDefinitionBuilder Routine(Expression<Func<TImplementation, string>> methodNameSelector)
+        {
+            var methodName = (string)((ConstantExpression)methodNameSelector.Body).Value;
+            return Routine(methodName);
+        }
+
+        public new ServiceDefinitionBuilder<TImplementation> Routine(string methodName, Action<RoutineDefinitionBuilder> buildAction)
+        {
+            buildAction(Routine(methodName));
+            return this;
+        }
+
+        public ServiceDefinitionBuilder<TImplementation> Routine(Expression<Func<TImplementation, string>> methodNameSelector, Action<RoutineDefinitionBuilder> buildAction)
+        {
+            var methodName = (string)((ConstantExpression)methodNameSelector.Body).Value;
+            buildAction(Routine(methodName));
             return this;
         }
     }

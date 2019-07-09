@@ -7,5 +7,7 @@ namespace Dasync.Modeling
     public interface IMutableMethodDefinition : IMethodDefinition, IMutablePropertyBag
     {
         new IMutableServiceDefinition Service { get; }
+
+        new bool IsRoutine { get; set; }
     }
 }

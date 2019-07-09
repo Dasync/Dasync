@@ -24,5 +24,7 @@ namespace Dasync.AspNetCore.Platform
         public Type[] Interfaces => null;
 
         public Type Implementation => null;
+
+        public IMethodDefinition FindMethod(string methodName) => null;
     }
 }
