@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Dasync.Modeling
 {
@@ -7,6 +9,8 @@ namespace Dasync.Modeling
         IMutableMethodDefinition, IMethodDefinition,
         IMutableRoutineDefinition, IRoutineDefinition
     {
+        private string[] _alternativeNames = Array.Empty<string>();
+
         public MethodDefinition(ServiceDefinition serviceDefinition, MethodInfo methodInfo)
         {
             ServiceDefinition = serviceDefinition;
@@ -26,5 +30,16 @@ namespace Dasync.Modeling
         IMutableServiceDefinition IMutableMethodDefinition.Service => ServiceDefinition;
 
         IMutableServiceDefinition IMutableRoutineDefinition.Service => ServiceDefinition;
+
+        public string[] AlternativeNames => _alternativeNames;
+
+        public bool AddAlternativeName(string name)
+        {
+            if (_alternativeNames.Contains(name, StringComparer.OrdinalIgnoreCase))
+                return false;
+            ServiceDefinition.OnMethodAlternativeNameAdding(this, name);
+            _alternativeNames = _alternativeNames.Concat(new[] { name }).ToArray();
+            return true;
+        }
     }
 }

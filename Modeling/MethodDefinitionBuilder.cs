@@ -8,9 +8,15 @@ namespace Dasync.Modeling
     {
         public MethodDefinitionBuilder(IMutableMethodDefinition methodDefinition)
         {
-            Method = methodDefinition;
+            MethodDefinition = methodDefinition;
         }
 
-        public IMutableMethodDefinition Method { get; private set; }
+        public IMutableMethodDefinition MethodDefinition { get; private set; }
+
+        public MethodDefinitionBuilder Ignore()
+        {
+            MethodDefinition.IsRoutine = false;
+            return this;
+        }
     }
 }

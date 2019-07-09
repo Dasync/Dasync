@@ -8,9 +8,16 @@ namespace Dasync.Modeling
     {
         public RoutineDefinitionBuilder(IMutableRoutineDefinition routineDefinition)
         {
-            Routine = routineDefinition;
+            RoutineDefinition = routineDefinition;
         }
 
-        public IMutableRoutineDefinition Routine { get; private set; }
+        public IMutableRoutineDefinition RoutineDefinition { get; private set; }
+
+        public RoutineDefinitionBuilder AlternativeName(params string[] alternativeMethodNames)
+        {
+            foreach (var altName in alternativeMethodNames)
+                RoutineDefinition.AddAlternativeName(altName);
+            return this;
+        }
     }
 }

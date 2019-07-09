@@ -10,8 +10,8 @@ namespace Dasync.Modeling
         private string _name;
         private ServiceType _type;
         private Type _implementation;
-        private Type[] _interfaces = new Type[0];
-        private string[] _alternativeNames = new string[0];
+        private Type[] _interfaces = Array.Empty<Type>();
+        private string[] _alternativeNames = Array.Empty<string>();
 
         private readonly Dictionary<string, MethodDefinition> _methodsByName =
             new Dictionary<string, MethodDefinition>(StringComparer.OrdinalIgnoreCase);
@@ -89,54 +89,60 @@ namespace Dasync.Modeling
 
         public IMutableMethodDefinition GetMethod(string name)
         {
-            lock (_methodsByName)
+            if (_methodsByName.TryGetValue(name, out var methodDefinition))
+                return methodDefinition;
+
+            if (this.Implementation != null)
             {
-                if (_methodsByName.TryGetValue(name, out var methodDefinition))
+                var methods = this.Implementation
+                    .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Where(mi => mi.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (methods.Count > 1)
+                    throw new InvalidOperationException($"The service '{Name}' has overloaded methods with the same name of '{name}'.");
+
+                if (methods.Count == 1)
+                {
+                    methodDefinition = new MethodDefinition(this, methods[0]);
+                    _methodsByName.Add(methods[0].Name, methodDefinition);
                     return methodDefinition;
-
-                if (this.Implementation != null)
-                {
-                    var methods = this.Implementation
-                        .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                        .Where(mi => mi.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-
-                    if (methods.Count > 1)
-                        throw new InvalidOperationException($"The service '{Name}' has overloaded methods with the same name of '{name}'.");
-
-                    if (methods.Count == 1)
-                    {
-                        methodDefinition = new MethodDefinition(this, methods[0]);
-                        _methodsByName.Add(methods[0].Name, methodDefinition);
-                        return methodDefinition;
-                    }
                 }
-
-                foreach (var interfaceType in Interfaces)
-                {
-                    var methods = interfaceType
-                        .GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                        .ToList();
-
-                    if (methods.Count > 1)
-                        throw new InvalidOperationException($"The service '{Name}' has overloaded methods with the same name of '{name}'.");
-
-                    if (methods.Count == 1)
-                    {
-                        methodDefinition = new MethodDefinition(this, methods[0]);
-                        _methodsByName.Add(methods[0].Name, methodDefinition);
-                        return methodDefinition;
-                    }
-                }
-
-                throw new ArgumentException($"Could not find method '{name}' in service '{Name}'.");
             }
+
+            foreach (var interfaceType in Interfaces)
+            {
+                var methods = interfaceType
+                    .GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                    .ToList();
+
+                if (methods.Count > 1)
+                    throw new InvalidOperationException($"The service '{Name}' has overloaded methods with the same name of '{name}'.");
+
+                if (methods.Count == 1)
+                {
+                    methodDefinition = new MethodDefinition(this, methods[0]);
+                    _methodsByName.Add(methods[0].Name, methodDefinition);
+                    return methodDefinition;
+                }
+            }
+
+            throw new ArgumentException($"Could not find method '{name}' in service '{Name}'.");
         }
 
         public IMethodDefinition FindMethod(string methodName)
         {
             _methodsByName.TryGetValue(methodName, out var methodDefinition);
             return methodDefinition;
+        }
+
+        internal void OnMethodAlternativeNameAdding(MethodDefinition methodDefinition, string newAltName)
+        {
+            var existingMethod = FindMethod(newAltName);
+            if (existingMethod != null && !ReferenceEquals(existingMethod, methodDefinition))
+                throw new InvalidOperationException($"Cannot use the alternative name '{newAltName}' for method '{methodDefinition.MethodInfo.Name}' of service '{methodDefinition.ServiceDefinition.Name}', because the name is already used by another method.");
+
+            _methodsByName.Add(newAltName, methodDefinition);
         }
     }
 }

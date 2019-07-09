@@ -7,5 +7,7 @@ namespace Dasync.Modeling
     public interface IMutableRoutineDefinition : IRoutineDefinition, IMutablePropertyBag
     {
         new IMutableServiceDefinition Service { get; }
+
+        bool AddAlternativeName(string name);
     }
 }

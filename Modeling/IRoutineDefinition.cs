@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Reflection;
 
 namespace Dasync.Modeling
 {
     public interface IRoutineDefinition : IPropertyBag
     {
         IServiceDefinition Service { get; }
+
+        MethodInfo MethodInfo { get; }
     }
 }
