@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Dasync.Modeling
 {
@@ -11,6 +12,9 @@ namespace Dasync.Modeling
         private Type _implementation;
         private Type[] _interfaces = new Type[0];
         private string[] _alternativeNames = new string[0];
+
+        private readonly Dictionary<string, MethodDefinition> _methodsByName =
+            new Dictionary<string, MethodDefinition>(StringComparer.OrdinalIgnoreCase);
 
         public ServiceDefinition(CommunicationModel model)
         {
@@ -80,6 +84,52 @@ namespace Dasync.Modeling
             {
                 Model.OnServiceImplementaionChanging(this, value);
                 _implementation = value;
+            }
+        }
+
+        public IMutableMethodDefinition GetMethod(string name)
+        {
+            lock (_methodsByName)
+            {
+                if (_methodsByName.TryGetValue(name, out var methodDefinition))
+                    return methodDefinition;
+
+                if (this.Implementation != null)
+                {
+                    var methods = this.Implementation
+                        .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                        .Where(mi => mi.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+
+                    if (methods.Count > 1)
+                        throw new InvalidOperationException($"The service '{Name}' has overloaded methods with the same name of '{name}'.");
+
+                    if (methods.Count == 1)
+                    {
+                        methodDefinition = new MethodDefinition(this, methods[0]);
+                        _methodsByName.Add(methods[0].Name, methodDefinition);
+                        return methodDefinition;
+                    }
+                }
+
+                foreach (var interfaceType in Interfaces)
+                {
+                    var methods = interfaceType
+                        .GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                        .ToList();
+
+                    if (methods.Count > 1)
+                        throw new InvalidOperationException($"The service '{Name}' has overloaded methods with the same name of '{name}'.");
+
+                    if (methods.Count == 1)
+                    {
+                        methodDefinition = new MethodDefinition(this, methods[0]);
+                        _methodsByName.Add(methods[0].Name, methodDefinition);
+                        return methodDefinition;
+                    }
+                }
+
+                throw new ArgumentException($"Could not find method '{name}' in service '{Name}'.");
             }
         }
     }

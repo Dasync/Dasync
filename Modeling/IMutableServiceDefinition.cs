@@ -17,5 +17,7 @@ namespace Dasync.Modeling
         bool RemoveInterface(Type interfaceType);
 
         new Type Implementation { get; set; }
+
+        IMutableMethodDefinition GetMethod(string name);
     }
 }

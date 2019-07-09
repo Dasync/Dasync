@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 
 namespace Dasync.Modeling
 {
@@ -29,6 +30,18 @@ namespace Dasync.Modeling
                 ServiceDefinition.AddAlternativeName(altName);
             return this;
         }
+
+        public MethodDefinitionBuilder Method(string methodName)
+        {
+            MethodDefinition methodDefinition = null;
+            return new MethodDefinitionBuilder(methodDefinition);
+        }
+
+        public ExternalServiceDefinitionBuilder Method(string methodName, Action<MethodDefinitionBuilder> buildAction)
+        {
+            buildAction(Method(methodName));
+            return this;
+        }
     }
 
     public class ExternalServiceDefinitionBuilder<TInterface> : ExternalServiceDefinitionBuilder
@@ -38,5 +51,23 @@ namespace Dasync.Modeling
         {
         }
 
+        public MethodDefinitionBuilder Method(Expression<Func<TInterface, string>> methodNameSelector)
+        {
+            var methodName = (string)((ConstantExpression)methodNameSelector.Body).Value;
+            return Method(methodName);
+        }
+
+        public new ExternalServiceDefinitionBuilder<TInterface> Method(string methodName, Action<MethodDefinitionBuilder> buildAction)
+        {
+            buildAction(Method(methodName));
+            return this;
+        }
+
+        public ExternalServiceDefinitionBuilder<TInterface> Method(Expression<Func<TInterface, string>> methodNameSelector, Action<MethodDefinitionBuilder> buildAction)
+        {
+            var methodName = (string)((ConstantExpression)methodNameSelector.Body).Value;
+            buildAction(Method(methodName));
+            return this;
+        }
     }
 }
