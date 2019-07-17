@@ -24,10 +24,10 @@ namespace Dasync.Modeling
             return this;
         }
 
-        public ExternalServiceDefinitionBuilder AlternativeName(params string[] alternativeServiceNames)
+        public ExternalServiceDefinitionBuilder AlternateName(params string[] alternateServiceNames)
         {
-            foreach (var altName in alternativeServiceNames)
-                ServiceDefinition.AddAlternativeName(altName);
+            foreach (var altName in alternateServiceNames)
+                ServiceDefinition.AddAlternateName(altName);
             return this;
         }
 

@@ -11,7 +11,7 @@ namespace Dasync.Modeling
         private ServiceType _type;
         private Type _implementation;
         private Type[] _interfaces = Array.Empty<Type>();
-        private string[] _alternativeNames = Array.Empty<string>();
+        private string[] _alternateNames = Array.Empty<string>();
 
         private readonly Dictionary<string, MethodDefinition> _methodsByName =
             new Dictionary<string, MethodDefinition>(StringComparer.OrdinalIgnoreCase);
@@ -37,14 +37,14 @@ namespace Dasync.Modeling
             }
         }
 
-        public string[] AlternativeNames => _alternativeNames;
+        public string[] AlternateNames => _alternateNames;
 
-        public bool AddAlternativeName(string name)
+        public bool AddAlternateName(string name)
         {
-            if (_alternativeNames.Contains(name, StringComparer.OrdinalIgnoreCase))
+            if (_alternateNames.Contains(name, StringComparer.OrdinalIgnoreCase))
                 return false;
-            Model.OnServiceAlternativeNameAdding(this, name);
-            _alternativeNames = _alternativeNames.Concat(new[] { name }).ToArray();
+            Model.OnServiceAlternateNameAdding(this, name);
+            _alternateNames = _alternateNames.Concat(new[] { name }).ToArray();
             return true;
         }
 
@@ -136,11 +136,11 @@ namespace Dasync.Modeling
             return methodDefinition;
         }
 
-        internal void OnMethodAlternativeNameAdding(MethodDefinition methodDefinition, string newAltName)
+        internal void OnMethodAlternateNameAdding(MethodDefinition methodDefinition, string newAltName)
         {
             var existingMethod = FindMethod(newAltName);
             if (existingMethod != null && !ReferenceEquals(existingMethod, methodDefinition))
-                throw new InvalidOperationException($"Cannot use the alternative name '{newAltName}' for method '{methodDefinition.MethodInfo.Name}' of service '{methodDefinition.ServiceDefinition.Name}', because the name is already used by another method.");
+                throw new InvalidOperationException($"Cannot use the alternate name '{newAltName}' for method '{methodDefinition.MethodInfo.Name}' of service '{methodDefinition.ServiceDefinition.Name}', because the name is already used by another method.");
 
             _methodsByName.Add(newAltName, methodDefinition);
         }

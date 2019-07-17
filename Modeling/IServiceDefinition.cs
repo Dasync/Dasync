@@ -8,7 +8,7 @@ namespace Dasync.Modeling
 
         string Name { get; }
 
-        string[] AlternativeNames { get; }
+        string[] AlternateNames { get; }
 
         ServiceType Type { get; }
 

@@ -9,7 +9,7 @@ namespace Dasync.Modeling
         IMutableMethodDefinition, IMethodDefinition,
         IMutableRoutineDefinition, IRoutineDefinition
     {
-        private string[] _alternativeNames = Array.Empty<string>();
+        private string[] _alternateNames = Array.Empty<string>();
 
         public MethodDefinition(ServiceDefinition serviceDefinition, MethodInfo methodInfo)
         {
@@ -31,14 +31,14 @@ namespace Dasync.Modeling
 
         IMutableServiceDefinition IMutableRoutineDefinition.Service => ServiceDefinition;
 
-        public string[] AlternativeNames => _alternativeNames;
+        public string[] AlternateNames => _alternateNames;
 
-        public bool AddAlternativeName(string name)
+        public bool AddAlternateName(string name)
         {
-            if (_alternativeNames.Contains(name, StringComparer.OrdinalIgnoreCase))
+            if (_alternateNames.Contains(name, StringComparer.OrdinalIgnoreCase))
                 return false;
-            ServiceDefinition.OnMethodAlternativeNameAdding(this, name);
-            _alternativeNames = _alternativeNames.Concat(new[] { name }).ToArray();
+            ServiceDefinition.OnMethodAlternateNameAdding(this, name);
+            _alternateNames = _alternateNames.Concat(new[] { name }).ToArray();
             return true;
         }
     }

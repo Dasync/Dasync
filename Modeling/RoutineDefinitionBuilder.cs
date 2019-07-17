@@ -13,10 +13,10 @@ namespace Dasync.Modeling
 
         public IMutableRoutineDefinition RoutineDefinition { get; private set; }
 
-        public RoutineDefinitionBuilder AlternativeName(params string[] alternativeMethodNames)
+        public RoutineDefinitionBuilder AlternateName(params string[] alternateMethodNames)
         {
-            foreach (var altName in alternativeMethodNames)
-                RoutineDefinition.AddAlternativeName(altName);
+            foreach (var altName in alternateMethodNames)
+                RoutineDefinition.AddAlternateName(altName);
             return this;
         }
     }

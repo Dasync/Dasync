@@ -17,7 +17,7 @@ namespace Dasync.AspNetCore.Platform
 
         public string Name { get; }
 
-        public string[] AlternativeNames { get; } = Array.Empty<string>();
+        public string[] AlternateNames { get; } = Array.Empty<string>();
 
         public ServiceType Type => ServiceType.External;
 

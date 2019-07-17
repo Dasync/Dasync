@@ -8,6 +8,6 @@ namespace Dasync.Modeling
     {
         new IMutableServiceDefinition Service { get; }
 
-        bool AddAlternativeName(string name);
+        bool AddAlternateName(string name);
     }
 }
