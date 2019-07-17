@@ -89,7 +89,7 @@ namespace Dasync.AspNetCore.Platform
             try
             {
                 var serviceInstance = _domainServiceProvider.GetService(serviceDefinition.Implementation);
-                var routineMethod = _routineMethodResolver.Resolve(serviceDefinition.Implementation, intent.MethodId);
+                var routineMethod = _routineMethodResolver.Resolve(serviceDefinition, intent.MethodId);
                 var methodInvoker = _methodInvokerFactory.Create(routineMethod);
 
                 foreach (var postAction in _transitionActions)

@@ -10,6 +10,7 @@ using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Extensions;
 using Dasync.ExecutionEngine.IntrinsicFlow;
 using Dasync.ExecutionEngine.StateMetadata.Service;
+using Dasync.Modeling;
 using Dasync.Proxy;
 using Dasync.ValueContainer;
 using System;
@@ -88,17 +89,22 @@ namespace Dasync.ExecutionEngine.Transitions
                 var serviceId = await transitionCarrier.GetServiceIdAsync(ct);
                 var routineDescriptor = await transitionCarrier.GetRoutineDescriptorAsync(ct);
 
-                var serviceInstance =
-#warning IntrinsicRoutines must be registered in the service registry, but it needs the engine IoC to resolve.
-                    serviceId.ProxyName == nameof(IntrinsicRoutines)
-                    ? _intrinsicRoutines
-                    : _serviceProxyBuilder.Build(serviceId);
-#warning check if the serviceInstance proxy is an actual non-abstract class with implementation
+                object serviceInstance;
+                IServiceDefinition serviceDefinition;
 
-                // Need exact underlying type of the service implementation type to call
-                // the routine method directly without using the virtual method table.
-                var serviceType = (serviceInstance as IProxy)?.ObjectType ?? serviceInstance.GetType();
-                var routineMethod = _routineMethodResolver.Resolve(serviceType, routineDescriptor.MethodId);
+#warning IntrinsicRoutines must be registered in the service registry, but it needs the engine IoC to resolve.
+                if (serviceId.ProxyName == nameof(IntrinsicRoutines))
+                {
+                    serviceInstance = _intrinsicRoutines;
+                    serviceDefinition = IntrinsicCommunicationModel.IntrinsicRoutinesServiceDefinition;
+                }
+                else
+                {
+                    serviceInstance = _serviceProxyBuilder.Build(serviceId);
+                    serviceDefinition = ((ServiceProxyContext)((IProxy)serviceInstance).Context).Definition;
+                }
+
+                var routineMethod = _routineMethodResolver.Resolve(serviceDefinition, routineDescriptor.MethodId);
 
                 //var serviceStateContainer = _serviceStateValueContainerProvider.CreateContainer(serviceInstance);
                 //var isStatefullService = serviceStateContainer.GetCount() > 0;

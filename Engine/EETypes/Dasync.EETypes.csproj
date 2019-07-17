@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.csproj" />
+    <ProjectReference Include="..\..\Modeling\Dasync.Modeling.csproj" />
   </ItemGroup>
 
 </Project>

@@ -40,11 +40,10 @@ namespace Dasync.ExecutionEngine.Proxy
             if (serviceDefinition == null)
                 throw new InvalidOperationException($"The service '{serviceId.ServiceName}' is not registered.");
 
-            return CreateServiceProxy(serviceDefinition, additionalInterfaces);
+            return CreateServiceProxy(serviceDefinition, serviceId, additionalInterfaces);
         }
 
-
-        private object CreateServiceProxy(IServiceDefinition serviceDefinition, string[] additionalInterfaces)
+        private object CreateServiceProxy(IServiceDefinition serviceDefinition, ServiceId serviceId, string[] additionalInterfaces)
         {
             Type proxyType;
 
@@ -88,9 +87,11 @@ namespace Dasync.ExecutionEngine.Proxy
 
             var serviceProxyContext = new ServiceProxyContext
             {
-                Service = new ServiceDescriptor
+                Definition = serviceDefinition,
+
+                Descriptor = new ServiceDescriptor
                 {
-                    Id = new ServiceId { ServiceName = serviceDefinition.Name },
+                    Id = serviceId,
                     Interfaces = allInterfaces.ToArray()
                 }
             };

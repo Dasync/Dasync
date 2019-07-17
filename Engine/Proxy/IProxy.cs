@@ -15,7 +15,7 @@ namespace Dasync.Proxy
         Type ObjectType { get; }
 
         /// <summary>
-        /// The executor of interface or overriden virtual methods.
+        /// The executor of interface or overridden virtual methods.
         /// Must not be set to NULL - there is no safety check.
         /// </summary>
         IProxyMethodExecutor Executor { get; set; }

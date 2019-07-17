@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
 using Dasync.Accessors;
-using Dasync.AsyncStateMachine;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
@@ -53,7 +52,7 @@ namespace Dasync.ExecutionEngine.Proxy
             var intent = new ExecuteRoutineIntent
             {
                 Id = _numericIdGenerator.NewId(),
-                ServiceId = serviceProxyContext.Service.Id,
+                ServiceId = serviceProxyContext.Descriptor.Id,
                 MethodId = _routineMethodIdProvider.GetId(methodInfo),
                 Parameters = parameters
             };
@@ -129,14 +128,14 @@ namespace Dasync.ExecutionEngine.Proxy
         {
             var eventDesc = new EventDescriptor
             {
-                ServiceId = ((ServiceProxyContext)proxy.Context).Service.Id,
+                ServiceId = ((ServiceProxyContext)proxy.Context).Descriptor.Id,
                 EventId = _eventIdProvider.GetId(@event)
             };
 
             if (@delegate.Target is IProxy subscriberProxy)
             {
                 var subscriberProxyContext = (ServiceProxyContext)(subscriberProxy.Context ?? ServiceProxyBuildingContext.CurrentServiceProxyContext);
-                var subscriberServiceId = subscriberProxyContext.Service.Id;
+                var subscriberServiceId = subscriberProxyContext.Descriptor.Id;
                 var subscriberMethodId = _routineMethodIdProvider.GetId(@delegate.GetMethodInfo());
 
                 var subscriberDesc = new EventSubscriberDescriptor
@@ -166,7 +165,7 @@ namespace Dasync.ExecutionEngine.Proxy
             var intent = new RaiseEventIntent
             {
                 Id = _numericIdGenerator.NewId(),
-                ServiceId = serviceProxyContext.Service.Id,
+                ServiceId = serviceProxyContext.Descriptor.Id,
                 EventId = _eventIdProvider.GetId(@event),
                 Parameters = parameters
             };

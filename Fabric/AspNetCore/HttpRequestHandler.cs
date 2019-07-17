@@ -206,7 +206,7 @@ namespace DasyncAspNetCore
             MethodInfo routineMethod;
             try
             {
-                routineMethod = _routineMethodResolver.Resolve(serviceDefinition.Implementation, routineMethodId);
+                routineMethod = _routineMethodResolver.Resolve(serviceDefinition, routineMethodId);
             }
             catch
             {
@@ -602,7 +602,7 @@ namespace DasyncAspNetCore
                 {
                     MethodName = subscriber.MethodId.MethodName
                 };
-                MethodInfo routineMethod = _routineMethodResolver.Resolve(subscriberServiceDefinition.Implementation, eventHandlerRoutineMethodId);
+                MethodInfo routineMethod = _routineMethodResolver.Resolve(subscriberServiceDefinition, eventHandlerRoutineMethodId);
 
                 var methodInvoker = _methodInvokerFactory.Create(routineMethod);
                 var parameterContainer = methodInvoker.CreateParametersContainer();

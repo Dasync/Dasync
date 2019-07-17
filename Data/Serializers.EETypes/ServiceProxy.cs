@@ -23,8 +23,8 @@ namespace Dasync.Serializers.EETypes
 
             return new ServiceProxyContainer
             {
-                ServiceId = proxyContext.Service.Id,
-                Interfaces = proxyContext.Service.Interfaces
+                ServiceId = proxyContext.Descriptor.Id,
+                Interfaces = proxyContext.Descriptor.Interfaces
             };
         }
 
