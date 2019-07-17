@@ -16,6 +16,8 @@ namespace Dasync.Proxy
         private static readonly Dictionary<Type[], Type> _proxyTypeMap
             = new Dictionary<Type[], Type>(TypeSetComparer.Instance);
 
+        private static int _nameCounter = 1;
+
         private sealed class TypeSetComparer : IEqualityComparer<Type[]>
         {
             public static readonly TypeSetComparer Instance = new TypeSetComparer();
@@ -67,6 +69,21 @@ namespace Dasync.Proxy
             LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
+        private string GenerateProxyTypeName(Type[] interfacesTypes)
+        {
+            var proxyTypeBaseName =
+                interfacesTypes.Length == 1
+                ? interfacesTypes[0].FullName
+                : string.Join("+", interfacesTypes.Select(i => i.FullName));
+            proxyTypeBaseName += "!proxy";
+
+            if (_moduleBuilder.Value.GetType(proxyTypeBaseName, throwOnError: false, ignoreCase: false) == null)
+                return proxyTypeBaseName;
+
+            var id = Interlocked.Increment(ref _nameCounter);
+            return proxyTypeBaseName + id;
+        }
+
         public Type Build(Type baseClass)
         {
             lock (_proxyTypeMap)
@@ -95,8 +112,6 @@ namespace Dasync.Proxy
             }
         }
 
-        private static int _counter;
-
         public Type BuildType(Type[] interfacesTypes)
         {
             var isClass = interfacesTypes.Length == 1 && interfacesTypes[0].GetTypeInfo().IsClass;
@@ -109,17 +124,7 @@ namespace Dasync.Proxy
             if (isClass && objectType.GetTypeInfo().IsSealed)
                 throw new ArgumentException($"The type '{objectType.FullName}' must not be sealed", nameof(objectType));
 
-            string proxyTypeFullName;
-
-            if (isClass)
-            {
-                proxyTypeFullName = objectType.FullName + "!proxy";
-            }
-            else
-            {
-                var id = Interlocked.Increment(ref _counter);
-                proxyTypeFullName = $"!proxy{id}";
-            }
+            var proxyTypeFullName = GenerateProxyTypeName(interfacesTypes);
 
             var typeBuilder = _moduleBuilder.Value.DefineType(proxyTypeFullName,
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed,
