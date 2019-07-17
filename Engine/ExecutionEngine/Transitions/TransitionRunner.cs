@@ -383,8 +383,11 @@ namespace Dasync.ExecutionEngine.Transitions
                 foreach (var intent in scheduledActions.ExecuteRoutineIntents)
                 {
                     var parameters = intent.Parameters;
-                    for (var i = 0; i < parameters.GetCount(); i++)
-                        AddIntentOnSpecialValue(parameters.GetValue(i));
+                    if (parameters != null)
+                    {
+                        for (var i = 0; i < parameters.GetCount(); i++)
+                            AddIntentOnSpecialValue(parameters.GetValue(i));
+                    }
                 }
             }
 
@@ -393,8 +396,11 @@ namespace Dasync.ExecutionEngine.Transitions
                 foreach (var intent in scheduledActions.RaiseEventIntents)
                 {
                     var parameters = intent.Parameters;
-                    for (var i = 0; i < parameters.GetCount(); i++)
-                        AddIntentOnSpecialValue(parameters.GetValue(i));
+                    if (parameters != null)
+                    {
+                        for (var i = 0; i < parameters.GetCount(); i++)
+                            AddIntentOnSpecialValue(parameters.GetValue(i));
+                    }
                 }
             }
 
