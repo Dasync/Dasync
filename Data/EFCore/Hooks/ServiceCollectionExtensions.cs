@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,8 +13,17 @@ namespace Dasync.EntityFrameworkCore.Hooks
             var serviceDescriptors = new List<ServiceDescriptor>();
             foreach (var descriptor in services)
             {
-                if (typeof(DbContext).IsAssignableFrom(descriptor.ServiceType))
-                    serviceDescriptors.Add(descriptor);
+                // Search for DbContext service types only
+                if (!typeof(DbContext).IsAssignableFrom(descriptor.ServiceType))
+                    continue;
+
+                // Skip DbContexts that take in IDbContextEvents - assume manual invocation without proxies.
+                if (descriptor.ServiceType.GetConstructors().Any(
+                    ctor => ctor.GetParameters().Any(
+                        p => p.ParameterType == typeof(IDbContextEvents))))
+                    continue;
+
+                serviceDescriptors.Add(descriptor);
             }
 
             foreach (var descriptor in serviceDescriptors)
@@ -23,17 +33,11 @@ namespace Dasync.EntityFrameworkCore.Hooks
 
                 object ProvideDbContext(IServiceProvider sp)
                 {
+                    var dbContextEvents = sp.GetService<IDbContextEvents>();
                     var dbContext = (DbContext)sp.GetService(dbContextProxyType);
                     var proxy = (IDbContextProxy)dbContext;
-
-                    var decorators = sp.GetServices<IDbContextDecorator>();
-                    foreach (var decorator in decorators)
-                        decorator.Decorate(proxy);
-
-                    var monitors = sp.GetServices<IDbContextMonitor>();
-                    foreach (var monitor in monitors)
-                        monitor.OnDbContextCreated(dbContext);
-
+                    proxy.OnModelCreatingCallback += (modelBuilder) => dbContextEvents.OnModelCreating(dbContext, modelBuilder);
+                    dbContextEvents.OnContextCreated(dbContext);
                     return dbContext;
                 };
 

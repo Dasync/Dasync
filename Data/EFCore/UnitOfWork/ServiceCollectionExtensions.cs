@@ -4,6 +4,7 @@ using System.Reflection;
 using Dasync.EntityFrameworkCore.Hooks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Dasync.DependencyInjection;
 
 namespace Dasync.EntityFrameworkCore.UnitOfWork
 {
@@ -13,7 +14,7 @@ namespace Dasync.EntityFrameworkCore.UnitOfWork
         {
             services.AddEFCoreHooks();
             services.AddDbContextProviders();
-            services.AddSingleton<IDbContextDecorator, UnitOfWorkDbContextDecorator>();
+            services.AddModule(DI.Bindings);
             return services;
         }
 
