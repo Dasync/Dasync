@@ -1,4 +1,5 @@
-﻿using Dasync.DependencyInjection;
+﻿using Dasync.AspNetCore.DependencyInjection;
+using Dasync.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +12,8 @@ namespace DasyncAspNetCore
         public static IServiceCollection AddDasync(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<DasyncOptions>(configuration.GetSection("Dasync"));
-            services.AddTransient<DasyncMiddleware>();
+            services.AddScoped<ScopedServiceProviderMiddleware>();
+            services.AddScoped<DasyncMiddleware>();
             services.AddSingleton<IHttpRequestHandler, HttpRequestHandler>();
             services.AddSingleton<IHostedService, DasyncCoHost>();
             services.AddSingleton<IStartupFilter, DasyncStartupFilter>();

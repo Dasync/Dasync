@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Dasync.DependencyInjection;
 using Dasync.Serialization;
 
 namespace Dasync.Bootstrap
@@ -12,6 +13,7 @@ namespace Dasync.Bootstrap
             [typeof(IAssemblyNameShortener)] = typeof(AggregateAssemblyNameShortener),
             [typeof(IObjectDecomposerSelector)] = typeof(AggregateObjectDecomposerSelector),
             [typeof(IObjectComposerSelector)] = typeof(AggregateObjectComposerSelector),
+            [typeof(IScopedServiceProvider)] = typeof(ScopedServiceProvider),
         };
     }
 }

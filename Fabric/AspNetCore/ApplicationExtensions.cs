@@ -1,4 +1,5 @@
-﻿using Dasync.Modeling;
+﻿using Dasync.AspNetCore.DependencyInjection;
+using Dasync.Modeling;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,7 @@ namespace DasyncAspNetCore
         {
             app.ApplicationServices.GetService<CommunicationModelProvider.Holder>().Model = model;
 
+            app.UseMiddleware<ScopedServiceProviderMiddleware>();
             app.UseMiddleware<DasyncMiddleware>();
 
             return app;
