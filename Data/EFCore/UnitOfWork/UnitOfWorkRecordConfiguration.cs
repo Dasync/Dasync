@@ -7,7 +7,7 @@ namespace Dasync.EntityFrameworkCore.UnitOfWork
     {
         public void Configure(EntityTypeBuilder<UnitOfWorkRecord> builder)
         {
-            builder.ToTable("uow");
+            builder.ToTable("uow", "dasync");
         }
     }
 }
