@@ -59,5 +59,13 @@ namespace Dasync.ValueContainer
                 target.SetValue(i, v.Value);
             }
         }
+
+        public static object[] GetValues(this IValueContainer container)
+        {
+            var values = new object[container.GetCount()];
+            for (var i = 0; i < values.Length; i++)
+                values[i] = container.GetValue(i);
+            return values;
+        }
     }
 }
