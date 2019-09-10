@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Dasync.DependencyInjection;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
@@ -17,13 +18,16 @@ namespace Dasync.Fabric.InMemory
         private string _serializationFormat;
         private readonly ExecutionContext _nonTransitionExecutionContext = ExecutionContext.Capture();
         private readonly IUniqueIdGenerator _uniqueIdGenerator;
+        private readonly IServiceProviderScope _serviceProviderScope;
 
         public InMemoryFabric(ITransitionRunner transitionRunner,
             IInMemoryFabricSerializerFactoryAdvisor serializerFactoryAdvisor,
-            IUniqueIdGenerator numericIdGenerator)
+            IUniqueIdGenerator numericIdGenerator,
+            IServiceProviderScope serviceProviderScope)
         {
             _transitionRunner = transitionRunner;
             _uniqueIdGenerator = numericIdGenerator;
+            _serviceProviderScope = serviceProviderScope;
 
             DataStore = InMemoryDataStore.Create(ScheduleMessage);
             var serializerFactory = serializerFactoryAdvisor.Advise();
@@ -131,32 +135,35 @@ namespace Dasync.Fabric.InMemory
             {
                 for (; ; )
                 {
-                    var carrier = new TransitionCarrier(this, message);
-                    carrier.Initialize();
-
-                    //var transitionInfo = await data.GetTransitionDescriptorAsync(ct);
-                    //if (transitionInfo.Type == TransitionType.InvokeRoutine ||
-                    //    transitionInfo.Type == TransitionType.ContinueRoutine)
-                    //{
-                    //    var routineDescriptor = await data.GetRoutineDescriptorAsync(ct);
-
-                    //    if (!string.IsNullOrEmpty(transitionInfo.ETag) &&
-                    //        transitionInfo.ETag != routineDescriptor.ETag)
-                    //    {
-                    //        // Ignore - stale duplicate message
-                    //        return;
-                    //    }
-                    //}
-
-                    try
+                    using (_serviceProviderScope.New())
                     {
-                        await _transitionRunner.RunAsync(carrier, ct);
-                        break;
-                    }
-                    catch (ConcurrentRoutineExecutionException)
-                    {
-                        // re-try
-                        continue;
+                        var carrier = new TransitionCarrier(this, message);
+                        carrier.Initialize();
+
+                        //var transitionInfo = await data.GetTransitionDescriptorAsync(ct);
+                        //if (transitionInfo.Type == TransitionType.InvokeRoutine ||
+                        //    transitionInfo.Type == TransitionType.ContinueRoutine)
+                        //{
+                        //    var routineDescriptor = await data.GetRoutineDescriptorAsync(ct);
+
+                        //    if (!string.IsNullOrEmpty(transitionInfo.ETag) &&
+                        //        transitionInfo.ETag != routineDescriptor.ETag)
+                        //    {
+                        //        // Ignore - stale duplicate message
+                        //        return;
+                        //    }
+                        //}
+
+                        try
+                        {
+                            await _transitionRunner.RunAsync(carrier, ct);
+                            break;
+                        }
+                        catch (ConcurrentRoutineExecutionException)
+                        {
+                            // re-try
+                            continue;
+                        }
                     }
                 }
             }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\Engine\Accessors\Dasync.Accessors.csproj" />
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />
     <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.csproj" />
+    <ProjectReference Include="..\..\IoC\DependencyInjection\Dasync.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\Modeling\Dasync.Modeling.csproj" />
     <ProjectReference Include="..\Sample.Base\Dasync.Fabric.Sample.Base.csproj" />
     <ProjectReference Include="..\ServiceRegistry\Dasync.ServiceRegistry.csproj" />

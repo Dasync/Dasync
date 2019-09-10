@@ -12,20 +12,19 @@ namespace Dasync.AspNetCore.DependencyInjection
     public class ScopedServiceProviderMiddleware : IMiddleware
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceProviderScope _serviceProviderScope;
 
-        public ScopedServiceProviderMiddleware(IServiceProvider sp) => _serviceProvider = sp;
+        public ScopedServiceProviderMiddleware(IServiceProvider serviceProvider, IServiceProviderScope serviceProviderScope)
+        {
+            _serviceProvider = serviceProvider;
+            _serviceProviderScope = serviceProviderScope;
+        }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            var previousValue = ScopedServiceProvider.Instance.Value;
-            ScopedServiceProvider.Instance.Value = _serviceProvider;
-            try
+            using (_serviceProviderScope.Register(_serviceProvider))
             {
                 await next(context);
-            }
-            finally
-            {
-                ScopedServiceProvider.Instance.Value = previousValue;
             }
         }
     }

@@ -19,6 +19,7 @@ namespace DasyncAspNetCore
             services.AddSingleton<IStartupFilter, DasyncStartupFilter>();
 
             services.AddModules(
+                Dasync.DependencyInjection.DI.Bindings,
                 Dasync.Modeling.DI.Bindings,
                 Dasync.Serialization.DI.Bindings,
                 Dasync.Serialization.Json.DI.Bindings,
