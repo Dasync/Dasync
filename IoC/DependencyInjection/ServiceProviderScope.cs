@@ -13,7 +13,8 @@ namespace Dasync.DependencyInjection
             var scope = new ServiceProviderScope
             {
                 _serviceScope = serviceScope,
-                _prevServiceProvider = ScopedServiceProvider.Instance.Value
+                _prevServiceProvider = ScopedServiceProvider.Instance.Value,
+                ServiceProvider = serviceScope.ServiceProvider
             };
             ScopedServiceProvider.Instance.Value = serviceScope.ServiceProvider;
             return scope;
@@ -23,7 +24,8 @@ namespace Dasync.DependencyInjection
         {
             var scope = new ServiceProviderScope
             {
-                _prevServiceProvider = ScopedServiceProvider.Instance.Value
+                _prevServiceProvider = ScopedServiceProvider.Instance.Value,
+                ServiceProvider = serviceProvider
             };
             ScopedServiceProvider.Instance.Value = serviceProvider;
             return scope;
@@ -36,5 +38,7 @@ namespace Dasync.DependencyInjection
             _serviceScope?.Dispose();
             _serviceScope = null;
         }
+
+        public IServiceProvider ServiceProvider { get; private set; }
     }
 }
