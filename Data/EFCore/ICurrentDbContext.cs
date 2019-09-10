@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Dasync.EntityFrameworkCore.UnitOfWork
+namespace Dasync.EntityFrameworkCore
 {
     public interface ICurrentDbContext<TContext> where TContext : DbContext
     {
