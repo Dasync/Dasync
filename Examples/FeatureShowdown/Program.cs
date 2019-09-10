@@ -91,8 +91,7 @@ namespace DasyncFeatures
                 Dasync.Serializers.DomainTypes.DI.Bindings,
                 Dasync.Proxy.DI.Bindings,
                 Dasync.AsyncStateMachine.DI.Bindings,
-                Dasync.ExecutionEngine.DI.Bindings,
-                Dasync.Bootstrap.DI.Bindings);
+                Dasync.ExecutionEngine.DI.Bindings);
 
             services.AddSingleton<IDomainServiceProvider, DomainServiceProvider>();
 

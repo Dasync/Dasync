@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -18,12 +19,12 @@ namespace Dasync.Serialization
 
         public TypeSerializerHelper(
             ITypeResolver typeResolver,
-            ITypeNameShortener typeNameShortener,
-            IAssemblyNameShortener assemblyNameShortener)
+            IEnumerable<ITypeNameShortener> typeNameShorteners,
+            IEnumerable<IAssemblyNameShortener> assemblyNameShorteners)
         {
             _typeResolver = typeResolver;
-            _typeNameShortener = typeNameShortener;
-            _assemblyNameShortener = assemblyNameShortener;
+            _typeNameShortener = new TypeNameShortenerChain(typeNameShorteners);
+            _assemblyNameShortener = new AssemblyNameShortenerChain(assemblyNameShorteners);
         }
 
         public TypeSerializationInfo GetTypeSerializationInfo(Type type)

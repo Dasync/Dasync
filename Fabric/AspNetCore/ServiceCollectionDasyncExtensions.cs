@@ -28,8 +28,7 @@ namespace DasyncAspNetCore
                 Dasync.Serializers.DomainTypes.DI.Bindings,
                 Dasync.Proxy.DI.Bindings,
                 Dasync.AsyncStateMachine.DI.Bindings,
-                Dasync.ExecutionEngine.DI.Bindings,
-                Dasync.Bootstrap.DI.Bindings);
+                Dasync.ExecutionEngine.DI.Bindings);
 
             services.AddModules(Dasync.AspNetCore.DI.Bindings);
 

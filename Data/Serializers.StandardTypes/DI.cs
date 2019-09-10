@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Dasync.Serialization;
 using Dasync.Serializers.StandardTypes.Runtime;
 
 namespace Dasync.Serializers.StandardTypes
@@ -8,10 +9,10 @@ namespace Dasync.Serializers.StandardTypes
     {
         public static readonly Dictionary<Type, Type> Bindings = new Dictionary<Type, Type>
         {
-            [typeof(StandardTypeNameShortener)] = typeof(StandardTypeNameShortener),
-            [typeof(StandardAssemblyNameShortener)] = typeof(StandardAssemblyNameShortener),
-            [typeof(StandardTypeDecomposerSelector)] = typeof(StandardTypeDecomposerSelector),
-            [typeof(StandardTypeComposerSelector)] = typeof(StandardTypeComposerSelector),
+            [typeof(ITypeNameShortener)] = typeof(StandardTypeNameShortener),
+            [typeof(IAssemblyNameShortener)] = typeof(StandardAssemblyNameShortener),
+            [typeof(IObjectDecomposerSelector)] = typeof(StandardTypeDecomposerSelector),
+            [typeof(IObjectComposerSelector)] = typeof(StandardTypeComposerSelector),
             [typeof(ExceptionSerializer)] = typeof(ExceptionSerializer),
         };
     }

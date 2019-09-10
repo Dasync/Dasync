@@ -1,4 +1,6 @@
-﻿namespace Dasync.Serialization
+﻿using System.Collections.Generic;
+
+namespace Dasync.Serialization
 {
     public class StandardSerializerFactory : IStandardSerializerFactory
     {
@@ -8,12 +10,12 @@
 
         public StandardSerializerFactory(
             ITypeSerializerHelper typeSerializerHelper,
-            IObjectDecomposerSelector decomposerSelector,
-            IObjectComposerSelector composerSelector)
+            IEnumerable<IObjectDecomposerSelector> decomposerSelectors,
+            IEnumerable<IObjectComposerSelector> composerSelectors)
         {
             _typeSerializerHelper = typeSerializerHelper;
-            _decomposerSelector = decomposerSelector;
-            _composerSelector = composerSelector;
+            _decomposerSelector = new ObjectDecomposerSelectorChain(decomposerSelectors);
+            _composerSelector = new ObjectComposerSelectorChain(composerSelectors);
         }
 
         public ISerializer Create(
