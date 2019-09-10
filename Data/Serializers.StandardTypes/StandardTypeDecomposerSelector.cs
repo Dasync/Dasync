@@ -41,9 +41,6 @@ namespace Dasync.Serializers.StandardTypes
             if (typeof(Exception).IsAssignableFrom(type))
                 return _exceptionSerializer;
 
-            if (type.IsPoco())
-                return PocoSerializer.Instance;
-
             return null;
         }
     }

@@ -186,7 +186,7 @@ namespace Dasync.Serialization
         {
             type = value?.GetType() ?? type;
 
-            var decomposer = _decomposerSelector.SelectDecomposer(type);
+            var decomposer = _decomposerSelector.SelectDecomposerOrPoco(type);
             if (decomposer == null)
             {
                 typeInfo = null;

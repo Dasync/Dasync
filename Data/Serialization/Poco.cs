@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Reflection;
-using Dasync.Serialization;
 using Dasync.ValueContainer;
 
-namespace Dasync.Serializers.StandardTypes
+namespace Dasync.Serialization
 {
     public sealed class PocoSerializer : IObjectDecomposer, IObjectComposer
     {
