@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Dasync.DependencyInjection;
 using Dasync.EntityFrameworkCore.Hooks;
+using Dasync.EntityFrameworkCore.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Dasync.DependencyInjection;
 
 namespace Dasync.EntityFrameworkCore.UnitOfWork
 {
@@ -23,7 +25,7 @@ namespace Dasync.EntityFrameworkCore.UnitOfWork
             var serviceDescriptors = new List<ServiceDescriptor>();
             foreach (var descriptor in services)
             {
-                if (typeof(DbContext).IsAssignableFrom(descriptor.ServiceType))
+                if (!descriptor.ServiceType.Assembly.IsDynamic && typeof(DbContext).IsAssignableFrom(descriptor.ServiceType))
                     serviceDescriptors.Add(descriptor);
             }
 
@@ -39,6 +41,8 @@ namespace Dasync.EntityFrameworkCore.UnitOfWork
                     typeof(Func<>).MakeGenericType(dbContextType),
                     sp => ProvideDbContextMethodInfo.MakeGenericMethod(dbContextType).Invoke(null, new object[] { sp }));
             }
+
+            services.AddSingleton(new KnownDbContextTypes(serviceDescriptors.Select(d => d.ServiceType)));
 
             return services;
         }

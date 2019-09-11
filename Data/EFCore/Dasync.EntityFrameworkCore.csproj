@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\IoC\DependencyInjection\Dasync.DependencyInjection.csproj" />
+    <ProjectReference Include="..\Projections\Dasync.Projections.csproj" />
+    <ProjectReference Include="..\Serialization\Dasync.Serialization.csproj" />
   </ItemGroup>
 
 </Project>
