@@ -206,11 +206,11 @@ public class CoffeeMachine
 
 ## Demo
 
-The technology currently matures in production environment with early adopters.
+The technology currently matures in a production environment with early adopters in a closed environment.
 
-However, here are few simple examples to play with:
-* [Feature Showdown Application](Examples/FeatureShowdown)
-* [Azure Functions Seamless Demo](https://dasyncnet.wordpress.com/2018/05/04/dasync-on-azure-functions/)
+The [Feature Showdown Application](Examples/FeatureShowdown) works locally only and will run in the cloud soon when the platform is open to the public.
+
+You may [sign-up for early experience](https://www.dasync.io/#comp-jyrluu0u) with a managed solution.
 
 
 ## More Info
