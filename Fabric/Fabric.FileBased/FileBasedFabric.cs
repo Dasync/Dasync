@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.CloudEvents;
+using Dasync.DependencyInjection;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
@@ -20,6 +21,7 @@ namespace Dasync.Fabric.FileBased
         private static readonly JsonSerializer _jsonSerializer = JsonSerializer.Create(CloudEventsSerialization.JsonSerializerSettings);
 
         private readonly ITransitionRunner _transitionRunner;
+        private readonly IServiceProviderScope _serviceProviderScope;
         private string _serializationFormat;
         private Task _monitorTransitionsTask;
         private Task _monitorEventsTask;
@@ -31,9 +33,11 @@ namespace Dasync.Fabric.FileBased
         public FileBasedFabric(
             ITransitionRunner transitionRunner,
             IFileBasedFabricSerializerFactoryAdvisor serializerFactoryAdvisor,
-            IUniqueIdGenerator idGenerator)
+            IUniqueIdGenerator idGenerator,
+            IServiceProviderScope serviceProviderScope)
         {
             _transitionRunner = transitionRunner;
+            _serviceProviderScope = serviceProviderScope;
 
             Directory = Path.GetFullPath(Path.Combine(System.IO.Directory.GetCurrentDirectory(), "data"));
             TransitionsDirectory = Path.Combine(Directory, "transitions");
@@ -189,31 +193,34 @@ namespace Dasync.Fabric.FileBased
         {
             for (; ; )
             {
-                var carrier = new TransitionCarrier(this, eventEnvelope);
-
-                //var transitionInfo = await data.GetTransitionDescriptorAsync(ct);
-                //if (transitionInfo.Type == TransitionType.InvokeRoutine ||
-                //    transitionInfo.Type == TransitionType.ContinueRoutine)
-                //{
-                //    var routineDescriptor = await data.GetRoutineDescriptorAsync(ct);
-
-                //    if (!string.IsNullOrEmpty(transitionInfo.ETag) &&
-                //        transitionInfo.ETag != routineDescriptor.ETag)
-                //    {
-                //        // Ignore - stale duplicate message
-                //        return;
-                //    }
-                //}
-
-                try
+                using (_serviceProviderScope.New())
                 {
-                    await _transitionRunner.RunAsync(carrier, ct);
-                    break;
-                }
-                catch (ConcurrentRoutineExecutionException)
-                {
-                    // re-try
-                    continue;
+                    var carrier = new TransitionCarrier(this, eventEnvelope);
+
+                    //var transitionInfo = await data.GetTransitionDescriptorAsync(ct);
+                    //if (transitionInfo.Type == TransitionType.InvokeRoutine ||
+                    //    transitionInfo.Type == TransitionType.ContinueRoutine)
+                    //{
+                    //    var routineDescriptor = await data.GetRoutineDescriptorAsync(ct);
+
+                    //    if (!string.IsNullOrEmpty(transitionInfo.ETag) &&
+                    //        transitionInfo.ETag != routineDescriptor.ETag)
+                    //    {
+                    //        // Ignore - stale duplicate message
+                    //        return;
+                    //    }
+                    //}
+
+                    try
+                    {
+                        await _transitionRunner.RunAsync(carrier, ct);
+                        break;
+                    }
+                    catch (ConcurrentRoutineExecutionException)
+                    {
+                        // re-try
+                        continue;
+                    }
                 }
             }
         }

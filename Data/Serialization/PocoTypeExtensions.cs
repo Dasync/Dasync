@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Dasync.Serializers.StandardTypes
+namespace Dasync.Serialization
 {
     public static class PocoTypeExtensions
     {
@@ -20,7 +20,7 @@ namespace Dasync.Serializers.StandardTypes
 
         private static bool CheckIsPoco(Type type)
         {
-            if (!IsPoco(type.GetBaseType()))
+            if (!IsPoco(type.GetTypeInfo().BaseType))
                 return false;
 
             var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;

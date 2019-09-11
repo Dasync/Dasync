@@ -59,7 +59,7 @@ namespace Dasync.Serialization
                 _scope.Type = _typeSerializerHelper.ResolveType(info.Type);
                 if (_scope.Container == null)
                 {
-                    _scope.Composer = _composerSelector.SelectComposer(_scope.Type);
+                    _scope.Composer = _composerSelector.SelectComposerOrPoco(_scope.Type);
                     if (_scope.Composer == null)
                         throw new UnserializableTypeException(_scope.Type);
                     _scope.Container = _scope.Composer.CreatePropertySet(_scope.Type);

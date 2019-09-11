@@ -1,4 +1,5 @@
-﻿using Dasync.DependencyInjection;
+﻿using Dasync.AspNetCore.DependencyInjection;
+using Dasync.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,12 +12,14 @@ namespace DasyncAspNetCore
         public static IServiceCollection AddDasync(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<DasyncOptions>(configuration.GetSection("Dasync"));
-            services.AddTransient<DasyncMiddleware>();
+            services.AddScoped<ScopedServiceProviderMiddleware>();
+            services.AddScoped<DasyncMiddleware>();
             services.AddSingleton<IHttpRequestHandler, HttpRequestHandler>();
             services.AddSingleton<IHostedService, DasyncCoHost>();
             services.AddSingleton<IStartupFilter, DasyncStartupFilter>();
 
             services.AddModules(
+                Dasync.DependencyInjection.DI.Bindings,
                 Dasync.Modeling.DI.Bindings,
                 Dasync.Serialization.DI.Bindings,
                 Dasync.Serialization.Json.DI.Bindings,
@@ -25,8 +28,7 @@ namespace DasyncAspNetCore
                 Dasync.Serializers.DomainTypes.DI.Bindings,
                 Dasync.Proxy.DI.Bindings,
                 Dasync.AsyncStateMachine.DI.Bindings,
-                Dasync.ExecutionEngine.DI.Bindings,
-                Dasync.Bootstrap.DI.Bindings);
+                Dasync.ExecutionEngine.DI.Bindings);
 
             services.AddModules(Dasync.AspNetCore.DI.Bindings);
 
