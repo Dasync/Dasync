@@ -3,7 +3,8 @@
     <metadata>
         <id>Dasync.AzureFunctions.TechnologyPreview</id>
         <version>1.1.0</version>
-        <authors>D-ASYNC LLC</authors>
+        <authors>dasync</authors>
+        <owners>dasync</owners>
         <projectUrl>https://github.com/Dasync/Dasync</projectUrl>
         <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>

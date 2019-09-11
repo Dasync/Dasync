@@ -3,13 +3,13 @@
     <metadata>
         <id>Dasync.AzureStorage</id>
         <version>1.0.0</version>
-        <authors>D-ASYNC LLC</authors>
+        <authors>dasync</authors>
+        <owners>dasync</owners>
         <projectUrl>https://github.com/Dasync</projectUrl>
         <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <description>Better abstractions of WindowsAzure.Storage.</description>
         <summary>Better abstractions of WindowsAzure.Storage.</summary>
-        <releaseNotes>1.0.0: First release.</releaseNotes>
         <tags>dasync azure storage</tags>
         <dependencies>
             <group targetFramework=".NETStandard1.4">

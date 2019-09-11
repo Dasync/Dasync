@@ -2,13 +2,12 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Dasync.AspNetCore</id>
-    <version>0.2.17-preview</version>
-    <authors>dasync,sergiis</authors>
+    <version>1.0.0</version>
+    <authors>dasync</authors>
     <owners>dasync</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
-    <description>preview</description>
-    <releaseNotes>preview</releaseNotes>
+    <description>HTTP fabric for ASP.NET Core applications</description>
     <copyright>D-ASYNC LLC  (c)  2019</copyright>
     <repository type="GitHub" url="https://github.com/Dasync/Dasync" />
     <dependencies>

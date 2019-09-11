@@ -2,14 +2,14 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>Dasync.Ioc</id>
-        <version>0.1.0-alpha</version>
-        <authors>D-ASYNC LLC</authors>
+        <version>1.0.0</version>
+        <authors>dasync</authors>
+        <owners>dasync</owners>
         <projectUrl>https://github.com/Dasync</projectUrl>
         <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <description>Inversion of control - dependency injection.</description>
         <summary>Inversion of control - dependency injection.</summary>
-        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
         <tags>dasync ioc di</tags>
         <dependencies>
             <group targetFramework=".NETStandard1.1">

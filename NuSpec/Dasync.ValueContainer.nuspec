@@ -2,14 +2,14 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>Dasync.ValueContainer</id>
-        <version>0.1.0</version>
-        <authors>D-ASYNC LLC</authors>
+        <version>1.0.0</version>
+        <authors>dasync</authors>
+        <owners>dasync</owners>
         <projectUrl>https://github.com/Dasync</projectUrl>
         <licenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</licenseUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <description>Allows to build POCO types at runtime, which effectively are tuples with property names, types, and values. Used to capture input of methods by runtime-generated proxies, and for serialization.</description>
         <summary>Allows to build POCO types at runtime for proxies and serialization</summary>
-        <releaseNotes>0.1.0: First alpha version.</releaseNotes>
         <tags>dasync poco valuetuple proxy serialization</tags>
         <dependencies>
             <group targetFramework=".NETStandard1.4">
