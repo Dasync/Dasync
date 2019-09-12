@@ -69,6 +69,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.EntityFrameworkCore"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Projections", "Data\Projections\Dasync.Projections.csproj", "{90A6B5B8-2547-4E50-A930-37CCEF4A3917}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Functions", "Functions", "{71D24D75-12F7-46D3-928E-6A2F077DC5C4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Azure.Functions.AspNetCoreMiddleware", "Azure\Functions\AspNetCoreMiddleware\Dasync.Azure.Functions.AspNetCoreMiddleware.csproj", "{3701FAFB-A655-40E7-8134-27947B34889F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -171,6 +175,10 @@ Global
 		{90A6B5B8-2547-4E50-A930-37CCEF4A3917}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90A6B5B8-2547-4E50-A930-37CCEF4A3917}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90A6B5B8-2547-4E50-A930-37CCEF4A3917}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3701FAFB-A655-40E7-8134-27947B34889F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3701FAFB-A655-40E7-8134-27947B34889F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3701FAFB-A655-40E7-8134-27947B34889F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3701FAFB-A655-40E7-8134-27947B34889F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -202,6 +210,8 @@ Global
 		{505ECE0D-89CB-44B0-8DF0-75410F6535F3} = {79D23AA5-2B44-49EF-B25B-EE784E5F68EE}
 		{72F36A99-4B54-48BB-901D-DFD6D0689F7C} = {45C9E14F-A562-4E97-8751-8723709661B8}
 		{90A6B5B8-2547-4E50-A930-37CCEF4A3917} = {45C9E14F-A562-4E97-8751-8723709661B8}
+		{71D24D75-12F7-46D3-928E-6A2F077DC5C4} = {9A50D63D-AD2B-4A69-B48E-6931C295DB96}
+		{3701FAFB-A655-40E7-8134-27947B34889F} = {71D24D75-12F7-46D3-928E-6A2F077DC5C4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F8B4417C-1BAD-421A-9164-89A427E53FA2}
