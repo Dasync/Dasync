@@ -13,20 +13,20 @@ namespace Dasync.ExecutionEngine.Proxy
 {
     public class ServiceProxyBuilder : IServiceProxyBuilder, ISerializedServiceProxyBuilder
     {
-        private readonly ICommunicationModelProvider _communicationModelProvider;
+        private readonly ICommunicationModel _communicationModel;
         private readonly IProxyTypeBuilder _proxyTypeBuilder;
         private readonly IProxyMethodExecutor _proxyMethodExecutor;
         private readonly IDomainServiceProvider _domainServiceProvider;
 
         public ServiceProxyBuilder(
-            ICommunicationModelProvider communicationModelProvider,
+            ICommunicationModel communicationModel,
             IProxyTypeBuilder proxyTypeBuilder,
             IProxyMethodExecutor proxyMethodExecutor,
             IDomainServiceProvider domainServiceProvider,
             ISerializedServiceProxyBuilder holder)
         {
             ((SerializedServiceProxyBuilderHolder)holder).Builder = this;
-            _communicationModelProvider = communicationModelProvider;
+            _communicationModel = communicationModel;
             _proxyTypeBuilder = proxyTypeBuilder;
             _proxyMethodExecutor = proxyMethodExecutor;
             _domainServiceProvider = domainServiceProvider;
@@ -36,7 +36,7 @@ namespace Dasync.ExecutionEngine.Proxy
 
         public object Build(ServiceId serviceId, string[] additionalInterfaces)
         {
-            var serviceDefinition = _communicationModelProvider.Model.FindServiceByName(serviceId.ServiceName);
+            var serviceDefinition = _communicationModel.FindServiceByName(serviceId.ServiceName);
             if (serviceDefinition == null)
                 throw new InvalidOperationException($"The service '{serviceId.ServiceName}' is not registered.");
 

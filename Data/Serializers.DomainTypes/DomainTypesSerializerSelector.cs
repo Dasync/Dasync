@@ -13,11 +13,11 @@ namespace Dasync.Serializers.DomainTypes
         private readonly EntityProjectionSerializer _entityProjectionSerializer;
 
         public DomainTypesSerializerSelector(
-            ICommunicationModelProvider communicationModelProvider,
+            ICommunicationModel communicationModel,
             EntityProjectionSerializer entityProjectionSerializer)
         {
             _knownEntityProjectionInterfaces = new HashSet<Type>(
-                communicationModelProvider.Model.EntityProjections
+                communicationModel.EntityProjections
                 .Select(d => d.InterfaceType)
                 .Where(i => EntityProjection.IsProjectionInterface(i)));
 

@@ -22,7 +22,7 @@ namespace Dasync.AspNetCore.Platform
 
     public class EventDispatcher : IEventDispatcher, IEventSubscriber
     {
-        private readonly ICommunicationModelProvider _communicationModelProvider;
+        private readonly ICommunicationModel _communicationModel;
         private readonly IPlatformHttpClientProvider _platformHttpClientProvider;
         private readonly ITransitionUserContext _transitionUserContext;
 
@@ -33,11 +33,11 @@ namespace Dasync.AspNetCore.Platform
             new Dictionary<EventDescriptor, HashSet<ServiceId>>();
 
         public EventDispatcher(
-            ICommunicationModelProvider communicationModelProvider,
+            ICommunicationModel communicationModel,
             IPlatformHttpClientProvider platformHttpClientProvider,
             ITransitionUserContext transitionUserContext)
         {
-            _communicationModelProvider = communicationModelProvider;
+            _communicationModel = communicationModel;
             _platformHttpClientProvider = platformHttpClientProvider;
             _transitionUserContext = transitionUserContext;
         }
@@ -95,7 +95,7 @@ namespace Dasync.AspNetCore.Platform
         {
             var serviceName = serviceId.ProxyName ?? serviceId.ServiceName;
 
-            var serviceDefinition = _communicationModelProvider.Model.Services.FirstOrDefault(d => d.Name == serviceName);
+            var serviceDefinition = _communicationModel.Services.FirstOrDefault(d => d.Name == serviceName);
             if (serviceDefinition == null)
                 throw new ArgumentException($"Service '{serviceName}' is not registered.");
 
@@ -106,11 +106,11 @@ namespace Dasync.AspNetCore.Platform
         {
             var serviceName = serviceId.ProxyName ?? serviceId.ServiceName;
 
-            var serviceDefinition = _communicationModelProvider.Model.Services.FirstOrDefault(d => d.Name == serviceName);
+            var serviceDefinition = _communicationModel.Services.FirstOrDefault(d => d.Name == serviceName);
             if (serviceDefinition != null)
                 return serviceDefinition;
 
-            return new UnknownExternalServiceDefinition(serviceName, _communicationModelProvider.Model);
+            return new UnknownExternalServiceDefinition(serviceName, _communicationModel);
         }
 
         private async void SubscribePeriodicallyInBackground(

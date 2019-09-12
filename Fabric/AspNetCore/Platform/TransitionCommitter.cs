@@ -19,7 +19,7 @@ namespace Dasync.AspNetCore.Platform
 {
     public class TransitionCommitter : ITransitionCommitter
     {
-        private readonly ICommunicationModelProvider _communicationModelProvider;
+        private readonly ICommunicationModel _communicationModel;
         private readonly IPlatformHttpClientProvider _platformHttpClientProvider;
         private readonly IRoutineCompletionSink _routineCompletionSink;
         private readonly IEventDispatcher _eventDispatcher;
@@ -30,7 +30,7 @@ namespace Dasync.AspNetCore.Platform
         private readonly ITransitionUserContext _transitionUserContext;
 
         public TransitionCommitter(
-            ICommunicationModelProvider communicationModelProvider,
+            ICommunicationModel communicationModel,
             IPlatformHttpClientProvider platformHttpClientProvider,
             IRoutineCompletionSink routineCompletionSink,
             IEventDispatcher eventDispatcher,
@@ -40,7 +40,7 @@ namespace Dasync.AspNetCore.Platform
             IEnumerable<IRoutineTransitionAction> transitionActions,
             ITransitionUserContext transitionUserContext)
         {
-            _communicationModelProvider = communicationModelProvider;
+            _communicationModel = communicationModel;
             _platformHttpClientProvider = platformHttpClientProvider;
             _routineCompletionSink = routineCompletionSink;
             _eventDispatcher = eventDispatcher;
@@ -126,7 +126,7 @@ namespace Dasync.AspNetCore.Platform
         {
             var serviceName = serviceId.ProxyName ?? serviceId.ServiceName;
 
-            var serviceDefinition = _communicationModelProvider.Model.Services.FirstOrDefault(d => d.Name == serviceName);
+            var serviceDefinition = _communicationModel.Services.FirstOrDefault(d => d.Name == serviceName);
             if (serviceDefinition == null)
                 throw new ArgumentException($"Service '{serviceName}' is not registered.");
 

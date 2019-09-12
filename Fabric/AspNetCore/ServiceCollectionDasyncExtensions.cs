@@ -1,5 +1,6 @@
 ﻿using Dasync.AspNetCore.DependencyInjection;
 using Dasync.DependencyInjection;
+using Dasync.Modeling;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +10,10 @@ namespace DasyncAspNetCore
 {
     public static class ServiceCollectionDasyncExtensions
     {
-        public static IServiceCollection AddDasync(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddDasync(
+            this IServiceCollection services,
+            ICommunicationModel communicationModel,
+            IConfiguration configuration)
         {
             services.Configure<DasyncOptions>(configuration.GetSection("Dasync"));
             services.AddScoped<ScopedServiceProviderMiddleware>();
@@ -20,7 +24,6 @@ namespace DasyncAspNetCore
 
             services.AddModules(
                 Dasync.DependencyInjection.DI.Bindings,
-                Dasync.Modeling.DI.Bindings,
                 Dasync.Serialization.DI.Bindings,
                 Dasync.Serialization.Json.DI.Bindings,
                 Dasync.Serializers.StandardTypes.DI.Bindings,
@@ -32,12 +35,17 @@ namespace DasyncAspNetCore
 
             services.AddModules(Dasync.AspNetCore.DI.Bindings);
 
+            services.AddSingleton(communicationModel);
+
             return services;
         }
 
-        public static IServiceCollection AddDasyncWithSimpleHttpPlatform(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddDasyncWithSimpleHttpPlatform(
+            this IServiceCollection services,
+            ICommunicationModel communicationModel,
+            IConfiguration configuration)
         {
-            services.AddDasync(configuration);
+            services.AddDasync(communicationModel, configuration);
             services.AddDasyncSimpleHttpPlatform();
             return services;
         }

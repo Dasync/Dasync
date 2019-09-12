@@ -8,14 +8,14 @@ namespace DasyncAspNetCore
 {
     public class DasyncCoHost : IHostedService
     {
-        private readonly ICommunicationModelProvider _communicationModelProvider;
+        private readonly ICommunicationModel _communicationModel;
         private readonly IDomainServiceProvider _domainServiceProvider;
 
         public DasyncCoHost(
-            ICommunicationModelProvider communicationModelProvider,
+            ICommunicationModel communicationModel,
             IDomainServiceProvider domainServiceProvider)
         {
-            _communicationModelProvider = communicationModelProvider;
+            _communicationModel = communicationModel;
             _domainServiceProvider = domainServiceProvider;
         }
 
@@ -34,8 +34,7 @@ namespace DasyncAspNetCore
         /// </summary>
         private void ResolveAllDomainServices()
         {
-            var communicationModel = _communicationModelProvider.Model;
-            foreach (var serviceDefinition in communicationModel.Services)
+            foreach (var serviceDefinition in _communicationModel.Services)
             {
                 if (serviceDefinition.Implementation != null)
                 {

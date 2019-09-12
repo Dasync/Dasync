@@ -53,7 +53,7 @@ namespace DasyncAspNetCore
             }
         };
 
-        private readonly ICommunicationModelProvider _communicationModelProvider;
+        private readonly ICommunicationModel _communicationModel;
         private readonly IDomainServiceProvider _domainServiceProvider;
         private readonly IRoutineMethodResolver _routineMethodResolver;
         private readonly IMethodInvokerFactory _methodInvokerFactory;
@@ -69,7 +69,7 @@ namespace DasyncAspNetCore
         private TimeSpan MaxLongPollTime = TimeSpan.FromMinutes(2);
 
         public HttpRequestHandler(
-            ICommunicationModelProvider communicationModelProvider,
+            ICommunicationModel communicationModel,
             IDomainServiceProvider domainServiceProvider,
             IRoutineMethodResolver routineMethodResolver,
             IMethodInvokerFactory methodInvokerFactory,
@@ -82,7 +82,7 @@ namespace DasyncAspNetCore
             IEnumerable<IRoutineTransitionAction> transitionActions,
             ITransitionUserContext transitionUserContext)
         {
-            _communicationModelProvider = communicationModelProvider;
+            _communicationModel = communicationModel;
             _domainServiceProvider = domainServiceProvider;
             _routineMethodResolver = routineMethodResolver;
             _methodInvokerFactory = methodInvokerFactory;
@@ -96,7 +96,7 @@ namespace DasyncAspNetCore
 
             _dasyncJsonSerializer = serializerFactorySelector.Select("dasync+json").Create();
 
-            JsonSettings.Converters.Add(new EntityProjectionConverter(communicationModelProvider.Model));
+            JsonSettings.Converters.Add(new EntityProjectionConverter(communicationModel));
         }
 
         public async Task HandleAsync(PathString basePath, HttpContext context, CancellationToken ct)
@@ -122,12 +122,12 @@ namespace DasyncAspNetCore
             }
 
             var serviceName = pathSegments[0];
-            var serviceDefinition = _communicationModelProvider.Model.FindServiceByName(serviceName);
+            var serviceDefinition = _communicationModel.FindServiceByName(serviceName);
             // Convenience resolution if a person typed the "Service" suffix where the full service name matches the class name.
             if (serviceDefinition == null && serviceName.EndsWith("Service", StringComparison.OrdinalIgnoreCase))
             {
                 var candidateServiceName = serviceName.Substring(0, serviceName.Length - 7);
-                serviceDefinition = _communicationModelProvider.Model.FindServiceByName(candidateServiceName);
+                serviceDefinition = _communicationModel.FindServiceByName(candidateServiceName);
                 if (serviceDefinition != null && serviceDefinition.Implementation != null &&
                     serviceDefinition.Implementation.Name.Equals(serviceName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -610,7 +610,7 @@ namespace DasyncAspNetCore
                 if (serviceDefinitionFilter != null && !string.Equals(subscriber.ServiceId.ServiceName, serviceDefinitionFilter.Name, StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                var subscriberServiceDefinition = _communicationModelProvider.Model.FindServiceByName(subscriber.ServiceId.ServiceName);
+                var subscriberServiceDefinition = _communicationModel.FindServiceByName(subscriber.ServiceId.ServiceName);
 
 #warning Use model for method resolution instead
                 var eventHandlerRoutineMethodId = new RoutineMethodId

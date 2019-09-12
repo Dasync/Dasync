@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Dasync.DependencyInjection;
@@ -83,7 +82,6 @@ namespace DasyncFeatures
         static void PlugInDasync(IServiceCollection services, IFeatureDemo feature, bool inMemoryEmulation)
         {
             services.AddModules(
-                Dasync.Modeling.DI.Bindings,
                 Dasync.Serialization.DI.Bindings,
                 Dasync.Serialization.Json.DI.Bindings,
                 Dasync.Serializers.StandardTypes.DI.Bindings,
@@ -101,16 +99,14 @@ namespace DasyncFeatures
             else
                 services.AddModule(Dasync.Fabric.FileBased.DI.Bindings);
 
-            services.Rebind<ICommunicationModelProvider>().To(new CommunicationModelProvider(
-                new CommunicationModelProvider.Holder { Model = feature.Model }));
-
+            services.AddSingleton(feature.Model);
             services.AddModule(feature.Bindings);
             services.AddDomainServicesViaDasync(feature.Model);
         }
 
         static void StartFabric(IServiceProvider services)
         {
-            var communicationModelProvider = services.GetService<ICommunicationModelProvider>();
+            var communicationModel = services.GetService<ICommunicationModel>();
             var domainServiceProvider = services.GetService<IDomainServiceProvider>();
 
             var fabric = services.GetService<IFabric>();
@@ -119,7 +115,6 @@ namespace DasyncFeatures
             services.GetService<ICurrentFabricSetter>().SetInstance(fabric);
 
             // ResolveAllDomainServices
-            var communicationModel = communicationModelProvider.Model;
             foreach (var serviceDefinition in communicationModel.Services)
             {
                 if (serviceDefinition.Implementation != null)

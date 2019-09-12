@@ -13,11 +13,11 @@ namespace Dasync.ExecutionEngine
 
     public class RoutineMethodResolver : IRoutineMethodResolver
     {
-        private readonly ICommunicationModelProvider _communicationModelProvider;
+        private readonly ICommunicationModel _communicationModel;
 
-        public RoutineMethodResolver(ICommunicationModelProvider communicationModelProvider)
+        public RoutineMethodResolver(ICommunicationModel communicationModel)
         {
-            _communicationModelProvider = communicationModelProvider;
+            _communicationModel = communicationModel;
         }
 
         public MethodInfo Resolve(IServiceDefinition serviceDefinition, RoutineMethodId methodId)
