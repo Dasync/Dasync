@@ -123,6 +123,21 @@ namespace DasyncAspNetCore
 
             var serviceName = pathSegments[0];
             var serviceDefinition = _communicationModelProvider.Model.FindServiceByName(serviceName);
+            // Convenience resolution if a person typed the "Service" suffix where the full service name matches the class name.
+            if (serviceDefinition == null && serviceName.EndsWith("Service", StringComparison.OrdinalIgnoreCase))
+            {
+                var candidateServiceName = serviceName.Substring(0, serviceName.Length - 7);
+                serviceDefinition = _communicationModelProvider.Model.FindServiceByName(candidateServiceName);
+                if (serviceDefinition != null && serviceDefinition.Implementation != null &&
+                    serviceDefinition.Implementation.Name.Equals(serviceName, StringComparison.OrdinalIgnoreCase))
+                {
+                    serviceName = candidateServiceName;
+                }
+                else
+                {
+                    serviceDefinition = null;
+                }
+            }
             if (serviceDefinition == null)
             {
                 context.Response.StatusCode = 404;
