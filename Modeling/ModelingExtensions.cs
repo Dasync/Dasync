@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -33,5 +34,43 @@ namespace Dasync.Modeling
 
             return true;
         }
+
+        public static bool HasQueryImplyingName(this MethodInfo methodInfo) =>
+            IsQueryImplyingName(methodInfo.Name);
+
+        public static bool IsQueryImplyingName(string methodName) =>
+            GetWordAndSynonyms.Contains(GetFirstWord(methodName));
+
+        private static string GetFirstWord(string text)
+        {
+            if (text.Length <= 1)
+                return text;
+
+            for (var i = 1; i < text.Length; i++)
+            {
+                char c = text[i];
+                if (char.IsUpper(c) || c == '_' || c == '-' || c == '+' || c == '#' || c == '@' || c == '!' || char.IsWhiteSpace(c))
+                {
+                    return text.Substring(0, i);
+                }
+            }
+
+            return text;
+        }
+
+        private static readonly HashSet<string> GetWordAndSynonyms =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Get",
+                "Query",
+                "Find",
+                "Search",
+                "List",
+                "Fetch",
+                "Retrieve",
+                "Collect",
+                "Select",
+                "Take"
+            };
     }
 }

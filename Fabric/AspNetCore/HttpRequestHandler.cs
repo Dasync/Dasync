@@ -228,10 +228,7 @@ namespace DasyncAspNetCore
                 return;
             }
 
-#warning Use model to determine if the method is command or query
-            var isQueryMethod = GetWordAndSynonyms.Contains(GetFirstWord(methodName));
-
-            if (isQueryRequest && !isQueryMethod)
+            if (isQueryRequest && !methodReference.Definition.IsQuery)
             {
                 context.Response.StatusCode = 404;
                 context.Response.ContentType = "text/plain";
@@ -312,7 +309,7 @@ namespace DasyncAspNetCore
             var serviceId = new ServiceId { Name = serviceDefinition.Name };
             var intentId = _idGenerator.NewId();
 
-            if (isQueryMethod)
+            if (methodReference.Definition.IsQuery)
             {
                 var serviceInstance = _domainServiceProvider.GetService(serviceDefinition.Implementation);
 
@@ -726,42 +723,6 @@ namespace DasyncAspNetCore
 
             return route;
         }
-
-        private static string GetFirstWord(string text)
-        {
-            if (text.Length <= 1)
-                return text;
-
-            for (var i = 1; i < text.Length; i++)
-            {
-                char c = text[i];
-                if (char.IsUpper(c) || c == '_' || c == '-' || c == '+' || c == '#' || c == '@' || c == '!' || char.IsWhiteSpace(c))
-                {
-                    return text.Substring(0, i);
-                }
-            }
-
-            return text;
-        }
-
-        private static readonly HashSet<string> GetWordAndSynonyms =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "Get",
-                "List",
-                "Fetch",
-                "Retrieve",
-                "Collect",
-                "Grab",
-                "Pick",
-                "Peek",
-                "Select",
-                "Take",
-                "Receive",
-                "Query",
-                "Find",
-                "Search"
-            };
 
         public struct RFC7240Preferences
         {

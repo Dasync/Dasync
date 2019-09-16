@@ -24,6 +24,8 @@ namespace Dasync.Modeling
 
         public bool IsRoutine { get; set; }
 
+        public bool IsQuery { get; set; }
+
         IServiceDefinition IMethodDefinition.Service => ServiceDefinition;
 
         IServiceDefinition IRoutineDefinition.Service => ServiceDefinition;

@@ -118,6 +118,7 @@ namespace Dasync.Modeling
                             }
                         }
                     }
+                    methodDefinition.IsQuery = methodInfo.HasQueryImplyingName();
                     _methodsByName.Add(methodInfo.Name, methodDefinition);
                     return methodDefinition;
                 }
@@ -134,8 +135,10 @@ namespace Dasync.Modeling
 
                 if (methods.Count == 1)
                 {
-                    methodDefinition = new MethodDefinition(this, methods[0]);
-                    _methodsByName.Add(methods[0].Name, methodDefinition);
+                    var methodInfo = methods[0];
+                    methodDefinition = new MethodDefinition(this, methodInfo);
+                    methodDefinition.IsQuery = methodInfo.HasQueryImplyingName();
+                    _methodsByName.Add(methodInfo.Name, methodDefinition);
                     return methodDefinition;
                 }
             }
