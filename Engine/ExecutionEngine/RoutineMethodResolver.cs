@@ -6,11 +6,6 @@ using Dasync.Modeling;
 
 namespace Dasync.ExecutionEngine
 {
-    public interface IRoutineMethodResolver
-    {
-        MethodInfo Resolve(IServiceDefinition serviceDefinition, RoutineMethodId methodId);
-    }
-
     public class RoutineMethodResolver : IRoutineMethodResolver
     {
         private readonly ICommunicationModel _communicationModel;
