@@ -5,7 +5,7 @@
     /// </summary>
     public sealed class RoutineMethodId
     {
-        public string MethodName { get; set; }
+        public string Name { get; set; }
 
 #warning Generic parameters
 #warning Method signature hash?
@@ -18,13 +18,15 @@
             : base.Equals(obj);
 
         public override int GetHashCode() =>
-            (MethodName != null)
-            ? MethodName.GetHashCode()
+            (Name != null)
+            ? Name.GetHashCode()
             : base.GetHashCode();
 
         public static bool operator ==(RoutineMethodId a, RoutineMethodId b) =>
-            string.Equals(a?.MethodName, b?.MethodName, System.StringComparison.OrdinalIgnoreCase);
+            string.Equals(a?.Name, b?.Name, System.StringComparison.OrdinalIgnoreCase);
 
         public static bool operator !=(RoutineMethodId a, RoutineMethodId b) => !(a == b);
+
+        public RoutineMethodId Copy() => new RoutineMethodId { Name = Name };
     }
 }

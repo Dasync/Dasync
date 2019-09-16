@@ -254,7 +254,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 var intent = (ExecuteRoutineIntent)userData;
 
                 throw new NotImplementedException(
-                    $"Need to await for the result in process for '{intent.ServiceId.ServiceName}.{intent.MethodId.MethodName}' " +
+                    $"Need to await for the result in process for '{intent.ServiceId.Name}.{intent.MethodId.Name}' " +
                     $"when called by {continuationInfo.Type} '{continuationObject.GetType()}'.");
             }
         }

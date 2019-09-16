@@ -2,8 +2,19 @@
 {
     public class CallerDescriptor
     {
-        public ServiceId ServiceId;
+        public CallerDescriptor() { }
 
-        public RoutineDescriptor Routine;
+        public CallerDescriptor(ServiceId service, RoutineMethodId routine, string intentId)
+        {
+            Service = service;
+            Routine = routine;
+            IntentId = intentId;
+        }
+
+        public ServiceId Service;
+
+        public RoutineMethodId Routine;
+
+        public string IntentId;
     }
 }

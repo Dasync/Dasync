@@ -173,13 +173,13 @@ namespace Dasync.Fabric.InMemory
         {
             lock (DataStore.Services)
             {
-                if (!DataStore.Services.TryGetValue(serviceId.ServiceName, out var record))
+                if (!DataStore.Services.TryGetValue(serviceId.Name, out var record))
                 {
                     record = new ServiceStateRecord
                     {
                         Id = serviceId
                     };
-                    DataStore.Services.Add(serviceId.ServiceName, record);
+                    DataStore.Services.Add(serviceId.Name, record);
                 }
                 return record;
             }

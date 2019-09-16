@@ -9,7 +9,7 @@ namespace Dasync.ExecutionEngine.Intents
         {
             return new RoutineMethodId
             {
-                MethodName = methodInfo.Name
+                Name = methodInfo.Name
 #warning Add method generic arguments
 #warning Add signature info for method overload resolution
 #warning Add versioning info

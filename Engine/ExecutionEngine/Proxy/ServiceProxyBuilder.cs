@@ -36,9 +36,9 @@ namespace Dasync.ExecutionEngine.Proxy
 
         public object Build(ServiceId serviceId, string[] additionalInterfaces)
         {
-            var serviceDefinition = _communicationModel.FindServiceByName(serviceId.ServiceName);
+            var serviceDefinition = _communicationModel.FindServiceByName(serviceId.Name);
             if (serviceDefinition == null)
-                throw new InvalidOperationException($"The service '{serviceId.ServiceName}' is not registered.");
+                throw new InvalidOperationException($"The service '{serviceId.Name}' is not registered.");
 
             return CreateServiceProxy(serviceDefinition, serviceId, additionalInterfaces);
         }

@@ -15,6 +15,8 @@ namespace Dasync.EETypes.Intents
 
         public DateTimeOffset? ContinueAt;
 
+        public DateTimeOffset Timestamp = DateTimeOffset.Now;
+
         /// <summary>
         /// The <see cref="ContinuationDescriptor.Id"/> for awaited routine, which will be
         /// used to correlate serialized proxy tasks with <see cref="Result"/>.

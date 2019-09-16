@@ -18,7 +18,7 @@ namespace Dasync.DependencyInjection
                         serviceProvider =>
                             serviceProvider
                             .GetService<IServiceProxyBuilder>()
-                            .Build(new ServiceId { ServiceName = serviceDefinition.Name }),
+                            .Build(new ServiceId { Name = serviceDefinition.Name }),
                         ServiceLifetime.Singleton));
                 }
 
@@ -33,7 +33,7 @@ namespace Dasync.DependencyInjection
                                 ? serviceProvider.GetService(serviceDefinition.Implementation)
                                 : serviceProvider
                                 .GetService<IServiceProxyBuilder>()
-                                .Build(new ServiceId { ServiceName = serviceDefinition.Name }),
+                                .Build(new ServiceId { Name = serviceDefinition.Name }),
                             ServiceLifetime.Singleton));
                     }
                 }

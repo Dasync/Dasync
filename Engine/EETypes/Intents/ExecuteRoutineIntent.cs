@@ -20,7 +20,7 @@ namespace Dasync.EETypes.Intents
 #warning Allow multiple continuations. Multicast continuation?
         public ContinuationDescriptor Continuation;
 
-        public DateTimeOffset InvocationTimestamp;
+        public DateTimeOffset Timestamp = DateTimeOffset.Now;
 
         public IValueContainer Parameters;
     }

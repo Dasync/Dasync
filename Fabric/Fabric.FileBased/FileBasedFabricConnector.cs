@@ -210,7 +210,7 @@ namespace Dasync.Fabric.FileBased
                 CloudEventsVersion = CloudEventsEnvelope.Version,
                 EventType = DasyncCloudEventsTypes.RaiseEvent.Name,
                 EventTypeVersion = DasyncCloudEventsTypes.RaiseEvent.Version,
-                Source = "/" + (intent.ServiceId.ServiceName ?? ""),
+                Source = "/" + (intent.ServiceId.Name ?? ""),
                 EventID = intent.Id.ToString(),
                 EventTime = DateTimeOffset.Now,
                 ContentType = "application/json",
@@ -254,7 +254,7 @@ namespace Dasync.Fabric.FileBased
                 Routine = routineDescriptor,
                 Caller = new CallerDescriptor
                 {
-                    ServiceId = raisedEventData.ServiceId
+                    Service = raisedEventData.ServiceId
                 },
                 Parameters = raisedEventData.Parameters
             };
@@ -264,7 +264,7 @@ namespace Dasync.Fabric.FileBased
                 CloudEventsVersion = CloudEventsEnvelope.Version,
                 EventType = DasyncCloudEventsTypes.InvokeRoutine.Name,
                 EventTypeVersion = DasyncCloudEventsTypes.InvokeRoutine.Version,
-                Source = "/" + (raisedEventData.ServiceId?.ServiceName ?? ""),
+                Source = "/" + (raisedEventData.ServiceId?.Name ?? ""),
                 EventID = intentId.ToString(),
                 EventTime = DateTimeOffset.Now,
                 ContentType = "application/json",

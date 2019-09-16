@@ -47,7 +47,7 @@ namespace Dasync.AspNetCore.Communication
 
         public async Task<RoutineInfo> ScheduleRoutineAsync(ExecuteRoutineIntent intent, NameValueCollection context, CancellationToken ct)
         {
-            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(_serviceDefinition), "/", intent.MethodId.MethodName);
+            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(_serviceDefinition), "/", intent.MethodId.Name);
 
             var json = _dasyncJsonSerializer.SerializeToString(intent);
             while (true)
@@ -90,10 +90,10 @@ namespace Dasync.AspNetCore.Communication
 
         public async Task SubscribeToEvent(EventDescriptor eventDesc, ServiceId subscriber, IServiceDefinition publisherServiceDefinition)
         {
-            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(publisherServiceDefinition), "/", eventDesc.EventId.EventName, "?subscribe&service=", subscriber.ServiceName);
+            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(publisherServiceDefinition), "/", eventDesc.EventId.EventName, "?subscribe&service=", subscriber.Name);
 
-            if (!string.IsNullOrEmpty(subscriber.ProxyName))
-                uri += string.Concat("&proxy=", subscriber.ProxyName);
+            if (!string.IsNullOrEmpty(subscriber.Proxy))
+                uri += string.Concat("&proxy=", subscriber.Proxy);
 
             var response = await _httpClient.PutAsync(uri, null);
 
@@ -104,7 +104,7 @@ namespace Dasync.AspNetCore.Communication
 
         public async Task PublishEvent(RaiseEventIntent intent, IServiceDefinition subscriberServiceDefinition, NameValueCollection context)
         {
-            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(subscriberServiceDefinition), "?react&event=", intent.EventId.EventName, "&service=", intent.ServiceId.ServiceName);
+            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(subscriberServiceDefinition), "?react&event=", intent.EventId.EventName, "&service=", intent.ServiceId.Name);
 
             var json = _dasyncJsonSerializer.SerializeToString(intent);
 

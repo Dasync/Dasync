@@ -2,7 +2,7 @@
 {
     public sealed class ServiceId
     {
-        public string ServiceName;
+        public string Name;
 
         /// <summary>
         /// A name of a proxy service that performs the actual work.
@@ -11,7 +11,7 @@
         /// This is a quick fix for IntrinsicRoutines, where ServiceName
         /// needs to be used to select the connector (route requests).
         /// </remarks>
-        public string ProxyName;
+        public string Proxy;
 
         // [FUTURE IDEA]
         // Can identify a service instance (a 'workflow'?) and
@@ -31,12 +31,14 @@
             : base.Equals(obj);
 
         public override int GetHashCode() =>
-            (ServiceName != null)
-            ? ServiceName.GetHashCode()
+            (Name != null)
+            ? Name.GetHashCode()
             : base.GetHashCode();
 
-        public static bool operator ==(ServiceId a, ServiceId b) => string.Equals(a?.ServiceName, b?.ServiceName);
+        public static bool operator ==(ServiceId a, ServiceId b) => string.Equals(a?.Name, b?.Name);
 
         public static bool operator !=(ServiceId a, ServiceId b) => !(a == b);
+
+        public ServiceId Copy() => new ServiceId { Name = Name, Proxy = Proxy };
     }
 }

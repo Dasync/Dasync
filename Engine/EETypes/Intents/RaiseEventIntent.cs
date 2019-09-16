@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using Dasync.ValueContainer;
 
 namespace Dasync.EETypes.Intents
@@ -17,6 +18,8 @@ namespace Dasync.EETypes.Intents
         public ServiceId ServiceId;
 
         public EventId EventId;
+
+        public DateTimeOffset Timestamp = DateTimeOffset.Now;
 
         /// <summary>
         /// Event arguments.

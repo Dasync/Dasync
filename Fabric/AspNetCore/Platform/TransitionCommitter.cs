@@ -124,7 +124,7 @@ namespace Dasync.AspNetCore.Platform
 
         private IServiceDefinition GetServiceDefinition(ServiceId serviceId)
         {
-            var serviceName = serviceId.ProxyName ?? serviceId.ServiceName;
+            var serviceName = serviceId.Proxy ?? serviceId.Name;
 
             var serviceDefinition = _communicationModel.Services.FirstOrDefault(d => d.Name == serviceName);
             if (serviceDefinition == null)
