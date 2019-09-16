@@ -1,4 +1,11 @@
-﻿using Dasync.Accessors;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Dasync.Accessors;
 using Dasync.AsyncStateMachine;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
@@ -6,20 +13,11 @@ using Dasync.EETypes.Engine;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Platform;
 using Dasync.EETypes.Proxy;
+using Dasync.EETypes.Resolvers;
 using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Extensions;
-using Dasync.ExecutionEngine.IntrinsicFlow;
-using Dasync.ExecutionEngine.StateMetadata.Service;
-using Dasync.Modeling;
 using Dasync.Proxy;
 using Dasync.ValueContainer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Dasync.ExecutionEngine.Transitions
 {
@@ -28,36 +26,36 @@ namespace Dasync.ExecutionEngine.Transitions
         private readonly ITransitionScope _transitionScope;
         private readonly ITransitionCommitter _transitionCommitter;
         private readonly IServiceProxyBuilder _serviceProxyBuilder;
-        private readonly IRoutineMethodResolver _routineMethodResolver;
         private readonly IAsyncStateMachineMetadataProvider _asyncStateMachineMetadataProvider;
         private readonly IMethodInvokerFactory _methodInvokerFactory;
         //private readonly IServiceStateValueContainerProvider _serviceStateValueContainerProvider;
-        private readonly IntrinsicRoutines _intrinsicRoutines;
         private readonly IUniqueIdGenerator _idGenerator;
         private readonly ITaskCompletionSourceRegistry _taskCompletionSourceRegistry;
+        private readonly IServiceResolver _serviceResolver;
+        private readonly IMethodResolver _methodResolver;
 
         public TransitionRunner(
             ITransitionScope transitionScope,
             ITransitionCommitter transitionCommitter,
             IServiceProxyBuilder serviceProxyBuilder,
-            IRoutineMethodResolver routineMethodResolver,
             IAsyncStateMachineMetadataProvider asyncStateMachineMetadataProvider,
             IMethodInvokerFactory methodInvokerFactory,
             //IServiceStateValueContainerProvider serviceStateValueContainerProvider,
-            IntrinsicRoutines intrinsicRoutines,
             IUniqueIdGenerator idGenerator,
-            ITaskCompletionSourceRegistry taskCompletionSourceRegistry)
+            ITaskCompletionSourceRegistry taskCompletionSourceRegistry,
+            IServiceResolver serviceResolver,
+            IMethodResolver methodResolver)
         {
             _transitionScope = transitionScope;
             _transitionCommitter = transitionCommitter;
             _serviceProxyBuilder = serviceProxyBuilder;
-            _routineMethodResolver = routineMethodResolver;
             _asyncStateMachineMetadataProvider = asyncStateMachineMetadataProvider;
             _methodInvokerFactory = methodInvokerFactory;
             //_serviceStateValueContainerProvider = serviceStateValueContainerProvider;
-            _intrinsicRoutines = intrinsicRoutines;
             _idGenerator = idGenerator;
             _taskCompletionSourceRegistry = taskCompletionSourceRegistry;
+            _serviceResolver = serviceResolver;
+            _methodResolver = methodResolver;
         }
 
         public async Task RunAsync(
@@ -89,22 +87,10 @@ namespace Dasync.ExecutionEngine.Transitions
                 var serviceId = await transitionCarrier.GetServiceIdAsync(ct);
                 var routineDescriptor = await transitionCarrier.GetRoutineDescriptorAsync(ct);
 
-                object serviceInstance;
-                IServiceDefinition serviceDefinition;
+                var serviceReference = _serviceResolver.Resolve(serviceId);
+                var methodReference = _methodResolver.Resolve(serviceReference.Definition, routineDescriptor.MethodId);
 
-#warning IntrinsicRoutines must be registered in the service registry, but it needs the engine IoC to resolve.
-                if (serviceId.ProxyName == nameof(IntrinsicRoutines))
-                {
-                    serviceInstance = _intrinsicRoutines;
-                    serviceDefinition = IntrinsicCommunicationModel.IntrinsicRoutinesServiceDefinition;
-                }
-                else
-                {
-                    serviceInstance = _serviceProxyBuilder.Build(serviceId);
-                    serviceDefinition = ((ServiceProxyContext)((IProxy)serviceInstance).Context).Definition;
-                }
-
-                var routineMethod = _routineMethodResolver.Resolve(serviceDefinition, routineDescriptor.MethodId);
+                object serviceInstance = serviceReference.GetInstance();
 
                 //var serviceStateContainer = _serviceStateValueContainerProvider.CreateContainer(serviceInstance);
                 //var isStatefullService = serviceStateContainer.GetCount() > 0;
@@ -114,7 +100,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 Task completionTask;
                 IValueContainer asmValueContainer = null;
 
-                if (TryCreateAsyncStateMachine(routineMethod, out var asmInstance, out var asmMetadata))
+                if (TryCreateAsyncStateMachine(methodReference.Definition.MethodInfo, out var asmInstance, out var asmMetadata))
                 {
                     var isContinuation = transitionDescriptor.Type == TransitionType.ContinueRoutine;
                     asmValueContainer = await LoadRoutineStateAsync(transitionCarrier, asmInstance, asmMetadata, isContinuation, ct);
@@ -125,7 +111,7 @@ namespace Dasync.ExecutionEngine.Transitions
                         serviceId,
                         routineDescriptor,
                         serviceInstance,
-                        routineMethod,
+                        methodReference.Definition.MethodInfo,
                         asmInstance);
 
                     try
@@ -138,7 +124,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     {
                         // The MoveNext() must not throw, but instead complete the task with an error.
                         // try-catch is added just in case for a non-compiler-generated state machine.
-                        var taskResultType = TaskAccessor.GetTaskResultType(routineMethod.ReturnType);
+                        var taskResultType = TaskAccessor.GetTaskResultType(methodReference.Definition.MethodInfo.ReturnType);
                         completionTask = TaskAccessor.FromException(taskResultType, ex);
                     }
                 }
@@ -147,14 +133,14 @@ namespace Dasync.ExecutionEngine.Transitions
                     if (transitionDescriptor.Type == TransitionType.ContinueRoutine)
                         throw new InvalidOperationException("Cannot continue a routine because it's not a state machine.");
 
-                    var methodInvoker = _methodInvokerFactory.Create(routineMethod);
+                    var methodInvoker = _methodInvokerFactory.Create(methodReference.Definition.MethodInfo);
                     var parameters = await LoadMethodParametersAsync(transitionCarrier, methodInvoker, ct);
 
                     transitionMonitor.OnRoutineStart(
                         serviceId,
                         routineDescriptor,
                         serviceInstance,
-                        routineMethod,
+                        methodReference.Definition.MethodInfo,
                         routineStateMachine: null);
 
                     try
@@ -164,7 +150,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     catch (Exception ex)
                     {
 #warning IDisposable.Dispose returns void, not a Task
-                        var taskResultType = TaskAccessor.GetTaskResultType(routineMethod.ReturnType);
+                        var taskResultType = TaskAccessor.GetTaskResultType(methodReference.Definition.MethodInfo.ReturnType);
                         completionTask = TaskAccessor.FromException(taskResultType, ex);
                     }
                 }
@@ -172,7 +158,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 if (completionTask == null)
                 {
 #warning Check if this method is really IDiposable.Dispose() ?
-                    if (routineMethod.Name == "Dispose")
+                    if (methodReference.Definition.MethodInfo.Name == "Dispose")
                     {
                         completionTask = TaskAccessor.CompletedTask;
                     }

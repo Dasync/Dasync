@@ -4,6 +4,7 @@ using Dasync.EETypes;
 using Dasync.EETypes.Cancellation;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Proxy;
+using Dasync.EETypes.Resolvers;
 using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Cancellation;
 using Dasync.ExecutionEngine.Continuation;
@@ -11,6 +12,7 @@ using Dasync.ExecutionEngine.Extensions;
 using Dasync.ExecutionEngine.Intents;
 using Dasync.ExecutionEngine.IntrinsicFlow;
 using Dasync.ExecutionEngine.Proxy;
+using Dasync.ExecutionEngine.Resolvers;
 using Dasync.ExecutionEngine.StateMetadata.Service;
 using Dasync.ExecutionEngine.Transitions;
 using Dasync.ExecutionEngine.Triggers;
@@ -35,7 +37,6 @@ namespace Dasync.ExecutionEngine
             [typeof(ITransitionRunner)] = typeof(TransitionRunner),
             [typeof(ITransitionScope)] = typeof(TransitionScope),
             [typeof(IUniqueIdGenerator)] = typeof(UniqueIdGenerator),
-            [typeof(IRoutineMethodResolver)] = typeof(RoutineMethodResolver),
             [typeof(IServiceStateMetadataProvider)] = typeof(ServiceStateMetadataProvider),
             [typeof(IServiceStateValueContainerProvider)] = typeof(ServiceStateValueContainerProvider),
             [typeof(ISerializedServiceProxyBuilder)] = typeof(SerializedServiceProxyBuilderHolder),
@@ -43,6 +44,8 @@ namespace Dasync.ExecutionEngine
             [typeof(ITaskCompletionSourceRegistry)] = typeof(TaskCompletionSourceRegistry),
             [typeof(IntrinsicRoutines)] = typeof(IntrinsicRoutines),
             [typeof(ITaskResultConverter)] = typeof(TaskResultConverter),
+            [typeof(IServiceResolver)] = typeof(ServiceResolver),
+            [typeof(IMethodResolver)] = typeof(MethodResolver),
         };
     }
 }

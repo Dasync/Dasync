@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -17,7 +18,7 @@ using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Ioc;
 using Dasync.EETypes.Platform;
-using Dasync.ExecutionEngine;
+using Dasync.EETypes.Resolvers;
 using Dasync.ExecutionEngine.Extensions;
 using Dasync.Json;
 using Dasync.Modeling;
@@ -27,7 +28,6 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using System.Net.Mime;
 
 namespace DasyncAspNetCore
 {
@@ -55,7 +55,6 @@ namespace DasyncAspNetCore
 
         private readonly ICommunicationModel _communicationModel;
         private readonly IDomainServiceProvider _domainServiceProvider;
-        private readonly IRoutineMethodResolver _routineMethodResolver;
         private readonly IMethodInvokerFactory _methodInvokerFactory;
         private readonly ISerializer _dasyncJsonSerializer;
         private readonly IEventDispatcher _eventDispatcher;
@@ -65,13 +64,14 @@ namespace DasyncAspNetCore
         private readonly IHttpIntentPreprocessor _intentPreprocessor;
         private readonly IEnumerable<IRoutineTransitionAction> _transitionActions;
         private readonly ITransitionUserContext _transitionUserContext;
+        private readonly IServiceResolver _serviceResolver;
+        private readonly IMethodResolver _methodResolver;
 
         private TimeSpan MaxLongPollTime = TimeSpan.FromMinutes(2);
 
         public HttpRequestHandler(
             ICommunicationModel communicationModel,
             IDomainServiceProvider domainServiceProvider,
-            IRoutineMethodResolver routineMethodResolver,
             IMethodInvokerFactory methodInvokerFactory,
             ISerializerFactorySelector serializerFactorySelector,
             IEnumerable<IEventDispatcher> eventDispatchers,
@@ -80,11 +80,12 @@ namespace DasyncAspNetCore
             IRoutineCompletionNotifier routineCompletionNotifier,
             IEnumerable<IHttpIntentPreprocessor> intentPreprocessors,
             IEnumerable<IRoutineTransitionAction> transitionActions,
-            ITransitionUserContext transitionUserContext)
+            ITransitionUserContext transitionUserContext,
+            IServiceResolver serviceResolver,
+            IMethodResolver methodResolver)
         {
             _communicationModel = communicationModel;
             _domainServiceProvider = domainServiceProvider;
-            _routineMethodResolver = routineMethodResolver;
             _methodInvokerFactory = methodInvokerFactory;
             _eventDispatcher = eventDispatchers.FirstOrDefault();
             _idGenerator = idGenerator;
@@ -93,6 +94,8 @@ namespace DasyncAspNetCore
             _intentPreprocessor = new AggregateHttpIntentPreprocessor(intentPreprocessors);
             _transitionActions = transitionActions;
             _transitionUserContext = transitionUserContext;
+            _serviceResolver = serviceResolver;
+            _methodResolver = methodResolver;
 
             _dasyncJsonSerializer = serializerFactorySelector.Select("dasync+json").Create();
 
@@ -217,13 +220,7 @@ namespace DasyncAspNetCore
                 Name = methodName
             };
 
-#warning Use model for method resolution instead
-            MethodInfo routineMethod;
-            try
-            {
-                routineMethod = _routineMethodResolver.Resolve(serviceDefinition, routineMethodId);
-            }
-            catch
+            if (!_methodResolver.TryResolve(serviceDefinition, methodId, out var methodReference))
             {
                 context.Response.StatusCode = 404;
                 context.Response.ContentType = "text/plain";
@@ -284,7 +281,7 @@ namespace DasyncAspNetCore
                 continuationDescriptor = envelope.Continuation;
             }
 
-            var methodInvoker = _methodInvokerFactory.Create(routineMethod);
+            var methodInvoker = _methodInvokerFactory.Create(methodReference.Definition.MethodInfo);
             var parameterContainer = methodInvoker.CreateParametersContainer();
 
             if (!string.IsNullOrWhiteSpace(parametersJson))
@@ -326,7 +323,7 @@ namespace DasyncAspNetCore
                 try
                 {
                     task = methodInvoker.Invoke(serviceInstance, parameterContainer);
-                    if (routineMethod.ReturnType != typeof(void))
+                    if (methodReference.Definition.MethodInfo.ReturnType != typeof(void))
                     {
                         try { await task; } catch { }
                     }
@@ -616,9 +613,9 @@ namespace DasyncAspNetCore
                 {
                     Name = subscriber.MethodId.Name
                 };
-                MethodInfo routineMethod = _routineMethodResolver.Resolve(subscriberServiceDefinition, eventHandlerRoutineMethodId);
+                var methodReference = _methodResolver.Resolve(subscriberServiceDefinition, eventHandlerRoutineMethodId);
 
-                var methodInvoker = _methodInvokerFactory.Create(routineMethod);
+                var methodInvoker = _methodInvokerFactory.Create(methodReference.Definition.MethodInfo);
                 var parameterContainer = methodInvoker.CreateParametersContainer();
 
                 if (!string.IsNullOrWhiteSpace(parametersJson))
@@ -647,7 +644,7 @@ namespace DasyncAspNetCore
                 try
                 {
                     task = methodInvoker.Invoke(serviceInstance, parameterContainer);
-                    if (routineMethod.ReturnType != typeof(void))
+                    if (methodReference.Definition.MethodInfo.ReturnType != typeof(void))
                     {
                         try { await task; } catch { }
                     }

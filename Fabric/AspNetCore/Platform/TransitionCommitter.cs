@@ -10,7 +10,7 @@ using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Ioc;
 using Dasync.EETypes.Platform;
-using Dasync.ExecutionEngine;
+using Dasync.EETypes.Resolvers;
 using Dasync.ExecutionEngine.Extensions;
 using Dasync.Modeling;
 using Dasync.Proxy;
@@ -23,32 +23,32 @@ namespace Dasync.AspNetCore.Platform
         private readonly IPlatformHttpClientProvider _platformHttpClientProvider;
         private readonly IRoutineCompletionSink _routineCompletionSink;
         private readonly IEventDispatcher _eventDispatcher;
-        private readonly IRoutineMethodResolver _routineMethodResolver;
         private readonly IDomainServiceProvider _domainServiceProvider;
         private readonly IMethodInvokerFactory _methodInvokerFactory;
         private readonly IEnumerable<IRoutineTransitionAction> _transitionActions;
         private readonly ITransitionUserContext _transitionUserContext;
+        private readonly IMethodResolver _methodResolver;
 
         public TransitionCommitter(
             ICommunicationModel communicationModel,
             IPlatformHttpClientProvider platformHttpClientProvider,
             IRoutineCompletionSink routineCompletionSink,
             IEventDispatcher eventDispatcher,
-            IRoutineMethodResolver routineMethodResolver,
             IDomainServiceProvider domainServiceProvider,
             IMethodInvokerFactory methodInvokerFactory,
             IEnumerable<IRoutineTransitionAction> transitionActions,
-            ITransitionUserContext transitionUserContext)
+            ITransitionUserContext transitionUserContext,
+            IMethodResolver methodResolver)
         {
             _communicationModel = communicationModel;
             _platformHttpClientProvider = platformHttpClientProvider;
             _routineCompletionSink = routineCompletionSink;
             _eventDispatcher = eventDispatcher;
-            _routineMethodResolver = routineMethodResolver;
             _domainServiceProvider = domainServiceProvider;
             _methodInvokerFactory = methodInvokerFactory;
             _transitionActions = transitionActions;
             _transitionUserContext = transitionUserContext;
+            _methodResolver = methodResolver;
         }
 
         public async Task CommitAsync(ScheduledActions actions, ITransitionCarrier transitionCarrier, TransitionCommitOptions options, CancellationToken ct)
@@ -89,8 +89,8 @@ namespace Dasync.AspNetCore.Platform
             try
             {
                 var serviceInstance = _domainServiceProvider.GetService(serviceDefinition.Implementation);
-                var routineMethod = _routineMethodResolver.Resolve(serviceDefinition, intent.MethodId);
-                var methodInvoker = _methodInvokerFactory.Create(routineMethod);
+                var methodReference = _methodResolver.Resolve(serviceDefinition, intent.MethodId);
+                var methodInvoker = _methodInvokerFactory.Create(methodReference.Definition.MethodInfo);
 
                 foreach (var postAction in _transitionActions)
                     await postAction.OnRoutineStartAsync(serviceDefinition, intent.ServiceId, intent.MethodId, intent.Id);
@@ -99,7 +99,7 @@ namespace Dasync.AspNetCore.Platform
                 try
                 {
                     task = methodInvoker.Invoke(serviceInstance, intent.Parameters);
-                    if (routineMethod.ReturnType != typeof(void))
+                    if (methodReference.Definition.MethodInfo.ReturnType != typeof(void))
                     {
                         try { await task; } catch { }
                     }
