@@ -54,7 +54,7 @@ namespace Dasync.Fabric.Sample.Base
             {
 #warning need ability to overwrite existing message instead of creating a new one (if supported)
                 var intent = actions.ResumeRoutineIntent;
-                var connector = _fabricConnectorSelector.Select(intent.Continuation.ServiceId);
+                var connector = _fabricConnectorSelector.Select(intent.ServiceId);
                 var info = await connector.ScheduleContinuationAsync(intent, ct);
             }
 
@@ -62,7 +62,7 @@ namespace Dasync.Fabric.Sample.Base
             {
                 foreach (var intent in actions.ContinuationIntents)
                 {
-                    var connector = _fabricConnectorSelector.Select(intent.Continuation.ServiceId);
+                    var connector = _fabricConnectorSelector.Select(intent.ServiceId);
                     var info = await connector.ScheduleContinuationAsync(intent, ct);
                 }
             }

@@ -106,24 +106,24 @@ namespace Dasync.Fabric.InMemory
             var transitionDescriptor = new TransitionDescriptor
             {
                 Type = TransitionType.ContinueRoutine,
-                ETag = intent.Continuation.Routine.ETag
+                ETag = intent.Routine.ETag
             };
 
             var message = new Message
             {
                 //["IntentId"] = _serializer.Serialize(intent.Id),
                 [nameof(TransitionDescriptor)] = _serializer.SerializeToString(transitionDescriptor),
-                [nameof(ServiceId)] = _serializer.SerializeToString(intent.Continuation.ServiceId),
-                [nameof(RoutineDescriptor)] = _serializer.SerializeToString(intent.Continuation.Routine),
+                [nameof(ServiceId)] = _serializer.SerializeToString(intent.ServiceId),
+                [nameof(RoutineDescriptor)] = _serializer.SerializeToString(intent.Routine),
                 [nameof(ResultDescriptor)] = _serializer.SerializeToString(intent.Result),
-                DeliverAt = intent.Continuation.ContinueAt?.ToUniversalTime()
+                DeliverAt = intent.ContinueAt
             };
 
             _dataStore.ScheduleMessage(message);
 
             var info = new ActiveRoutineInfo
             {
-                RoutineId = intent.Continuation.Routine.RoutineId
+                RoutineId = intent.Routine.RoutineId
             };
 
             return Task.FromResult(info);
@@ -181,7 +181,7 @@ namespace Dasync.Fabric.InMemory
 
                     var resultDescriptor = new ResultDescriptor
                     {
-                        CorrelationId = intent.TriggerId,
+                        TaskId = intent.TriggerId,
                         Result = taskResult
                     };
 

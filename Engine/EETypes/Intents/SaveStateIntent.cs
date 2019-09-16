@@ -1,8 +1,10 @@
-﻿using Dasync.EETypes.Descriptors;
+﻿using System.Runtime.InteropServices;
+using Dasync.EETypes.Descriptors;
 using Dasync.ValueContainer;
 
 namespace Dasync.EETypes.Intents
 {
+    [StructLayout(LayoutKind.Sequential)]
     public sealed class SaveStateIntent
     {
         public ServiceId ServiceId;
@@ -12,14 +14,14 @@ namespace Dasync.EETypes.Intents
 
         public RoutineDescriptor Routine;
 
-        public IValueContainer RoutineState;
-
-        public TaskResult RoutineResult;
-
         /// <summary>
         /// If not null, the save state is caused due to calling another
         /// routine which must resume the current one upon completion.
         /// </summary>
         public ExecuteRoutineIntent AwaitedRoutine;
+
+        public IValueContainer RoutineState;
+
+        public TaskResult RoutineResult;
     }
 }

@@ -1,8 +1,11 @@
-﻿using Dasync.EETypes.Descriptors;
+﻿using System;
+using System.Runtime.InteropServices;
+using Dasync.EETypes.Descriptors;
 using Dasync.ValueContainer;
 
 namespace Dasync.EETypes.Intents
 {
+    [StructLayout(LayoutKind.Sequential)]
     public class ExecuteRoutineIntent
     {
         /// <summary>
@@ -14,15 +17,11 @@ namespace Dasync.EETypes.Intents
 
         public RoutineMethodId MethodId;
 
-        public IValueContainer Parameters;
-
 #warning Allow multiple continuations. Multicast continuation?
         public ContinuationDescriptor Continuation;
 
-        /// <summary>
-        /// The calling service+routine, if any.
-        /// NULL when is called outside of the transitioning context.
-        /// </summary>
-        public CallerDescriptor Caller;
+        public DateTimeOffset InvocationTimestamp;
+
+        public IValueContainer Parameters;
     }
 }

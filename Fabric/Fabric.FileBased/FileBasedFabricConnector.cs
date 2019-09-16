@@ -71,7 +71,7 @@ namespace Dasync.Fabric.FileBased
             {
                 ServiceId = intent.ServiceId,
                 Routine = routineDescriptor,
-                Caller = intent.Caller,
+                //Caller = intent.Caller,
                 Continuation = intent.Continuation,
                 Parameters = _serializer.SerializeToString(intent.Parameters)
             };
@@ -81,7 +81,7 @@ namespace Dasync.Fabric.FileBased
                 CloudEventsVersion = CloudEventsEnvelope.Version,
                 EventType = DasyncCloudEventsTypes.InvokeRoutine.Name,
                 EventTypeVersion = DasyncCloudEventsTypes.InvokeRoutine.Version,
-                Source = "/" + (intent.Caller?.ServiceId.ServiceName ?? ""),
+                //Source = "/" + (intent.Caller?.ServiceId.ServiceName ?? ""),
                 EventID = intent.Id.ToString(),
                 EventTime = DateTimeOffset.Now,
                 ContentType = "application/json",
@@ -127,9 +127,9 @@ namespace Dasync.Fabric.FileBased
         {
             var eventData = new RoutineEventData
             {
-                ServiceId = intent.Continuation.ServiceId,
-                Routine = intent.Continuation.Routine,
-                Callee = intent.Callee,
+                ServiceId = intent.ServiceId,
+                Routine = intent.Routine,
+                //Callee = intent.Callee,
                 Result = _serializer.SerializeToString(intent.Result)
             };
 
@@ -138,11 +138,11 @@ namespace Dasync.Fabric.FileBased
                 CloudEventsVersion = CloudEventsEnvelope.Version,
                 EventType = DasyncCloudEventsTypes.ContinueRoutine.Name,
                 EventTypeVersion = DasyncCloudEventsTypes.ContinueRoutine.Version,
-                Source = "/" + (intent.Callee?.ServiceId.ServiceName ?? ""),
+                //Source = "/" + (intent.Callee?.ServiceId.ServiceName ?? ""),
                 EventID = intent.Id.ToString(),
                 EventTime = DateTimeOffset.Now,
-                EventDeliveryTime = intent.Continuation.ContinueAt?.ToUniversalTime(),
-                ETag = intent.Continuation.Routine.ETag,
+                EventDeliveryTime = intent.ContinueAt?.ToUniversalTime(),
+                ETag = intent.Routine.ETag,
                 ContentType = "application/json",
                 Data = CloudEventsSerialization.Serialize(eventData)
             };
@@ -154,7 +154,7 @@ namespace Dasync.Fabric.FileBased
 
             var info = new ActiveRoutineInfo
             {
-                RoutineId = intent.Continuation.Routine.RoutineId
+                RoutineId = intent.Routine.RoutineId
             };
 
             return Task.FromResult(info);

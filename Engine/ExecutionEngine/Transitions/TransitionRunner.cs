@@ -198,18 +198,6 @@ namespace Dasync.ExecutionEngine.Transitions
                     };
                 }
 
-                if (scheduledActions.ExecuteRoutineIntents?.Count > 0)
-                {
-                    var callerDescriptor = new CallerDescriptor
-                    {
-                        ServiceId = serviceId,
-                        Routine = routineDescriptor
-                    };
-
-                    foreach (var intent in scheduledActions.ExecuteRoutineIntents)
-                        intent.Caller = callerDescriptor;
-                }
-
                 if (scheduledActions.ResumeRoutineIntent != null)
                 {
                     scheduledActions.ResumeRoutineIntent.Id = _idGenerator.NewId();
@@ -221,23 +209,13 @@ namespace Dasync.ExecutionEngine.Transitions
 
                     scheduledActions.SaveStateIntent.RoutineResult = routineResult;
 
-                    var awaitedResultDescriptor = new ResultDescriptor
-                    {
-                        Result = routineResult,
-                        CorrelationId = routineDescriptor.IntentId
-                    };
-
-                    var awaitedRoutineDescriptor = new CallerDescriptor
-                    {
-                        ServiceId = serviceId,
-                        Routine = routineDescriptor
-                    };
+                    var taskId = routineDescriptor.IntentId;
 
                     await AddContinuationIntentsAsync(
                         transitionCarrier,
                         scheduledActions,
-                        awaitedResultDescriptor,
-                        awaitedRoutineDescriptor,
+                        routineResult,
+                        taskId,
                         ct);
                 }
 
@@ -325,7 +303,7 @@ namespace Dasync.ExecutionEngine.Transitions
             foreach (var task in deserializedTasks)
             {
                 if (task.AsyncState is IProxyTaskState state &&
-                    state.CorellationId == awaitedResult.CorrelationId)
+                    state.TaskId == awaitedResult.TaskId)
                 {
                     task.TrySetResult(awaitedResult.Result);
                 }
@@ -359,8 +337,8 @@ namespace Dasync.ExecutionEngine.Transitions
         private async Task AddContinuationIntentsAsync(
             ITransitionCarrier transitionCarrier,
             ScheduledActions actions,
-            ResultDescriptor awaitedResultDescriptor,
-            CallerDescriptor awaitedRoutineDescriptor,
+            TaskResult taskResult,
+            string taskId,
             CancellationToken ct)
         {
             var continuations = await transitionCarrier.GetContinuationsAsync(ct);
@@ -372,9 +350,11 @@ namespace Dasync.ExecutionEngine.Transitions
                     var intent = new ContinueRoutineIntent
                     {
                         Id = _idGenerator.NewId(),
-                        Continuation = continuation,
-                        Result = awaitedResultDescriptor,
-                        Callee = awaitedRoutineDescriptor
+                        ServiceId = continuation.ServiceId,
+                        Routine = continuation.Routine,
+                        ContinueAt = continuation.ContinueAt,
+                        TaskId = taskId,
+                        Result = taskResult
                     };
                     actions.ContinuationIntents.Add(intent);
                 }

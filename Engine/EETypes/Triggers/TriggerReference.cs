@@ -7,7 +7,7 @@
     {
         public string Id;
 
-        string IProxyTaskState.CorellationId => Id;
+        string IProxyTaskState.TaskId => Id;
 
 #warning Needs routing info in case a trigger (TaskCompletionSource) is used in a different service
 

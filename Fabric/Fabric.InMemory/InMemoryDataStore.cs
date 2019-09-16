@@ -14,7 +14,7 @@ namespace Dasync.Fabric.InMemory
     {
         public class Message : Dictionary<string, string>
         {
-            public DateTime? DeliverAt;
+            public DateTimeOffset? DeliverAt;
             public bool IsEvent;
 
             public int Size

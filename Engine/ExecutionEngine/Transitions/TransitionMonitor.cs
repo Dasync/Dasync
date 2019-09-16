@@ -172,12 +172,9 @@ namespace Dasync.ExecutionEngine.Transitions
             actions.SaveRoutineState = true;
             actions.ResumeRoutineIntent = new ContinueRoutineIntent
             {
-                Continuation = new ContinuationDescriptor
-                {
-                    ServiceId = transitionContext.ServiceId,
-                    Routine = transitionContext.RoutineDescriptor,
-                    ContinueAt = resumeTime
-                }
+                ServiceId = transitionContext.ServiceId,
+                Routine = transitionContext.RoutineDescriptor,
+                ContinueAt = resumeTime
             };
             CompleteTransition();
         }
@@ -201,7 +198,8 @@ namespace Dasync.ExecutionEngine.Transitions
                 Continuation = new ContinuationDescriptor
                 {
                     ServiceId = Context.ServiceId,
-                    Routine = Context.RoutineDescriptor
+                    Routine = Context.RoutineDescriptor,
+                    TaskId = triggerReference.Id
                 }
             });
             CompleteTransition();
@@ -236,7 +234,8 @@ namespace Dasync.ExecutionEngine.Transitions
                 intent.Continuation = new ContinuationDescriptor
                 {
                     ServiceId = transitionContext.ServiceId,
-                    Routine = transitionContext.RoutineDescriptor
+                    Routine = transitionContext.RoutineDescriptor,
+                    TaskId = ((IProxyTaskState)routineCompletionTask.AsyncState).TaskId
                 };
 
                 CompleteTransition();

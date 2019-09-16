@@ -9,6 +9,6 @@ namespace Dasync.EETypes.Proxy
     {
         public string IntentId;
 
-        string IProxyTaskState.CorellationId => IntentId;
+        string IProxyTaskState.TaskId => IntentId;
     }
 }

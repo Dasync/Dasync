@@ -1,7 +1,9 @@
-﻿using Dasync.ValueContainer;
+﻿using System.Runtime.InteropServices;
+using Dasync.ValueContainer;
 
 namespace Dasync.EETypes.Intents
 {
+    [StructLayout(LayoutKind.Sequential)]
     public class RaiseEventIntent
     {
         /// <summary>
