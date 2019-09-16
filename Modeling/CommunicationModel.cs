@@ -23,6 +23,8 @@ namespace Dasync.Modeling
 
         public IReadOnlyCollection<IServiceDefinition> Services => _services;
 
+        IReadOnlyCollection<IMutableServiceDefinition> IMutableCommunicationModel.Services => _services;
+
         public IServiceDefinition FindServiceByName(string name) =>
             _servicesByName.TryGetValue(name, out var serviceDefinition) ? serviceDefinition : null;
 

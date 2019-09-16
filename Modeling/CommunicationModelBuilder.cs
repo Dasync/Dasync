@@ -14,7 +14,10 @@ namespace Dasync.Modeling
         {
             var builder = new CommunicationModelBuilder();
             buildAction(builder);
-            return builder.Model;
+            ModelRefiner.Refine(builder);
+            var model = builder.Model;
+            //ValidateModel(model);
+            return model;
         }
 
         public IMutableCommunicationModel Model { get; private set; }

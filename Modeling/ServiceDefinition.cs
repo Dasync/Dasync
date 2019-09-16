@@ -104,8 +104,21 @@ namespace Dasync.Modeling
 
                 if (methods.Count == 1)
                 {
-                    methodDefinition = new MethodDefinition(this, methods[0]);
-                    _methodsByName.Add(methods[0].Name, methodDefinition);
+                    var methodInfo = methods[0];
+                    methodDefinition = new MethodDefinition(this, methodInfo);
+                    foreach (var interfaceType in Interfaces)
+                    {
+                        var map = this.Implementation.GetInterfaceMap(interfaceType);
+                        for (var i = 0; i < map.TargetMethods.Length; i++)
+                        {
+                            if (ReferenceEquals(methodInfo, map.TargetMethods[i]))
+                            {
+                                methodDefinition.AddInterfaceMethod(map.InterfaceMethods[i]);
+                                break;
+                            }
+                        }
+                    }
+                    _methodsByName.Add(methodInfo.Name, methodDefinition);
                     return methodDefinition;
                 }
             }

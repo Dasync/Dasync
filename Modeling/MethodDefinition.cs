@@ -10,6 +10,7 @@ namespace Dasync.Modeling
         IMutableRoutineDefinition, IRoutineDefinition
     {
         private string[] _alternateNames = Array.Empty<string>();
+        private MethodInfo[] _interfaceMethods = Array.Empty<MethodInfo>();
 
         public MethodDefinition(ServiceDefinition serviceDefinition, MethodInfo methodInfo)
         {
@@ -40,6 +41,13 @@ namespace Dasync.Modeling
             ServiceDefinition.OnMethodAlternateNameAdding(this, name);
             _alternateNames = _alternateNames.Concat(new[] { name }).ToArray();
             return true;
+        }
+
+        public void AddInterfaceMethod(MethodInfo methodInfo)
+        {
+            if (_interfaceMethods.Contains(methodInfo))
+                return;
+            _interfaceMethods = _interfaceMethods.Concat(new[] { methodInfo }).ToArray();
         }
     }
 }
