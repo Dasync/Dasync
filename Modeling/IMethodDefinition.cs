@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
 
 namespace Dasync.Modeling
 {
@@ -7,6 +8,12 @@ namespace Dasync.Modeling
         IServiceDefinition Service { get; }
 
         MethodInfo MethodInfo { get; }
+
+        /// <summary>
+        /// Mapping of the <see cref="MethodInfo"/> to methods implemented by interface(s) of the service.
+        /// Not applicable to <see cref="ServiceType.External"/>.
+        /// </summary>
+        MethodInfo[] InterfaceMethods { get; }
 
         /// <summary>
         /// Tells is a method is part of a service contract and can be executed in a reliable way.

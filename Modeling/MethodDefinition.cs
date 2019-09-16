@@ -26,6 +26,8 @@ namespace Dasync.Modeling
 
         public bool IsQuery { get; set; }
 
+        public MethodInfo[] InterfaceMethods => _interfaceMethods;
+
         IServiceDefinition IMethodDefinition.Service => ServiceDefinition;
 
         IServiceDefinition IRoutineDefinition.Service => ServiceDefinition;
