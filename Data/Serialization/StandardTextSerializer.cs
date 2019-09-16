@@ -15,18 +15,22 @@ namespace Dasync.Serialization
         private readonly ITypeSerializerHelper _typeSerializerHelper;
 
         public StandardTextSerializer(
+            string contentType,
             IValueTextWriterFactory valueTextWriterFactory,
             IValueTextReaderFactory valueTextReaderFactory,
             IObjectDecomposerSelector decomposerSelector,
             IObjectComposerSelector composerSelector,
             ITypeSerializerHelper typeSerializerHelper)
         {
+            ContentType = contentType;
             _valueTextWriterFactory = valueTextWriterFactory;
             _valueTextReaderFactory = valueTextReaderFactory;
             _decomposerSelector = decomposerSelector;
             _composerSelector = composerSelector;
             _typeSerializerHelper = typeSerializerHelper;
         }
+
+        public string ContentType { get; }
 
         public void Serialize(TextWriter writer, object @object)
         {

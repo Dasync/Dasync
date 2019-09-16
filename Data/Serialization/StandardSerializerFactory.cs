@@ -19,12 +19,14 @@ namespace Dasync.Serialization
         }
 
         public ISerializer Create(
+            string contentType,
             IValueWriterFactory valueWriterFactory,
             IValueReaderFactory valueReaderFactory)
         {
             if (valueWriterFactory is IValueTextWriterFactory valueTextWriterFactory &&
                 valueReaderFactory is IValueTextReaderFactory valueTextReaderFactory)
                 return new StandardTextSerializer(
+                    contentType,
                     valueTextWriterFactory,
                     valueTextReaderFactory,
                     _decomposerSelector,
@@ -32,6 +34,7 @@ namespace Dasync.Serialization
                     _typeSerializerHelper);
 
             return new StandardSerializer(
+                contentType,
                 valueWriterFactory,
                 valueReaderFactory,
                 _decomposerSelector,

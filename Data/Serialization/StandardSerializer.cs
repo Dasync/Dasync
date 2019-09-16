@@ -12,18 +12,22 @@ namespace Dasync.Serialization
         private readonly ITypeSerializerHelper _typeSerializerHelper;
 
         public StandardSerializer(
+            string contentType,
             IValueWriterFactory valueWriterFactory,
             IValueReaderFactory valueReaderFactory,
             IObjectDecomposerSelector decomposerSelector,
             IObjectComposerSelector composerSelector,
             ITypeSerializerHelper typeSerializerHelper)
         {
+            ContentType = contentType;
             _valueWriterFactory = valueWriterFactory;
             _valueReaderFactory = valueReaderFactory;
             _decomposerSelector = decomposerSelector;
             _composerSelector = composerSelector;
             _typeSerializerHelper = typeSerializerHelper;
         }
+
+        public string ContentType { get; }
 
         public void Serialize(Stream stream, object @object)
         {

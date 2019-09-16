@@ -7,6 +7,7 @@
         public DasyncJsonSerializerFactory(IStandardSerializerFactory standardSerializerFactory)
         {
             _serializer = standardSerializerFactory.Create(
+                Format,
                 new JsonValueWriterFactory(),
                 new JsonValueReaderFactory());
         }

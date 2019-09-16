@@ -70,18 +70,39 @@ namespace Dasync.Serialization
             {
                 return textSerializer.SerializeToString(@object);
             }
-            else
+
+            if (@object is ISerializedValueContainer serializedValueContainer &&
+                serializedValueContainer.GetContentType() == serializer.ContentType)
             {
-                using (var stream = new MemoryStream())
+                var serializedForm = serializedValueContainer.GetSerializedForm();
+                if (serializedForm is string serializedString)
                 {
-                    serializer.Serialize(stream, @object);
-                    return Convert.ToBase64String(stream.ToArray());
+                    return serializedString;
                 }
+
+                if (serializedForm is byte[] serializedData)
+                {
+                    using (var stream = new MemoryStream())
+                    {
+                        return Convert.ToBase64String(serializedData);
+                    }
+                }
+            }
+
+            using (var stream = new MemoryStream())
+            {
+                serializer.Serialize(stream, @object);
+                return Convert.ToBase64String(stream.ToArray());
             }
         }
 
         public static string SerializeToString(this ITextSerializer serializer, object @object)
         {
+            if (@object is ISerializedValueContainer serializedValueContainer &&
+                serializedValueContainer.GetContentType() == serializer.ContentType &&
+                serializedValueContainer.GetSerializedForm() is string serializedString)
+                return serializedString;
+
             using (var textWriter = new StringWriter())
             {
                 serializer.Serialize(textWriter, @object);
