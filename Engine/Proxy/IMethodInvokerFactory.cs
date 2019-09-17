@@ -4,6 +4,6 @@ namespace Dasync.Proxy
 {
     public interface IMethodInvokerFactory
     {
-        IMethodInvoker Create(MethodInfo methodInfo);
+        IMethodInvoker Create(MethodInfo methodInfo, MethodInfo interfaceMethodInfo = null);
     }
 }

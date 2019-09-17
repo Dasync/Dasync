@@ -12,11 +12,9 @@ using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Platform;
-using Dasync.EETypes.Proxy;
 using Dasync.EETypes.Resolvers;
 using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Extensions;
-using Dasync.Proxy;
 using Dasync.ValueContainer;
 
 namespace Dasync.ExecutionEngine.Transitions
@@ -25,9 +23,7 @@ namespace Dasync.ExecutionEngine.Transitions
     {
         private readonly ITransitionScope _transitionScope;
         private readonly ITransitionCommitter _transitionCommitter;
-        private readonly IServiceProxyBuilder _serviceProxyBuilder;
         private readonly IAsyncStateMachineMetadataProvider _asyncStateMachineMetadataProvider;
-        private readonly IMethodInvokerFactory _methodInvokerFactory;
         //private readonly IServiceStateValueContainerProvider _serviceStateValueContainerProvider;
         private readonly IUniqueIdGenerator _idGenerator;
         private readonly ITaskCompletionSourceRegistry _taskCompletionSourceRegistry;
@@ -37,9 +33,7 @@ namespace Dasync.ExecutionEngine.Transitions
         public TransitionRunner(
             ITransitionScope transitionScope,
             ITransitionCommitter transitionCommitter,
-            IServiceProxyBuilder serviceProxyBuilder,
             IAsyncStateMachineMetadataProvider asyncStateMachineMetadataProvider,
-            IMethodInvokerFactory methodInvokerFactory,
             //IServiceStateValueContainerProvider serviceStateValueContainerProvider,
             IUniqueIdGenerator idGenerator,
             ITaskCompletionSourceRegistry taskCompletionSourceRegistry,
@@ -48,9 +42,7 @@ namespace Dasync.ExecutionEngine.Transitions
         {
             _transitionScope = transitionScope;
             _transitionCommitter = transitionCommitter;
-            _serviceProxyBuilder = serviceProxyBuilder;
             _asyncStateMachineMetadataProvider = asyncStateMachineMetadataProvider;
-            _methodInvokerFactory = methodInvokerFactory;
             //_serviceStateValueContainerProvider = serviceStateValueContainerProvider;
             _idGenerator = idGenerator;
             _taskCompletionSourceRegistry = taskCompletionSourceRegistry;
@@ -133,8 +125,8 @@ namespace Dasync.ExecutionEngine.Transitions
                     if (transitionDescriptor.Type == TransitionType.ContinueRoutine)
                         throw new InvalidOperationException("Cannot continue a routine because it's not a state machine.");
 
-                    var methodInvoker = _methodInvokerFactory.Create(methodReference.Definition.MethodInfo);
-                    var parameters = await LoadMethodParametersAsync(transitionCarrier, methodInvoker, ct);
+                    var parameters = methodReference.CreateParametersContainer();
+                    await transitionCarrier.ReadRoutineParametersAsync(parameters, ct);
 
                     transitionMonitor.OnRoutineStart(
                         serviceId,
@@ -145,7 +137,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
                     try
                     {
-                        completionTask = methodInvoker.Invoke(serviceInstance, parameters);
+                        completionTask = methodReference.Invoke(serviceInstance, parameters);
                     }
                     catch (Exception ex)
                     {
@@ -211,16 +203,6 @@ namespace Dasync.ExecutionEngine.Transitions
 
                 await _transitionCommitter.CommitAsync(scheduledActions, transitionCarrier, commitOptions, ct);
             }
-        }
-
-        private async Task<IValueContainer> LoadMethodParametersAsync(
-            ITransitionCarrier transitionCarrier,
-            IMethodInvoker methodInvoker,
-            CancellationToken ct)
-        {
-            var valueContainer = methodInvoker.CreateParametersContainer();
-            await transitionCarrier.ReadRoutineParametersAsync(valueContainer, ct);
-            return valueContainer;
         }
 
         private bool TryCreateAsyncStateMachine(

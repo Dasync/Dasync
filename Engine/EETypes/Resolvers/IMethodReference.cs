@@ -1,4 +1,6 @@
-﻿using Dasync.Modeling;
+﻿using System.Threading.Tasks;
+using Dasync.Modeling;
+using Dasync.ValueContainer;
 
 namespace Dasync.EETypes.Resolvers
 {
@@ -7,5 +9,9 @@ namespace Dasync.EETypes.Resolvers
         RoutineMethodId Id { get; }
 
         IMethodDefinition Definition { get; }
+
+        IValueContainer CreateParametersContainer();
+
+        Task Invoke(object serviceInstance, IValueContainer parameters);
     }
 }

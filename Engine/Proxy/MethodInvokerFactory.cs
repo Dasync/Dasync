@@ -16,13 +16,14 @@ namespace Dasync.Proxy
             _invokers = new Dictionary<MethodInfo, IMethodInvoker>();
         }
 
-        public IMethodInvoker Create(MethodInfo methodInfo)
+        public IMethodInvoker Create(MethodInfo methodInfo, MethodInfo interfaceMethodInfo = null)
         {
             lock (_invokers)
             {
                 if (!_invokers.TryGetValue(methodInfo, out var invoker))
                 {
-                    invoker = new MethodInvoker(methodInfo, GetParametersContainerFactory(methodInfo));
+                    var parameterContainerFactory = GetParametersContainerFactory(interfaceMethodInfo ?? methodInfo);
+                    invoker = new MethodInvoker(methodInfo, parameterContainerFactory);
                     _invokers.Add(methodInfo, invoker);
                 }
                 return invoker;
