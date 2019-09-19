@@ -22,5 +22,7 @@
         public static readonly string CorrelationId = "X-Correlation-ID";
 
         public static readonly string Context = "X-Context";
+
+        public static readonly string TaskStatus = "X-Task-Status";
     }
 }

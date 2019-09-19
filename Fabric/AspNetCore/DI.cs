@@ -14,6 +14,7 @@ namespace Dasync.AspNetCore
             [typeof(IDomainServiceProvider)] = typeof(DomainServiceProvider),
             [typeof(DefaultServiceHttpConfigurator)] = typeof(DefaultServiceHttpConfigurator),
             [typeof(ITransitionUserContext)] = typeof(TransitionUserContext),
+            [typeof(HttpStatusCodeExceptionMap)] = typeof(HttpStatusCodeExceptionMap),
         };
     }
 }

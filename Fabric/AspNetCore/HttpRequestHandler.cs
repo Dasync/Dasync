@@ -65,7 +65,7 @@ namespace DasyncAspNetCore
         private readonly IHttpIntentPreprocessor _intentPreprocessor;
         private readonly IEnumerable<IRoutineTransitionAction> _transitionActions;
         private readonly ITransitionUserContext _transitionUserContext;
-
+        private readonly HttpStatusCodeExceptionMap _httpStatusCodeExceptionMap;
         private TimeSpan MaxLongPollTime = TimeSpan.FromMinutes(2);
 
         public HttpRequestHandler(
@@ -80,7 +80,8 @@ namespace DasyncAspNetCore
             IRoutineCompletionNotifier routineCompletionNotifier,
             IEnumerable<IHttpIntentPreprocessor> intentPreprocessors,
             IEnumerable<IRoutineTransitionAction> transitionActions,
-            ITransitionUserContext transitionUserContext)
+            ITransitionUserContext transitionUserContext,
+            HttpStatusCodeExceptionMap httpStatusCodeExceptionMap)
         {
             _communicationModelProvider = communicationModelProvider;
             _domainServiceProvider = domainServiceProvider;
@@ -93,6 +94,7 @@ namespace DasyncAspNetCore
             _intentPreprocessor = new AggregateHttpIntentPreprocessor(intentPreprocessors);
             _transitionActions = transitionActions;
             _transitionUserContext = transitionUserContext;
+            _httpStatusCodeExceptionMap = httpStatusCodeExceptionMap;
 
             _dasyncJsonSerializer = serializerFactorySelector.Select("dasync+json").Create();
 
@@ -439,6 +441,7 @@ namespace DasyncAspNetCore
             if (taskResult.IsCanceled)
             {
                 context.Response.StatusCode = DasyncHttpCodes.Canceled;
+                context.Response.Headers.Add(DasyncHttpHeaders.TaskStatus, "Canceled");
 
                 if (isDasyncJsonRequest)
                 {
@@ -450,7 +453,11 @@ namespace DasyncAspNetCore
             }
             else if (taskResult.IsFaulted)
             {
-                context.Response.StatusCode = DasyncHttpCodes.Faulted;
+                if (!_httpStatusCodeExceptionMap.TryMap(taskResult.Exception.GetType(), out var statusCode))
+                    statusCode = DasyncHttpCodes.Faulted;
+
+                context.Response.StatusCode = statusCode;
+                context.Response.Headers.Add(DasyncHttpHeaders.TaskStatus, "Faulted");
 
                 if (isDasyncJsonRequest)
                 {
