@@ -3,10 +3,12 @@ using System.Collections.Generic;
 
 namespace Dasync.Serialization
 {
+    [Obsolete]
     public class SerializerFactorySelector : ISerializerFactorySelector
     {
         private readonly Dictionary<string, ISerializerFactory> _factoryMap;
 
+        [Obsolete]
         public SerializerFactorySelector(IEnumerable<ISerializerFactory> factories)
         {
             _factoryMap = new Dictionary<string, ISerializerFactory>(StringComparer.OrdinalIgnoreCase);
@@ -14,6 +16,7 @@ namespace Dasync.Serialization
                 _factoryMap.Add(factory.Format, factory);
         }
 
+        [Obsolete]
         public ISerializerFactory Select(string format)
         {
             if (string.IsNullOrEmpty(format))

@@ -1,7 +1,11 @@
-﻿namespace Dasync.Serialization
+﻿using System;
+
+namespace Dasync.Serialization
 {
+    [Obsolete]
     public interface ISerializerFactorySelector
     {
+        [Obsolete]
         ISerializerFactory Select(string format);
     }
 }

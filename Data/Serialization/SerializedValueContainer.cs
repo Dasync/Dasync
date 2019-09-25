@@ -20,11 +20,11 @@ namespace Dasync.Serialization
             string contentType,
             object serializedForm,
             object state,
-            Func<object, object, IValueContainer> deserializeFunc)
+            Func<string, object, object, IValueContainer> deserializeFunc)
         {
             _contentType = contentType;
             _serializedForm = serializedForm;
-            _lazyValueContainer = new Lazy<IValueContainer>(() => deserializeFunc(serializedForm, state));
+            _lazyValueContainer = new Lazy<IValueContainer>(() => deserializeFunc(contentType, serializedForm, state));
         }
 
         public string GetContentType() => _contentType;
