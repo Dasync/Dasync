@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Dasync.Modeling
 {
@@ -16,6 +17,12 @@ namespace Dasync.Modeling
 
         Type Implementation { get; }
 
+        IEnumerable<IMethodDefinition> Methods { get; }
+
+        IEnumerable<IEventDefinition> Events { get; }
+
         IMethodDefinition FindMethod(string methodName);
+
+        IEventDefinition FindEvent(string eventName);
     }
 }

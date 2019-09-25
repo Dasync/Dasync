@@ -7,6 +7,7 @@ namespace Dasync.Modeling
     internal class MethodDefinition :
         PropertyBag, IMutablePropertyBag, IPropertyBag,
         IMutableMethodDefinition, IMethodDefinition,
+        IMutableQueryDefinition, IQueryDefinition,
         IMutableCommandDefinition, ICommandDefinition
     {
         private string[] _alternateNames = Array.Empty<string>();
@@ -33,9 +34,13 @@ namespace Dasync.Modeling
 
         IServiceDefinition IMethodDefinition.Service => ServiceDefinition;
 
+        IServiceDefinition IQueryDefinition.Service => ServiceDefinition;
+
         IServiceDefinition ICommandDefinition.Service => ServiceDefinition;
 
         IMutableServiceDefinition IMutableMethodDefinition.Service => ServiceDefinition;
+
+        IMutableServiceDefinition IMutableQueryDefinition.Service => ServiceDefinition;
 
         IMutableServiceDefinition IMutableCommandDefinition.Service => ServiceDefinition;
 

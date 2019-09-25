@@ -9,6 +9,7 @@ namespace Dasync.Modeling
             foreach (var serviceDefinition in builder.Model.Services)
             {
                 FindMethods(serviceDefinition);
+                FindEvents(serviceDefinition);
             }
         }
 
@@ -24,15 +25,42 @@ namespace Dasync.Modeling
                         serviceDefinition.GetMethod(methodInfo.Name);
                 }
             }
-
-            foreach (var interfaceType in serviceDefinition.Interfaces)
+            else
             {
-                foreach (var methodInfo in interfaceType.GetMethods(
+                foreach (var interfaceType in serviceDefinition.Interfaces)
+                {
+                    foreach (var methodInfo in interfaceType.GetMethods(
+                        BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+                    {
+                        if (serviceDefinition.FindMethod(methodInfo.Name) == null &&
+                            (methodInfo.IsQueryCandidate() || methodInfo.IsCommandCandidate()))
+                            serviceDefinition.GetMethod(methodInfo.Name);
+                    }
+                }
+            }
+        }
+
+        public static void FindEvents(IMutableServiceDefinition serviceDefinition)
+        {
+            if (serviceDefinition.Implementation != null)
+            {
+                foreach (var eventInfo in serviceDefinition.Implementation.GetEvents(
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                 {
-                    if (serviceDefinition.FindMethod(methodInfo.Name) == null &&
-                        (methodInfo.IsQueryCandidate() || methodInfo.IsCommandCandidate()))
-                        serviceDefinition.GetMethod(methodInfo.Name);
+                    if (serviceDefinition.FindEvent(eventInfo.Name) == null && eventInfo.IsEventCandidate())
+                        serviceDefinition.GetEvent(eventInfo.Name);
+                }
+            }
+            else
+            {
+                foreach (var interfaceType in serviceDefinition.Interfaces)
+                {
+                    foreach (var eventInfo in interfaceType.GetEvents(
+                        BindingFlags.Public | BindingFlags.Instance))
+                    {
+                        if (serviceDefinition.FindEvent(eventInfo.Name) == null && eventInfo.IsEventCandidate())
+                            serviceDefinition.GetEvent(eventInfo.Name);
+                    }
                 }
             }
         }

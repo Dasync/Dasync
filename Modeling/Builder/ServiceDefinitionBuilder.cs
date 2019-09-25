@@ -57,16 +57,28 @@ namespace Dasync.Modeling
             return this;
         }
 
-        public CommandDefinitionBuilder Query(string methodName)
+        public QueryDefinitionBuilder Query(string methodName)
         {
             var methodDefinition = ServiceDefinition.GetMethod(methodName);
             methodDefinition.IsQuery = true;
-            return new CommandDefinitionBuilder((IMutableCommandDefinition)methodDefinition);
+            return new QueryDefinitionBuilder((IMutableQueryDefinition)methodDefinition);
         }
 
-        public ServiceDefinitionBuilder Query(string methodName, Action<CommandDefinitionBuilder> buildAction)
+        public ServiceDefinitionBuilder Query(string methodName, Action<QueryDefinitionBuilder> buildAction)
         {
             buildAction(Query(methodName));
+            return this;
+        }
+
+        public EventDefinitionBuilder Event(string eventName)
+        {
+            var eventDefinition = ServiceDefinition.GetEvent(eventName);
+            return new EventDefinitionBuilder(eventDefinition);
+        }
+
+        public ServiceDefinitionBuilder Event(string eventName, Action<EventDefinitionBuilder> buildAction)
+        {
+            buildAction(Event(eventName));
             return this;
         }
     }
@@ -97,6 +109,25 @@ namespace Dasync.Modeling
             return this;
         }
 
+        public QueryDefinitionBuilder Query(Expression<Func<TImplementation, string>> methodNameSelector)
+        {
+            var methodName = (string)((ConstantExpression)methodNameSelector.Body).Value;
+            return Query(methodName);
+        }
+
+        public new ServiceDefinitionBuilder<TImplementation> Query(string methodName, Action<QueryDefinitionBuilder> buildAction)
+        {
+            buildAction(Query(methodName));
+            return this;
+        }
+
+        public ServiceDefinitionBuilder<TImplementation> Query(Expression<Func<TImplementation, string>> methodNameSelector, Action<QueryDefinitionBuilder> buildAction)
+        {
+            var methodName = (string)((ConstantExpression)methodNameSelector.Body).Value;
+            buildAction(Query(methodName));
+            return this;
+        }
+
         public CommandDefinitionBuilder Command(Expression<Func<TImplementation, string>> methodNameSelector)
         {
             var methodName = (string)((ConstantExpression)methodNameSelector.Body).Value;
@@ -113,6 +144,18 @@ namespace Dasync.Modeling
         {
             var methodName = (string)((ConstantExpression)methodNameSelector.Body).Value;
             buildAction(Command(methodName));
+            return this;
+        }
+
+        public EventDefinitionBuilder Event(string eventName)
+        {
+            var eventDefinition = ServiceDefinition.GetEvent(eventName);
+            return new EventDefinitionBuilder(eventDefinition);
+        }
+
+        public ServiceDefinitionBuilder<TImplementation> Event(string eventName, Action<EventDefinitionBuilder> buildAction)
+        {
+            buildAction(Event(eventName));
             return this;
         }
     }

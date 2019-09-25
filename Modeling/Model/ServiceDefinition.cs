@@ -16,6 +16,9 @@ namespace Dasync.Modeling
         private readonly Dictionary<string, MethodDefinition> _methodsByName =
             new Dictionary<string, MethodDefinition>(StringComparer.OrdinalIgnoreCase);
 
+        private readonly Dictionary<string, EventDefinition> _eventsByName =
+            new Dictionary<string, EventDefinition>(StringComparer.OrdinalIgnoreCase);
+
         public ServiceDefinition(CommunicationModel model)
         {
             Model = model;
@@ -58,6 +61,14 @@ namespace Dasync.Modeling
         {
             get => _interfaces;
         }
+
+        IEnumerable<IMethodDefinition> IServiceDefinition.Methods => _methodsByName.Values;
+
+        IEnumerable<IMutableMethodDefinition> IMutableServiceDefinition.Methods => _methodsByName.Values;
+
+        IEnumerable<IEventDefinition> IServiceDefinition.Events => _eventsByName.Values;
+
+        IEnumerable<IMutableEventDefinition> IMutableServiceDefinition.Events => _eventsByName.Values;
 
         public bool AddInterface(Type interfaceType)
         {
@@ -159,6 +170,64 @@ namespace Dasync.Modeling
                 throw new InvalidOperationException($"Cannot use the alternate name '{newAltName}' for method '{methodDefinition.MethodInfo.Name}' of service '{methodDefinition.ServiceDefinition.Name}', because the name is already used by another method.");
 
             _methodsByName.Add(newAltName, methodDefinition);
+        }
+
+        public IMutableEventDefinition GetEvent(string name)
+        {
+            if (_eventsByName.TryGetValue(name, out var eventDefinition))
+                return eventDefinition;
+
+            if (this.Implementation != null)
+            {
+                var events = this.Implementation
+                    .GetEvents(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Where(mi => mi.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (events.Count > 1)
+                    throw new InvalidOperationException($"The service '{Name}' has overloaded events with the same name of '{name}'.");
+
+                if (events.Count == 1)
+                {
+                    var eventInfo = events[0];
+                    eventDefinition = new EventDefinition(this, eventInfo);
+                    foreach (var interfaceType in Interfaces)
+                    {
+                        var interfaceEvent = interfaceType.GetEvent(eventInfo.Name,
+                            BindingFlags.Instance | BindingFlags.Public);
+                        if (interfaceEvent.EventHandlerType == eventInfo.EventHandlerType)
+                            eventDefinition.AddInterfaceEvent(interfaceEvent);
+                    }
+                    _eventsByName.Add(eventInfo.Name, eventDefinition);
+                    return eventDefinition;
+                }
+            }
+
+            foreach (var interfaceType in Interfaces)
+            {
+                var events = interfaceType
+                    .GetEvents(BindingFlags.Instance | BindingFlags.Public)
+                    .ToList();
+
+                if (events.Count > 1)
+                    throw new InvalidOperationException($"The service '{Name}' has overloaded events with the same name of '{name}'.");
+
+                if (events.Count == 1)
+                {
+                    var eventInfo = events[0];
+                    eventDefinition = new EventDefinition(this, eventInfo);
+                    _eventsByName.Add(eventInfo.Name, eventDefinition);
+                    return eventDefinition;
+                }
+            }
+
+            throw new ArgumentException($"Could not find event '{name}' in service '{Name}'.");
+        }
+
+        public IEventDefinition FindEvent(string eventName)
+        {
+            _eventsByName.TryGetValue(eventName, out var eventDefinition);
+            return eventDefinition;
         }
     }
 }

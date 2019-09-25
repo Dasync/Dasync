@@ -12,7 +12,7 @@ namespace Dasync.Modeling
         MethodInfo MethodInfo { get; }
 
         /// <summary>
-        /// Mapping of the <see cref="MethodInfo"/> to methods implemented by interface(s) of the service.
+        /// Mapping of the <see cref="MethodInfo"/> to methods defined by interface(s) of the service.
         /// Not applicable to <see cref="ServiceType.External"/>.
         /// </summary>
         MethodInfo[] InterfaceMethods { get; }
@@ -23,7 +23,7 @@ namespace Dasync.Modeling
         bool IsQuery { get; }
 
         /// <summary>
-        /// Tells is a method is not a part of a service contract and cannot be invoked.
+        /// Tells if the method is not a part of a service contract and cannot be invoked.
         /// </summary>
         bool IsIgnored { get; }
     }

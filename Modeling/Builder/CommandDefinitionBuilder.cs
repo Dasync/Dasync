@@ -1,8 +1,9 @@
 ﻿namespace Dasync.Modeling
 {
-    public class CommandDefinitionBuilder
+    public class CommandDefinitionBuilder : MethodDefinitionBuilder
     {
         public CommandDefinitionBuilder(IMutableCommandDefinition commandDefinition)
+            : base((IMutableMethodDefinition)commandDefinition)
         {
             CommandDefinition = commandDefinition;
         }

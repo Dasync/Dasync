@@ -57,7 +57,19 @@ namespace Dasync.Modeling
 
         public static bool IsEventCandidate(this EventInfo eventInfo)
         {
-            return false;
+            if (!eventInfo.AddMethod.IsFamily && !eventInfo.AddMethod.IsPublic)
+                return false;
+
+            if (!eventInfo.AddMethod.IsVirtual)
+                return false;
+
+            if (eventInfo.AddMethod.IsAbstract && !eventInfo.AddMethod.DeclaringType.IsInterface)
+                return false;
+
+            if (eventInfo.AddMethod.IsFinal)
+                return false;
+
+            return true;
         }
 
         public static bool HasQueryImplyingName(this MethodInfo methodInfo) =>
