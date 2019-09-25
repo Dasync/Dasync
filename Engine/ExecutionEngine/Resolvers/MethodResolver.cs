@@ -19,7 +19,7 @@ namespace Dasync.ExecutionEngine.Resolvers
         public bool TryResolve(IServiceDefinition serviceDefinition, RoutineMethodId methodId, out IMethodReference methodReference)
         {
             var methodDefinition = serviceDefinition.FindMethod(methodId.Name);
-            if (methodDefinition == null)
+            if (methodDefinition == null || methodDefinition.IsIgnored)
             {
                 methodReference = null;
                 return false;

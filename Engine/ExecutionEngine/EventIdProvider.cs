@@ -9,7 +9,7 @@ namespace Dasync.ExecutionEngine
         {
             return new EventId
             {
-                EventName = eventInfo.Name
+                Name = eventInfo.Name
             };
         }
     }

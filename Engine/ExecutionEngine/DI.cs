@@ -46,6 +46,7 @@ namespace Dasync.ExecutionEngine
             [typeof(ITaskResultConverter)] = typeof(TaskResultConverter),
             [typeof(IServiceResolver)] = typeof(ServiceResolver),
             [typeof(IMethodResolver)] = typeof(MethodResolver),
+            [typeof(IEventResolver)] = typeof(EventResolver),
         };
     }
 }

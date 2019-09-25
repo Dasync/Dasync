@@ -90,7 +90,7 @@ namespace Dasync.AspNetCore.Communication
 
         public async Task SubscribeToEvent(EventDescriptor eventDesc, ServiceId subscriber, IServiceDefinition publisherServiceDefinition)
         {
-            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(publisherServiceDefinition), "/", eventDesc.EventId.EventName, "?subscribe&service=", subscriber.Name);
+            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(publisherServiceDefinition), "/", eventDesc.EventId.Name, "?subscribe&service=", subscriber.Name);
 
             if (!string.IsNullOrEmpty(subscriber.Proxy))
                 uri += string.Concat("&proxy=", subscriber.Proxy);
@@ -104,7 +104,7 @@ namespace Dasync.AspNetCore.Communication
 
         public async Task PublishEvent(RaiseEventIntent intent, IServiceDefinition subscriberServiceDefinition, NameValueCollection context)
         {
-            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(subscriberServiceDefinition), "?react&event=", intent.EventId.EventName, "&service=", intent.ServiceId.Name);
+            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(subscriberServiceDefinition), "?react&event=", intent.EventId.Name, "&service=", intent.ServiceId.Name);
 
             var json = _dasyncJsonSerializer.SerializeToString(intent);
 

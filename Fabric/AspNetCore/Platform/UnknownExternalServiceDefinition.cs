@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Dasync.Modeling;
 
 namespace Dasync.AspNetCore.Platform
@@ -25,6 +26,12 @@ namespace Dasync.AspNetCore.Platform
 
         public Type Implementation => null;
 
+        public IEnumerable<IMethodDefinition> Methods { get; } = Array.Empty<IMethodDefinition>();
+
+        public IEnumerable<IEventDefinition> Events { get; } = Array.Empty<IEventDefinition>();
+
         public IMethodDefinition FindMethod(string methodName) => null;
+
+        public IEventDefinition FindEvent(string eventName) => null;
     }
 }

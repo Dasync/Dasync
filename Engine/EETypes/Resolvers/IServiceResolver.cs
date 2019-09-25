@@ -13,7 +13,23 @@ namespace Dasync.EETypes.Resolvers
         {
             if (resolver.TryResolve(serviceId, out var serviceReference))
                 return serviceReference;
-            throw new InvalidOperationException($"Could not resolve service '{serviceId.Proxy ?? serviceId.Name}'.");
+            throw new ServiceResolveException(serviceId);
         }
+    }
+
+    public class ServiceResolveException : Exception
+    {
+        public ServiceResolveException()
+            : base("Could not resolve a service.")
+        {
+        }
+
+        public ServiceResolveException(ServiceId serviceId)
+            : base($"Could not resolve service '{serviceId.Proxy ?? serviceId.Name}'.")
+        {
+            ServiceId = serviceId;
+        }
+
+        public ServiceId ServiceId { get; }
     }
 }

@@ -27,6 +27,7 @@ namespace Dasync.ExecutionEngine.Resolvers
             if (Definition.Implementation != null)
                 return _domainServiceProvider.GetService(Definition.Implementation);
 
+            // TODO: move to model validation
             if (Definition.Interfaces?.Length < 1)
                 throw new InvalidOperationException($"The service '{Definition.Name}' has no implementation nor interfaces.");
 

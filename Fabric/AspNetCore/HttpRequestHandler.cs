@@ -521,7 +521,7 @@ namespace DasyncAspNetCore
 
             var subscriberServiceId = new ServiceId { Name = serviceName, Proxy = proxyName };
 
-            var eventId = new EventId { EventName = eventName };
+            var eventId = new EventId { Name = eventName };
             var publisherServiceId = new ServiceId { Name = serviceDefinition.Name };
             var eventDesc = new EventDescriptor { ServiceId = publisherServiceId, EventId = eventId };
 
@@ -560,7 +560,7 @@ namespace DasyncAspNetCore
 
             var eventDesc = new EventDescriptor
             {
-                EventId = new EventId { EventName = eventName },
+                EventId = new EventId { Name = eventName },
                 ServiceId = new ServiceId { Name = serviceName }
             };
 

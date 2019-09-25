@@ -5,7 +5,7 @@
         /// <summary>
         /// The name of the event which is extracted with reflection.
         /// </summary>
-        public string EventName;
+        public string Name;
 
         public override bool Equals(object obj) =>
             (obj is EventId eventId)
@@ -13,11 +13,11 @@
             : base.Equals(obj);
 
         public override int GetHashCode() =>
-            (EventName != null)
-            ? EventName.GetHashCode()
+            (Name != null)
+            ? Name.GetHashCode()
             : base.GetHashCode();
 
-        public static bool operator ==(EventId a, EventId b) => string.Equals(a?.EventName, b?.EventName);
+        public static bool operator ==(EventId a, EventId b) => string.Equals(a?.Name, b?.Name);
 
         public static bool operator !=(EventId a, EventId b) => !(a == b);
     }
