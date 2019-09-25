@@ -1,14 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dasync.DependencyInjection
 {
     public static class DI
     {
-        public static readonly Dictionary<Type, Type> Bindings = new Dictionary<Type, Type>
+        public static readonly IEnumerable<ServiceDescriptor> Bindings =
+            new ServiceDescriptorList().Configure();
+
+        public static IServiceCollection Configure(this IServiceCollection services)
         {
-            [typeof(IScopedServiceProvider)] = typeof(ScopedServiceProvider),
-            [typeof(IServiceProviderScope)] = typeof(ServiceProviderScopeFactory),
-        };
+            services.AddSingleton<IScopedServiceProvider, ScopedServiceProvider>();
+            services.AddSingleton<IServiceProviderScope, ServiceProviderScopeFactory>();
+            return services;
+        }
     }
 }

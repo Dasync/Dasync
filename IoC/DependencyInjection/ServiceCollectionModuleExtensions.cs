@@ -77,5 +77,23 @@ namespace Dasync.DependencyInjection
             this IServiceCollection services,
             params IEnumerable<KeyValuePair<Type, Type>>[] modules)
             => services.AddModules((IEnumerable<IEnumerable<KeyValuePair<Type, Type>>>)modules);
+
+        public static IServiceCollection AddModule(
+            this IServiceCollection services,
+            IEnumerable<ServiceDescriptor> bindings)
+        {
+            foreach (var descriptor in bindings)
+                services.Add(descriptor);
+            return services;
+        }
+
+        public static IServiceCollection AddModules(
+            this IServiceCollection services,
+            params IEnumerable<ServiceDescriptor>[] bindingsSet)
+        {
+            foreach (var bindings in bindingsSet)
+                services.AddModule(bindings);
+            return services;
+        }
     }
 }
