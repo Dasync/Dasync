@@ -10,11 +10,13 @@ using Dasync.ExecutionEngine.Cancellation;
 using Dasync.ExecutionEngine.Continuation;
 using Dasync.ExecutionEngine.Extensions;
 using Dasync.ExecutionEngine.IntrinsicFlow;
+using Dasync.ExecutionEngine.Modeling;
 using Dasync.ExecutionEngine.Proxy;
 using Dasync.ExecutionEngine.Resolvers;
 using Dasync.ExecutionEngine.StateMetadata.Service;
 using Dasync.ExecutionEngine.Transitions;
 using Dasync.ExecutionEngine.Triggers;
+using Dasync.Modeling;
 using Dasync.Proxy;
 
 namespace Dasync.ExecutionEngine
@@ -46,6 +48,7 @@ namespace Dasync.ExecutionEngine
             [typeof(IServiceResolver)] = typeof(ServiceResolver),
             [typeof(IMethodResolver)] = typeof(MethodResolver),
             [typeof(IEventResolver)] = typeof(EventResolver),
+            [typeof(ICommunicationModelEnricher)] = typeof(CommunicationModelEnricher),
         };
     }
 }
