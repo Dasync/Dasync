@@ -371,7 +371,7 @@ namespace DasyncAspNetCore
                 {
                     var cts = new CancellationTokenSource();
                     var completionSink = new TaskCompletionSource<TaskResult>();
-                    _routineCompletionNotifier.NotifyCompletion(intent.ServiceId, intent.MethodId, intent.Id, completionSink, cts.Token);
+                    _routineCompletionNotifier.NotifyOnCompletion(intent.Service, intent.Method, intent.Id, completionSink, cts.Token);
                     try
                     {
                         var taskResult = await completionSink.Task.WithTimeout(waitTime);
@@ -421,7 +421,7 @@ namespace DasyncAspNetCore
                 try
                 {
                     var completionSink = new TaskCompletionSource<TaskResult>();
-                    _routineCompletionNotifier.NotifyCompletion(serviceId, methodId, intentId, completionSink, cts.Token);
+                    _routineCompletionNotifier.NotifyOnCompletion(serviceId, methodId, intentId, completionSink, cts.Token);
                     taskResult = await completionSink.Task.WithTimeout(waitTime);
                 }
                 catch (TaskCanceledException)
@@ -655,7 +655,7 @@ namespace DasyncAspNetCore
                 var taskResult = task?.ToTaskResult() ?? new TaskResult();
 
                 foreach (var postAction in _transitionActions)
-                    await postAction.OnRoutineCompleteAsync(subscriberServiceDefinition, subscriber.ServiceId, subscriber.MethodId, intentId, taskResult);
+                    await postAction.OnRoutineCompleteAsync(subscriberServiceDefinition, subscriber.Service, subscriber.Method, intentId, taskResult);
 
                 results.Add(new RaiseEventResult
                 {

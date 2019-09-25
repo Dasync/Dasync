@@ -4,7 +4,7 @@
     {
         /// <summary>
         /// A hint to notify current process on routine completion (synchronous call).
-        /// The listener must use <see cref="IRoutineCompletionNotifier.NotifyCompletion"/>.
+        /// The listener must use <see cref="IRoutineCompletionNotifier.NotifyOnCompletion"/>.
         /// </summary>
         public bool NotifyOnRoutineCompletion;
 

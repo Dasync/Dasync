@@ -97,7 +97,7 @@ namespace Dasync.ExecutionEngine.Proxy
             // Do it before commit as a routine may complete immediately.
 
             var tcs = new TaskCompletionSource<TaskResult>();
-            _routineCompletionNotifier.NotifyCompletion(intent.ServiceId, intent.MethodId, intent.Id, tcs, default);
+            _routineCompletionNotifier.NotifyOnCompletion(intent.Service, intent.Method, intent.Id, tcs, default);
 
             // Commit intent
 

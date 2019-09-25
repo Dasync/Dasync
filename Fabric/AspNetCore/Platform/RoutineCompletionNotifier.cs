@@ -33,7 +33,7 @@ namespace Dasync.AspNetCore.Platform
             }
         }
 
-        public void NotifyCompletion(
+        public void NotifyOnCompletion(
             ServiceId serviceId,
             MethodId methodId,
             string intentId,

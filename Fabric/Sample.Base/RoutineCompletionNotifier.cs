@@ -53,7 +53,7 @@ namespace Dasync.Fabric.Sample.Base
             }
         }
 
-        public async void NotifyCompletion(
+        public async void NotifyOnCompletion(
             ServiceId serviceId,
             MethodId methodId,
             string intentId,

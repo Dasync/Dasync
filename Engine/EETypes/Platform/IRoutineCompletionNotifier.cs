@@ -12,7 +12,7 @@ namespace Dasync.EETypes.Platform
             string intentId,
             CancellationToken ct);
 
-        void NotifyCompletion(
+        void NotifyOnCompletion(
             ServiceId serviceId,
             MethodId methodId,
             string intentId,
