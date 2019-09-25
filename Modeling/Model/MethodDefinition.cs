@@ -7,7 +7,7 @@ namespace Dasync.Modeling
     internal class MethodDefinition :
         PropertyBag, IMutablePropertyBag, IPropertyBag,
         IMutableMethodDefinition, IMethodDefinition,
-        IMutableRoutineDefinition, IRoutineDefinition
+        IMutableCommandDefinition, ICommandDefinition
     {
         private string[] _alternateNames = Array.Empty<string>();
         private MethodInfo[] _interfaceMethods = Array.Empty<MethodInfo>();
@@ -16,25 +16,28 @@ namespace Dasync.Modeling
         {
             ServiceDefinition = serviceDefinition;
             MethodInfo = methodInfo;
+            Name = methodInfo.Name;
         }
 
         public ServiceDefinition ServiceDefinition { get; }
 
+        public string Name { get; }
+
         public MethodInfo MethodInfo { get; }
 
-        public bool IsRoutine { get; set; }
-
         public bool IsQuery { get; set; }
+
+        public bool IsIgnored { get; set; }
 
         public MethodInfo[] InterfaceMethods => _interfaceMethods;
 
         IServiceDefinition IMethodDefinition.Service => ServiceDefinition;
 
-        IServiceDefinition IRoutineDefinition.Service => ServiceDefinition;
+        IServiceDefinition ICommandDefinition.Service => ServiceDefinition;
 
         IMutableServiceDefinition IMutableMethodDefinition.Service => ServiceDefinition;
 
-        IMutableServiceDefinition IMutableRoutineDefinition.Service => ServiceDefinition;
+        IMutableServiceDefinition IMutableCommandDefinition.Service => ServiceDefinition;
 
         public string[] AlternateNames => _alternateNames;
 

@@ -7,7 +7,27 @@ namespace Dasync.Modeling
 {
     public static class ModelingExtensions
     {
-        public static bool IsRoutineCandidate(this MethodInfo methodInfo)
+        public static bool IsQueryCandidate(this MethodInfo methodInfo)
+        {
+            if (!methodInfo.IsFamily && !methodInfo.IsPublic)
+                return false;
+
+            if (!methodInfo.IsVirtual)
+                return false;
+
+            if (methodInfo.IsAbstract && !methodInfo.DeclaringType.IsInterface)
+                return false;
+
+            if (methodInfo.ContainsGenericParameters)
+                return false;
+
+            if (!methodInfo.ReturnType.IsGenericType || !typeof(Task<>).IsAssignableFrom(methodInfo.ReturnType.GetGenericTypeDefinition()))
+                return false;
+
+            return true;
+        }
+
+        public static bool IsCommandCandidate(this MethodInfo methodInfo)
         {
             if (!methodInfo.IsFamily && !methodInfo.IsPublic)
                 return false;
@@ -33,6 +53,11 @@ namespace Dasync.Modeling
             }
 
             return true;
+        }
+
+        public static bool IsEventCandidate(this EventInfo eventInfo)
+        {
+            return false;
         }
 
         public static bool HasQueryImplyingName(this MethodInfo methodInfo) =>

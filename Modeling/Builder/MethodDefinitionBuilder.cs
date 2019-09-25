@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Dasync.Modeling
+﻿namespace Dasync.Modeling
 {
     public class MethodDefinitionBuilder
     {
@@ -15,7 +11,14 @@ namespace Dasync.Modeling
 
         public MethodDefinitionBuilder Ignore()
         {
-            MethodDefinition.IsRoutine = false;
+            MethodDefinition.IsIgnored = true;
+            return this;
+        }
+
+        public MethodDefinitionBuilder AlternateName(params string[] alternateMethodNames)
+        {
+            foreach (var altName in alternateMethodNames)
+                MethodDefinition.AddAlternateName(altName);
             return this;
         }
     }

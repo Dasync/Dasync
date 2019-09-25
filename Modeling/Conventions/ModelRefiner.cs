@@ -19,7 +19,8 @@ namespace Dasync.Modeling
                 foreach (var methodInfo in serviceDefinition.Implementation.GetMethods(
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                 {
-                    if (serviceDefinition.FindMethod(methodInfo.Name) == null && methodInfo.IsRoutineCandidate())
+                    if (serviceDefinition.FindMethod(methodInfo.Name) == null &&
+                        (methodInfo.IsQueryCandidate() || methodInfo.IsCommandCandidate()))
                         serviceDefinition.GetMethod(methodInfo.Name);
                 }
             }
@@ -29,7 +30,8 @@ namespace Dasync.Modeling
                 foreach (var methodInfo in interfaceType.GetMethods(
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                 {
-                    if (serviceDefinition.FindMethod(methodInfo.Name) == null && methodInfo.IsRoutineCandidate())
+                    if (serviceDefinition.FindMethod(methodInfo.Name) == null &&
+                        (methodInfo.IsQueryCandidate() || methodInfo.IsCommandCandidate()))
                         serviceDefinition.GetMethod(methodInfo.Name);
                 }
             }

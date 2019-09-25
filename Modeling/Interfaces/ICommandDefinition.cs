@@ -2,7 +2,7 @@
 
 namespace Dasync.Modeling
 {
-    public interface IRoutineDefinition : IPropertyBag
+    public interface ICommandDefinition : IPropertyBag
     {
         IServiceDefinition Service { get; }
 

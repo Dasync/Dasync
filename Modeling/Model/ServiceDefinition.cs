@@ -118,7 +118,7 @@ namespace Dasync.Modeling
                             }
                         }
                     }
-                    methodDefinition.IsQuery = methodInfo.HasQueryImplyingName();
+                    methodDefinition.IsQuery = methodInfo.HasQueryImplyingName() && methodInfo.IsQueryCandidate();
                     _methodsByName.Add(methodInfo.Name, methodDefinition);
                     return methodDefinition;
                 }

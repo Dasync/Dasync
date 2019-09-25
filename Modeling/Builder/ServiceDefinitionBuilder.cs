@@ -34,6 +34,7 @@ namespace Dasync.Modeling
         public MethodDefinitionBuilder Method(string methodName)
         {
             var methodDefinition = ServiceDefinition.GetMethod(methodName);
+            methodDefinition.IsQuery = false;
             return new MethodDefinitionBuilder(methodDefinition);
         }
 
@@ -43,16 +44,29 @@ namespace Dasync.Modeling
             return this;
         }
 
-        public RoutineDefinitionBuilder Routine(string methodName)
+        public CommandDefinitionBuilder Command(string methodName)
         {
             var methodDefinition = ServiceDefinition.GetMethod(methodName);
-            methodDefinition.IsRoutine = true;
-            return new RoutineDefinitionBuilder((IMutableRoutineDefinition)methodDefinition);
+            methodDefinition.IsQuery = false;
+            return new CommandDefinitionBuilder((IMutableCommandDefinition)methodDefinition);
         }
 
-        public ServiceDefinitionBuilder Routine(string methodName, Action<RoutineDefinitionBuilder> buildAction)
+        public ServiceDefinitionBuilder Command(string methodName, Action<CommandDefinitionBuilder> buildAction)
         {
-            buildAction(Routine(methodName));
+            buildAction(Command(methodName));
+            return this;
+        }
+
+        public CommandDefinitionBuilder Query(string methodName)
+        {
+            var methodDefinition = ServiceDefinition.GetMethod(methodName);
+            methodDefinition.IsQuery = true;
+            return new CommandDefinitionBuilder((IMutableCommandDefinition)methodDefinition);
+        }
+
+        public ServiceDefinitionBuilder Query(string methodName, Action<CommandDefinitionBuilder> buildAction)
+        {
+            buildAction(Query(methodName));
             return this;
         }
     }
@@ -83,22 +97,22 @@ namespace Dasync.Modeling
             return this;
         }
 
-        public RoutineDefinitionBuilder Routine(Expression<Func<TImplementation, string>> methodNameSelector)
+        public CommandDefinitionBuilder Command(Expression<Func<TImplementation, string>> methodNameSelector)
         {
             var methodName = (string)((ConstantExpression)methodNameSelector.Body).Value;
-            return Routine(methodName);
+            return Command(methodName);
         }
 
-        public new ServiceDefinitionBuilder<TImplementation> Routine(string methodName, Action<RoutineDefinitionBuilder> buildAction)
+        public new ServiceDefinitionBuilder<TImplementation> Command(string methodName, Action<CommandDefinitionBuilder> buildAction)
         {
-            buildAction(Routine(methodName));
+            buildAction(Command(methodName));
             return this;
         }
 
-        public ServiceDefinitionBuilder<TImplementation> Routine(Expression<Func<TImplementation, string>> methodNameSelector, Action<RoutineDefinitionBuilder> buildAction)
+        public ServiceDefinitionBuilder<TImplementation> Command(Expression<Func<TImplementation, string>> methodNameSelector, Action<CommandDefinitionBuilder> buildAction)
         {
             var methodName = (string)((ConstantExpression)methodNameSelector.Body).Value;
-            buildAction(Routine(methodName));
+            buildAction(Command(methodName));
             return this;
         }
     }
