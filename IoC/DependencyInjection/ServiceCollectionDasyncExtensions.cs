@@ -7,6 +7,26 @@ namespace Dasync.DependencyInjection
 {
     public static class ServiceCollectionDasyncExtensions
     {
+        public static IServiceCollection AddCommunicationModel(this IServiceCollection services, ICommunicationModel model)
+        {
+            if (model is IMutableCommunicationModel mutableModel)
+            {
+                services.AddSingleton<ICommunicationModel>(
+                    sp =>
+                    {
+                        foreach (var enricher in sp.GetServices<ICommunicationModelEnricher>())
+                            enricher.Enrich(mutableModel);
+                        return mutableModel;
+                    }
+                );
+            }
+            else
+            {
+                services.AddSingleton(model);
+            }
+            return services;
+        }
+
         public static IServiceCollection AddDomainServicesViaDasync(this IServiceCollection services, ICommunicationModel model)
         {
             foreach (var serviceDefinition in model.Services)
