@@ -6,8 +6,8 @@ namespace Dasync.EETypes.Intents
     [StructLayout(LayoutKind.Sequential)]
     public class SubscribeToTriggerIntent
     {
-        public string TriggerId;
+        public string TriggerId { get; set; }
 
-        public ContinuationDescriptor Continuation;
+        public ContinuationDescriptor Continuation { get; set; }
     }
 }

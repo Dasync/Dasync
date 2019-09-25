@@ -39,7 +39,7 @@ namespace Dasync.Fabric.Sample.Base
             {
                 foreach (var intent in actions.ExecuteRoutineIntents)
                 {
-                    var connector = _fabricConnectorSelector.Select(intent.ServiceId);
+                    var connector = _fabricConnectorSelector.Select(intent.Service);
 #warning TODO: try to pre-generate routine ID - needed for transactionality.
 #warning TODO: check if target fabric can route back the continuation. If not, come up with another strategy, e.g. polling, or gateway?
                     var info = await connector.ScheduleRoutineAsync(intent, ct);
@@ -54,7 +54,7 @@ namespace Dasync.Fabric.Sample.Base
             {
 #warning need ability to overwrite existing message instead of creating a new one (if supported)
                 var intent = actions.ResumeRoutineIntent;
-                var connector = _fabricConnectorSelector.Select(intent.ServiceId);
+                var connector = _fabricConnectorSelector.Select(intent.Service);
                 var info = await connector.ScheduleContinuationAsync(intent, ct);
             }
 
@@ -62,7 +62,7 @@ namespace Dasync.Fabric.Sample.Base
             {
                 foreach (var intent in actions.ContinuationIntents)
                 {
-                    var connector = _fabricConnectorSelector.Select(intent.ServiceId);
+                    var connector = _fabricConnectorSelector.Select(intent.Service);
                     var info = await connector.ScheduleContinuationAsync(intent, ct);
                 }
             }
@@ -71,10 +71,10 @@ namespace Dasync.Fabric.Sample.Base
             {
                 foreach (var intent in actions.RaiseEventIntents)
                 {
-                    if (intent.ServiceId == null)
+                    if (intent.Service == null)
                         throw new NotSupportedException();
 
-                    var connector = _fabricConnectorSelector.Select(intent.ServiceId);
+                    var connector = _fabricConnectorSelector.Select(intent.Service);
                     await connector.PublishEventAsync(intent, ct);
                 }
             }

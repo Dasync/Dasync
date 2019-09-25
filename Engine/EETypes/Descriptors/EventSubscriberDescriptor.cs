@@ -2,8 +2,9 @@
 {
     public class EventSubscriberDescriptor
     {
-        public ServiceId ServiceId;
-        public RoutineMethodId MethodId;
+        public ServiceId Service { get; set; }
+
+        public MethodId Method { get; set; }
 
         public override bool Equals(object obj) =>
             (obj is EventSubscriberDescriptor subscriber)
@@ -11,12 +12,12 @@
             : base.Equals(obj);
 
         public override int GetHashCode() =>
-            (ServiceId != null && MethodId != null)
-            ? ServiceId.GetHashCode() ^ MethodId.GetHashCode()
+            (Service != null && Method != null)
+            ? Service.GetHashCode() ^ Method.GetHashCode()
             : base.GetHashCode();
 
         public static bool operator ==(EventSubscriberDescriptor a, EventSubscriberDescriptor b) =>
-            a.ServiceId == b.ServiceId && a.MethodId == b.MethodId;
+            a.Service == b.Service && a.Method == b.Method;
 
         public static bool operator !=(EventSubscriberDescriptor a, EventSubscriberDescriptor b) => !(a == b);
     }

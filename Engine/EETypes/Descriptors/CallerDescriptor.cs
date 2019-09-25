@@ -4,17 +4,17 @@
     {
         public CallerDescriptor() { }
 
-        public CallerDescriptor(ServiceId service, RoutineMethodId routine, string intentId)
+        public CallerDescriptor(ServiceId service, MethodId method, string intentId)
         {
             Service = service;
-            Routine = routine;
+            Method = method;
             IntentId = intentId;
         }
 
-        public ServiceId Service;
+        public ServiceId Service { get; set; }
 
-        public RoutineMethodId Routine;
+        public MethodId Method { get; set; }
 
-        public string IntentId;
+        public string IntentId { get; set; }
     }
 }

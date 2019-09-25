@@ -1,8 +1,8 @@
 ﻿namespace Dasync.EETypes
 {
-    public sealed class ServiceId
+    public class ServiceId
     {
-        public string Name;
+        public string Name { get; set; }
 
         /// <summary>
         /// A name of a proxy service that performs the actual work.
@@ -11,7 +11,7 @@
         /// This is a quick fix for IntrinsicRoutines, where ServiceName
         /// needs to be used to select the connector (route requests).
         /// </remarks>
-        public string Proxy;
+        public string Proxy { get; set; }
 
         // [FUTURE IDEA]
         // Can identify a service instance (a 'workflow'?) and
@@ -39,6 +39,19 @@
 
         public static bool operator !=(ServiceId a, ServiceId b) => !(a == b);
 
-        public ServiceId Copy() => new ServiceId { Name = Name, Proxy = Proxy };
+        public void Deconstruct(out string name, out string proxy)
+        {
+            name = Name;
+            proxy = Proxy;
+        }
+
+        public ServiceId Clone() => CopyTo(new ServiceId());
+
+        public T CopyTo<T>(T copy) where T : ServiceId
+        {
+            copy.Name = Name;
+            copy.Proxy = Proxy;
+            return copy;
+        }
     }
 }

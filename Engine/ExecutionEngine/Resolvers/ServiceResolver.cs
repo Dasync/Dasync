@@ -38,7 +38,7 @@ namespace Dasync.ExecutionEngine.Resolvers
                     if (serviceDefinition != null && serviceDefinition.Implementation != null &&
                         serviceDefinition.Implementation.Name.Equals(serviceId.Name, StringComparison.OrdinalIgnoreCase))
                     {
-                        serviceId = serviceId.Copy();
+                        serviceId = serviceId.Clone();
                         serviceId.Name = candidateServiceName;
                     }
                     else

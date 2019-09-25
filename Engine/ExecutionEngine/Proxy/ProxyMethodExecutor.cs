@@ -19,7 +19,7 @@ namespace Dasync.ExecutionEngine.Proxy
     public class ProxyMethodExecutor : IProxyMethodExecutor
     {
         private readonly ITransitionScope _transitionScope;
-        private readonly IRoutineMethodIdProvider _routineMethodIdProvider;
+        private readonly IMethodIdProvider _routineMethodIdProvider;
         private readonly IEventIdProvider _eventIdProvider;
         private readonly IUniqueIdGenerator _numericIdGenerator;
         private readonly ITransitionCommitter _transitionCommitter;
@@ -28,7 +28,7 @@ namespace Dasync.ExecutionEngine.Proxy
 
         public ProxyMethodExecutor(
             ITransitionScope transitionScope,
-            IRoutineMethodIdProvider routineMethodIdProvider,
+            IMethodIdProvider routineMethodIdProvider,
             IEventIdProvider eventIdProvider,
             IUniqueIdGenerator numericIdGenerator,
             ITransitionCommitter transitionCommitter,
@@ -52,14 +52,12 @@ namespace Dasync.ExecutionEngine.Proxy
             var intent = new ExecuteRoutineIntent
             {
                 Id = _numericIdGenerator.NewId(),
-                ServiceId = serviceProxyContext.Descriptor.Id,
-                MethodId = _routineMethodIdProvider.GetId(methodInfo),
+                Service = serviceProxyContext.Descriptor.Id,
+                Method = _routineMethodIdProvider.GetId(methodInfo),
                 Parameters = parameters
             };
 
-            var taskResultType =
-                // Dispose() does not return a task, and is the only exception.
-#warning check if it's really IDisposable.Dispose
+            Type taskResultType =
                 methodInfo.ReturnType == typeof(void)
                 ? TaskAccessor.VoidTaskResultType
                 : TaskAccessor.GetTaskResultType(methodInfo.ReturnType);
@@ -128,8 +126,8 @@ namespace Dasync.ExecutionEngine.Proxy
         {
             var eventDesc = new EventDescriptor
             {
-                ServiceId = ((ServiceProxyContext)proxy.Context).Descriptor.Id,
-                EventId = _eventIdProvider.GetId(@event)
+                Service = ((ServiceProxyContext)proxy.Context).Descriptor.Id,
+                Event = _eventIdProvider.GetId(@event)
             };
 
             if (@delegate.Target is IProxy subscriberProxy)
@@ -140,8 +138,8 @@ namespace Dasync.ExecutionEngine.Proxy
 
                 var subscriberDesc = new EventSubscriberDescriptor
                 {
-                    ServiceId = subscriberServiceId,
-                    MethodId = subscriberMethodId
+                    Service = subscriberServiceId,
+                    Method = subscriberMethodId
                 };
 
                 _eventSubscriber.Subscribe(eventDesc, subscriberDesc);
@@ -165,8 +163,8 @@ namespace Dasync.ExecutionEngine.Proxy
             var intent = new RaiseEventIntent
             {
                 Id = _numericIdGenerator.NewId(),
-                ServiceId = serviceProxyContext.Descriptor.Id,
-                EventId = _eventIdProvider.GetId(@event),
+                Service = serviceProxyContext.Descriptor.Id,
+                Event = _eventIdProvider.GetId(@event),
                 Parameters = parameters
             };
 

@@ -6,7 +6,7 @@ namespace Dasync.EETypes.Resolvers
 {
     public interface IMethodReference
     {
-        RoutineMethodId Id { get; }
+        MethodId Id { get; }
 
         IMethodDefinition Definition { get; }
 

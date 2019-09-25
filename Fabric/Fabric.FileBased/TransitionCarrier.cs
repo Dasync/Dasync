@@ -58,7 +58,7 @@ namespace Dasync.Fabric.FileBased
                     result.Add(_routineEventData.Continuation);
                 }
                 else if (FileBasedFabricConnector.TryReadRoutineData(
-                    _fabric.RoutinesDirectory, EventData.Routine.RoutineId,
+                    _fabric.RoutinesDirectory, EventData.MethodId.RoutineId,
                     out var dataEnvelope, out var eTag) && dataEnvelope.Continuation != null)
                 {
                     result.Add(dataEnvelope.Continuation);
@@ -67,9 +67,9 @@ namespace Dasync.Fabric.FileBased
                 return Task.FromResult(result);
             }
 
-            public Task<RoutineDescriptor> GetRoutineDescriptorAsync(CancellationToken ct)
+            public Task<PersistedMethodId> GetRoutineDescriptorAsync(CancellationToken ct)
             {
-                var routineDesc = EventData.Routine;
+                var routineDesc = EventData.MethodId;
                 if (FileBasedFabricConnector.TryGetRoutineETag(
                     _fabric.RoutinesDirectory, routineDesc.RoutineId, out var eTag))
                     routineDesc.ETag = eTag;
@@ -117,7 +117,7 @@ namespace Dasync.Fabric.FileBased
             public Task ReadRoutineStateAsync(IValueContainer target, CancellationToken ct)
             {
                 if (FileBasedFabricConnector.TryReadRoutineData(
-                    _fabric.RoutinesDirectory, EventData.Routine.RoutineId,
+                    _fabric.RoutinesDirectory, EventData.MethodId.RoutineId,
                     out var dataEnvelope, out var eTag) && dataEnvelope.State != null)
                 {
                     _fabric.Serializer.Populate(dataEnvelope.State, target);
@@ -139,10 +139,10 @@ namespace Dasync.Fabric.FileBased
 
                 if (intent.RoutineState != null || intent.RoutineResult != null)
                 {
-                    UpsertRoutineData(intent.Routine.RoutineId, intent.Routine.ETag,
+                    UpsertRoutineData(intent.Method.RoutineId, intent.Method.ETag,
                         routineDataEnvelope =>
                         {
-                            routineDataEnvelope.ServiceId = intent.ServiceId;
+                            routineDataEnvelope.ServiceId = intent.Service;
 
                             if (_routineEventData.Caller != null)
                                 routineDataEnvelope.Caller = _routineEventData.Caller;

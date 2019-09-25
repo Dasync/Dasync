@@ -60,17 +60,17 @@ namespace Dasync.Fabric.FileBased
         {
             var pregeneratedRoutineId = intent.Id.ToString();
 
-            var routineDescriptor = new RoutineDescriptor
-            {
-                IntentId = intent.Id,
-                MethodId = intent.MethodId,
-                RoutineId = pregeneratedRoutineId
-            };
+            var methodId = intent.Method.CopyTo(
+                new PersistedMethodId
+                {
+                    IntentId = intent.Id,
+                    RoutineId = pregeneratedRoutineId
+                });
 
             var eventData = new RoutineEventData
             {
-                ServiceId = intent.ServiceId,
-                Routine = routineDescriptor,
+                ServiceId = intent.Service,
+                MethodId = methodId,
                 //Caller = intent.Caller,
                 Continuation = intent.Continuation,
                 Parameters = _serializer.SerializeToString(intent.Parameters)
@@ -127,8 +127,8 @@ namespace Dasync.Fabric.FileBased
         {
             var eventData = new RoutineEventData
             {
-                ServiceId = intent.ServiceId,
-                Routine = intent.Routine,
+                ServiceId = intent.Service,
+                MethodId = intent.Method,
                 //Callee = intent.Callee,
                 Result = _serializer.SerializeToString(intent.Result)
             };
@@ -142,7 +142,7 @@ namespace Dasync.Fabric.FileBased
                 EventID = intent.Id.ToString(),
                 EventTime = DateTimeOffset.Now,
                 EventDeliveryTime = intent.ContinueAt?.ToUniversalTime(),
-                ETag = intent.Routine.ETag,
+                ETag = intent.Method.ETag,
                 ContentType = "application/json",
                 Data = CloudEventsSerialization.Serialize(eventData)
             };
@@ -154,7 +154,7 @@ namespace Dasync.Fabric.FileBased
 
             var info = new ActiveRoutineInfo
             {
-                RoutineId = intent.Routine.RoutineId
+                RoutineId = intent.Method.RoutineId
             };
 
             return Task.FromResult(info);
@@ -200,8 +200,8 @@ namespace Dasync.Fabric.FileBased
         {
             var eventData = new RoutineEventData
             {
-                ServiceId = intent.ServiceId,
-                EventId = intent.EventId,
+                ServiceId = intent.Service,
+                EventId = intent.Event,
                 Parameters = _serializer.SerializeToString(intent.Parameters)
             };
 
@@ -210,7 +210,7 @@ namespace Dasync.Fabric.FileBased
                 CloudEventsVersion = CloudEventsEnvelope.Version,
                 EventType = DasyncCloudEventsTypes.RaiseEvent.Name,
                 EventTypeVersion = DasyncCloudEventsTypes.RaiseEvent.Version,
-                Source = "/" + (intent.ServiceId.Name ?? ""),
+                Source = "/" + (intent.Service.Name ?? ""),
                 EventID = intent.Id.ToString(),
                 EventTime = DateTimeOffset.Now,
                 ContentType = "application/json",
@@ -241,17 +241,17 @@ namespace Dasync.Fabric.FileBased
 
             var pregeneratedRoutineId = intentId.ToString();
 
-            var routineDescriptor = new RoutineDescriptor
-            {
-                IntentId = intentId,
-                MethodId = eventSubscriberDescriptor.MethodId,
-                RoutineId = pregeneratedRoutineId
-            };
+            var methodId = eventSubscriberDescriptor.Method.CopyTo(
+                new PersistedMethodId
+                {
+                    IntentId = intentId,
+                    RoutineId = pregeneratedRoutineId
+                });
 
             var eventData = new RoutineEventData
             {
-                ServiceId = eventSubscriberDescriptor.ServiceId,
-                Routine = routineDescriptor,
+                ServiceId = eventSubscriberDescriptor.Service,
+                MethodId = methodId,
                 Caller = new CallerDescriptor
                 {
                     Service = raisedEventData.ServiceId

@@ -1,13 +1,13 @@
 ﻿using System.Reflection;
 using Dasync.EETypes;
 
-namespace Dasync.ExecutionEngine.Intents
+namespace Dasync.ExecutionEngine
 {
-    public class RoutineMethodIdProvider : IRoutineMethodIdProvider
+    public class MethodIdProvider : IMethodIdProvider
     {
-        public RoutineMethodId GetId(MethodInfo methodInfo)
+        public MethodId GetId(MethodInfo methodInfo)
         {
-            return new RoutineMethodId
+            return new MethodId
             {
                 Name = methodInfo.Name
 #warning Add method generic arguments

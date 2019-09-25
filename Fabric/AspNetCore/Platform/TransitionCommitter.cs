@@ -57,7 +57,7 @@ namespace Dasync.AspNetCore.Platform
             {
                 foreach (var intent in actions.ExecuteRoutineIntents)
                 {
-                    var serviceDefinition = GetServiceDefinition(intent.ServiceId);
+                    var serviceDefinition = GetServiceDefinition(intent.Service);
 
                     if (serviceDefinition.Type == ServiceType.Local)
                     {
@@ -89,11 +89,11 @@ namespace Dasync.AspNetCore.Platform
             try
             {
                 var serviceInstance = _domainServiceProvider.GetService(serviceDefinition.Implementation);
-                var methodReference = _methodResolver.Resolve(serviceDefinition, intent.MethodId);
+                var methodReference = _methodResolver.Resolve(serviceDefinition, intent.Method);
                 var methodInvoker = _methodInvokerFactory.Create(methodReference.Definition.MethodInfo);
 
                 foreach (var postAction in _transitionActions)
-                    await postAction.OnRoutineStartAsync(serviceDefinition, intent.ServiceId, intent.MethodId, intent.Id);
+                    await postAction.OnRoutineStartAsync(serviceDefinition, intent.Service, intent.Method, intent.Id);
 
                 Task task;
                 try
@@ -113,7 +113,7 @@ namespace Dasync.AspNetCore.Platform
                 var taskResult = task?.ToTaskResult() ?? new TaskResult();
 
                 foreach (var postAction in _transitionActions)
-                    await postAction.OnRoutineCompleteAsync(serviceDefinition, intent.ServiceId, intent.MethodId, intent.Id, taskResult);
+                    await postAction.OnRoutineCompleteAsync(serviceDefinition, intent.Service, intent.Method, intent.Id, taskResult);
 
                 _routineCompletionSink.OnRoutineCompleted(intent.Id, taskResult);
             }

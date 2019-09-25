@@ -2,8 +2,8 @@
 {
     public sealed class ServiceDescriptor
     {
-        public ServiceId Id;
+        public ServiceId Id { get; set; }
 
-        public string[] Interfaces;
+        public string[] Interfaces { get; set; }
     }
 }

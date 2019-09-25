@@ -70,9 +70,9 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
 
                 var continuation = new ContinuationDescriptor
                 {
-                    ServiceId = context.ServiceId,
-                    Routine = context.RoutineDescriptor,
-                    TaskId = context.RoutineDescriptor.IntentId
+                    Service = context.ServiceId,
+                    Method = context.MethodId,
+                    TaskId = context.MethodId.IntentId
                 };
 
                 var actions = context.ScheduledActions;

@@ -16,7 +16,7 @@ namespace Dasync.ExecutionEngine.Resolvers
             _methodInvokerFactory = methodInvokerFactory;
         }
 
-        public bool TryResolve(IServiceDefinition serviceDefinition, RoutineMethodId methodId, out IMethodReference methodReference)
+        public bool TryResolve(IServiceDefinition serviceDefinition, MethodId methodId, out IMethodReference methodReference)
         {
             var methodDefinition = serviceDefinition.FindMethod(methodId.Name);
             if (methodDefinition == null || methodDefinition.IsIgnored)

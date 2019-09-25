@@ -6,8 +6,8 @@ namespace Dasync.EETypes.Intents
     [StructLayout(LayoutKind.Sequential)]
     public class ActivateTriggerIntent
     {
-        public string TriggerId;
+        public string TriggerId { get; set; }
 
-        public TaskResult Value;
+        public TaskResult Value { get; set; }
     }
 }

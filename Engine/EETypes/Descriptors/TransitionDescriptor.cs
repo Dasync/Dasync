@@ -2,8 +2,8 @@
 {
     public class TransitionDescriptor
     {
-        public TransitionType Type;
+        public TransitionType Type { get; set; }
 
-        public string ETag;
+        public string ETag { get; set; }
     }
 }

@@ -77,10 +77,10 @@ namespace Dasync.ExecutionEngine.Transitions
                 var transitionMonitor = _transitionScope.CurrentMonitor;
 
                 var serviceId = await transitionCarrier.GetServiceIdAsync(ct);
-                var routineDescriptor = await transitionCarrier.GetRoutineDescriptorAsync(ct);
+                var methodId = await transitionCarrier.GetRoutineDescriptorAsync(ct);
 
                 var serviceReference = _serviceResolver.Resolve(serviceId);
-                var methodReference = _methodResolver.Resolve(serviceReference.Definition, routineDescriptor.MethodId);
+                var methodReference = _methodResolver.Resolve(serviceReference.Definition, methodId);
 
                 object serviceInstance = serviceReference.GetInstance();
 
@@ -101,7 +101,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
                     transitionMonitor.OnRoutineStart(
                         serviceId,
-                        routineDescriptor,
+                        methodId,
                         serviceInstance,
                         methodReference.Definition.MethodInfo,
                         asmInstance);
@@ -130,7 +130,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
                     transitionMonitor.OnRoutineStart(
                         serviceId,
-                        routineDescriptor,
+                        methodId,
                         serviceInstance,
                         methodReference.Definition.MethodInfo,
                         routineStateMachine: null);
@@ -167,12 +167,12 @@ namespace Dasync.ExecutionEngine.Transitions
                 {
                     scheduledActions.SaveStateIntent = new SaveStateIntent
                     {
-                        ServiceId = serviceId,
+                        Service = serviceId,
                         //ServiceState = isStatefullService ? serviceStateContainer : null,
-                        Routine = scheduledActions.SaveRoutineState ? routineDescriptor : null,
+                        Method = scheduledActions.SaveRoutineState ? methodId : null,
                         RoutineState = scheduledActions.SaveRoutineState ? asmValueContainer : null,
                         AwaitedRoutine = scheduledActions.ExecuteRoutineIntents?.FirstOrDefault(
-                            intent => intent.Continuation?.Routine?.IntentId == routineDescriptor.IntentId)
+                            intent => intent.Continuation?.Method?.IntentId == methodId.IntentId)
                     };
                 }
 
@@ -187,7 +187,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
                     scheduledActions.SaveStateIntent.RoutineResult = routineResult;
 
-                    var taskId = routineDescriptor.IntentId;
+                    var taskId = methodId.IntentId;
 
                     await AddContinuationIntentsAsync(
                         transitionCarrier,
@@ -318,8 +318,8 @@ namespace Dasync.ExecutionEngine.Transitions
                     var intent = new ContinueRoutineIntent
                     {
                         Id = _idGenerator.NewId(),
-                        ServiceId = continuation.ServiceId,
-                        Routine = continuation.Routine,
+                        Service = continuation.Service,
+                        Method = continuation.Method,
                         ContinueAt = continuation.ContinueAt,
                         TaskId = taskId,
                         Result = taskResult

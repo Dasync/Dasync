@@ -248,8 +248,8 @@ namespace Dasync.Fabric.FileBased
 
             var eventDescriptor = new EventDescriptor
             {
-                ServiceId = routineEventData.ServiceId,
-                EventId = routineEventData.EventId
+                Service = routineEventData.ServiceId,
+                Event = routineEventData.EventId
             };
 
             foreach (var eventSubscriberDescriptor in GetEventListeners(eventDescriptor))

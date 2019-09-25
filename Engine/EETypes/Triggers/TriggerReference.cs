@@ -5,7 +5,7 @@
     /// </summary>
     public class TriggerReference : IProxyTaskState
     {
-        public string Id;
+        public string Id { get; set; }
 
         string IProxyTaskState.TaskId => Id;
 

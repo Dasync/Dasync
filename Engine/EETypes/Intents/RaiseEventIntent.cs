@@ -10,20 +10,20 @@ namespace Dasync.EETypes.Intents
         /// <summary>
         /// An intent ID, which must be unique within a scope of a routine being executed.
         /// </summary>
-        public string Id;
+        public string Id { get; set; }
 
         /// <summary>
         /// A service that published the event, or null if the event is not raised by a service.
         /// </summary>
-        public ServiceId ServiceId;
+        public ServiceId Service { get; set; }
 
-        public EventId EventId;
+        public EventId Event { get; set; }
 
-        public DateTimeOffset Timestamp = DateTimeOffset.Now;
+        public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.Now;
 
         /// <summary>
         /// Event arguments.
         /// </summary>
-        public IValueContainer Parameters;
+        public IValueContainer Parameters { get; set; }
     }
 }

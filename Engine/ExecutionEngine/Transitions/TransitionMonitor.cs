@@ -60,7 +60,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
         void OnRoutineStart(
             ServiceId serviceId,
-            RoutineDescriptor routineDesc,
+            PersistedMethodId methodId,
             object serviceInstance,
             MethodInfo routineMethod,
             IAsyncStateMachine routineStateMachine);
@@ -113,13 +113,13 @@ namespace Dasync.ExecutionEngine.Transitions
 
         public void OnRoutineStart(
             ServiceId serviceId,
-            RoutineDescriptor routineDesc,
+            PersistedMethodId methodId,
             object serviceInstance,
             MethodInfo routineMethod,
             IAsyncStateMachine routineStateMachine)
         {
             Context.ServiceId = serviceId;
-            Context.RoutineDescriptor = routineDesc;
+            Context.MethodId = methodId;
             Context.ServiceInstance = serviceInstance;
             Context.RoutineMethod = routineMethod;
             Context.RoutineStateMachine = routineStateMachine;
@@ -172,8 +172,8 @@ namespace Dasync.ExecutionEngine.Transitions
             actions.SaveRoutineState = true;
             actions.ResumeRoutineIntent = new ContinueRoutineIntent
             {
-                ServiceId = transitionContext.ServiceId,
-                Routine = transitionContext.RoutineDescriptor,
+                Service = transitionContext.ServiceId,
+                Method = transitionContext.MethodId,
                 ContinueAt = resumeTime
             };
             CompleteTransition();
@@ -197,8 +197,8 @@ namespace Dasync.ExecutionEngine.Transitions
                 TriggerId = triggerReference.Id,
                 Continuation = new ContinuationDescriptor
                 {
-                    ServiceId = Context.ServiceId,
-                    Routine = Context.RoutineDescriptor,
+                    Service = Context.ServiceId,
+                    Method = Context.MethodId,
                     TaskId = triggerReference.Id
                 }
             });
@@ -233,8 +233,8 @@ namespace Dasync.ExecutionEngine.Transitions
                 var intent = (ExecuteRoutineIntent)userData;
                 intent.Continuation = new ContinuationDescriptor
                 {
-                    ServiceId = transitionContext.ServiceId,
-                    Routine = transitionContext.RoutineDescriptor,
+                    Service = transitionContext.ServiceId,
+                    Method = transitionContext.MethodId,
                     TaskId = ((IProxyTaskState)routineCompletionTask.AsyncState).TaskId
                 };
 
@@ -254,7 +254,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 var intent = (ExecuteRoutineIntent)userData;
 
                 throw new NotImplementedException(
-                    $"Need to await for the result in process for '{intent.ServiceId.Name}.{intent.MethodId.Name}' " +
+                    $"Need to await for the result in process for '{intent.Service.Name}.{intent.Method.Name}' " +
                     $"when called by {continuationInfo.Type} '{continuationObject.GetType()}'.");
             }
         }

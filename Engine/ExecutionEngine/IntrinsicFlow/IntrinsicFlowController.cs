@@ -45,13 +45,13 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
         private readonly ITaskContinuationClassifier _taskContinuationClassifier;
         private readonly IAsyncStateMachineMetadataProvider _asyncStateMachineMetadataProvider;
         private readonly IUniqueIdGenerator _numericIdGenerator;
-        private readonly IRoutineMethodIdProvider _routineMethodIdProvider;
+        private readonly IMethodIdProvider _routineMethodIdProvider;
 
         public IntrinsicFlowController(
             ITaskContinuationClassifier taskContinuationClassifier,
             IAsyncStateMachineMetadataProvider asyncStateMachineMetadataProvider,
             IUniqueIdGenerator numericIdGenerator,
-            IRoutineMethodIdProvider routineMethodIdProvider)
+            IMethodIdProvider routineMethodIdProvider)
         {
             _taskContinuationClassifier = taskContinuationClassifier;
             _asyncStateMachineMetadataProvider = asyncStateMachineMetadataProvider;
@@ -200,13 +200,13 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
                     {
                         Id = whenAllIntentId,
 
-                        ServiceId = new ServiceId
+                        Service = new ServiceId
                         {
-                            Name = awaitedRoutineIntent.ServiceId.Name,
+                            Name = awaitedRoutineIntent.Service.Name,
                             Proxy = nameof(IntrinsicRoutines)
                         },
 
-                        MethodId = _routineMethodIdProvider.GetId(
+                        Method = _routineMethodIdProvider.GetId(
                             IntrinsicRoutines.WhenAllMethodInfo),
 
                         Parameters = new WhenAllInputParameters

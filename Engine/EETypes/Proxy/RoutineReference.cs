@@ -7,7 +7,7 @@ namespace Dasync.EETypes.Proxy
     /// </summary>
     public class RoutineReference : IProxyTaskState
     {
-        public string IntentId;
+        public string IntentId { get; set; }
 
         string IProxyTaskState.TaskId => IntentId;
     }

@@ -21,7 +21,7 @@ namespace Dasync.AspNetCore.Platform
 
         public Task<TaskResult> TryPollCompletionAsync(
             ServiceId serviceId,
-            RoutineMethodId methodId,
+            MethodId methodId,
             string intentId,
             CancellationToken ct)
         {
@@ -35,7 +35,7 @@ namespace Dasync.AspNetCore.Platform
 
         public void NotifyCompletion(
             ServiceId serviceId,
-            RoutineMethodId methodId,
+            MethodId methodId,
             string intentId,
             TaskCompletionSource<TaskResult> completionSink,
             CancellationToken ct)

@@ -8,13 +8,13 @@ namespace Dasync.EETypes.Platform
     {
         Task<TaskResult> TryPollCompletionAsync(
             ServiceId serviceId,
-            RoutineMethodId methodId,
+            MethodId methodId,
             string intentId,
             CancellationToken ct);
 
         void NotifyCompletion(
             ServiceId serviceId,
-            RoutineMethodId methodId,
+            MethodId methodId,
             string intentId,
             TaskCompletionSource<TaskResult> completionSink,
             CancellationToken ct);

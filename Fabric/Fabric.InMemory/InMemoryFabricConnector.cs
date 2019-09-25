@@ -60,20 +60,20 @@ namespace Dasync.Fabric.InMemory
                 ETag = routineRecord.ETag
             };
 
-            var routineDescriptor = new RoutineDescriptor
-            {
-                MethodId = intent.MethodId,
-                IntentId = intent.Id,
-                RoutineId = routineRecord.Id,
-                ETag = routineRecord.ETag
-            };
+            var methodId = intent.Method.CopyTo(
+                new PersistedMethodId
+                {
+                    IntentId = intent.Id,
+                    RoutineId = routineRecord.Id,
+                    ETag = routineRecord.ETag
+                });
 
             var message = new Message
             {
                 //["IntentId"] = _serializer.Serialize(intent.Id),
                 [nameof(TransitionDescriptor)] = _serializer.SerializeToString(transitionDescriptor),
-                [nameof(ServiceId)] = _serializer.SerializeToString(intent.ServiceId),
-                [nameof(RoutineDescriptor)] = _serializer.SerializeToString(routineDescriptor),
+                [nameof(ServiceId)] = _serializer.SerializeToString(intent.Service),
+                [nameof(PersistedMethodId)] = _serializer.SerializeToString(methodId),
                 ["Parameters"] = _serializer.SerializeToString(intent.Parameters)
             };
 
@@ -106,15 +106,15 @@ namespace Dasync.Fabric.InMemory
             var transitionDescriptor = new TransitionDescriptor
             {
                 Type = TransitionType.ContinueRoutine,
-                ETag = intent.Routine.ETag
+                ETag = intent.Method.ETag
             };
 
             var message = new Message
             {
                 //["IntentId"] = _serializer.Serialize(intent.Id),
                 [nameof(TransitionDescriptor)] = _serializer.SerializeToString(transitionDescriptor),
-                [nameof(ServiceId)] = _serializer.SerializeToString(intent.ServiceId),
-                [nameof(RoutineDescriptor)] = _serializer.SerializeToString(intent.Routine),
+                [nameof(ServiceId)] = _serializer.SerializeToString(intent.Service),
+                [nameof(PersistedMethodId)] = _serializer.SerializeToString(intent.Method),
                 [nameof(ResultDescriptor)] = _serializer.SerializeToString(intent.Result),
                 DeliverAt = intent.ContinueAt
             };
@@ -123,7 +123,7 @@ namespace Dasync.Fabric.InMemory
 
             var info = new ActiveRoutineInfo
             {
-                RoutineId = intent.Routine.RoutineId
+                RoutineId = intent.Method.RoutineId
             };
 
             return Task.FromResult(info);
@@ -145,8 +145,8 @@ namespace Dasync.Fabric.InMemory
             var message = new Message
             {
                 IsEvent = true,
-                [nameof(ServiceId)] = _serializer.SerializeToString(intent.ServiceId),
-                [nameof(EventId)] = _serializer.SerializeToString(intent.EventId),
+                [nameof(ServiceId)] = _serializer.SerializeToString(intent.Service),
+                [nameof(EventId)] = _serializer.SerializeToString(intent.Event),
                 ["Parameters"] = _serializer.SerializeToString(intent.Parameters)
             };
 
@@ -176,7 +176,7 @@ namespace Dasync.Fabric.InMemory
                     var transitionDescriptor = new TransitionDescriptor
                     {
                         Type = TransitionType.ContinueRoutine,
-                        ETag = intent.Continuation.Routine.ETag
+                        ETag = intent.Continuation.Method.ETag
                     };
 
                     var resultDescriptor = new ResultDescriptor
@@ -188,8 +188,8 @@ namespace Dasync.Fabric.InMemory
                     var message = new Message
                     {
                         [nameof(TransitionDescriptor)] = _serializer.SerializeToString(transitionDescriptor),
-                        [nameof(ServiceId)] = _serializer.SerializeToString(intent.Continuation.ServiceId),
-                        [nameof(RoutineDescriptor)] = _serializer.SerializeToString(intent.Continuation.Routine),
+                        [nameof(ServiceId)] = _serializer.SerializeToString(intent.Continuation.Service),
+                        [nameof(PersistedMethodId)] = _serializer.SerializeToString(intent.Continuation.Method),
                         [nameof(ResultDescriptor)] = _serializer.SerializeToString(resultDescriptor),
                         DeliverAt = intent.Continuation.ContinueAt?.ToUniversalTime()
                     };

@@ -11,14 +11,14 @@ namespace Dasync.ExecutionEngine.Resolvers
     {
         private readonly IMethodInvoker _invoker;
 
-        public MethodReference(RoutineMethodId id, IMethodDefinition definition, IMethodInvoker invoker)
+        public MethodReference(MethodId id, IMethodDefinition definition, IMethodInvoker invoker)
         {
             Id = id;
             Definition = definition;
             _invoker = invoker;
         }
 
-        public RoutineMethodId Id { get; }
+        public MethodId Id { get; }
 
         public IMethodDefinition Definition { get; }
 

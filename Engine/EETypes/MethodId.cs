@@ -3,7 +3,7 @@
     /// <summary>
     /// Uniquely identifies a routine method.
     /// </summary>
-    public sealed class RoutineMethodId
+    public class MethodId
     {
         public string Name { get; set; }
 
@@ -13,7 +13,7 @@
 #warning Method/client version?
 
         public override bool Equals(object obj) =>
-            (obj is RoutineMethodId methodId)
+            (obj is MethodId methodId)
             ? this == methodId
             : base.Equals(obj);
 
@@ -22,11 +22,22 @@
             ? Name.GetHashCode()
             : base.GetHashCode();
 
-        public static bool operator ==(RoutineMethodId a, RoutineMethodId b) =>
+        public static bool operator ==(MethodId a, MethodId b) =>
             string.Equals(a?.Name, b?.Name, System.StringComparison.OrdinalIgnoreCase);
 
-        public static bool operator !=(RoutineMethodId a, RoutineMethodId b) => !(a == b);
+        public static bool operator !=(MethodId a, MethodId b) => !(a == b);
 
-        public RoutineMethodId Copy() => new RoutineMethodId { Name = Name };
+        public void Deconstruct(out string name)
+        {
+            name = Name;
+        }
+
+        public MethodId Clone() => CopyTo(new MethodId());
+
+        public T CopyTo<T>(T copy) where T : MethodId
+        {
+            copy.Name = Name;
+            return copy;
+        }
     }
 }

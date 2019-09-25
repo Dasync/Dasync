@@ -18,7 +18,7 @@ namespace Dasync.Fabric.InMemory
         {
             private readonly InMemoryFabric _fabric;
             private readonly Message _message;
-            private RoutineDescriptor _routineDescriptor;
+            private PersistedMethodId _methodId;
 
             public TransitionCarrier(InMemoryFabric fabric, Message message)
             {
@@ -28,13 +28,13 @@ namespace Dasync.Fabric.InMemory
 
             public void Initialize()
             {
-                _routineDescriptor = GetValueOrDefault<RoutineDescriptor>();
-                if (_routineDescriptor != null)
+                _methodId = GetValueOrDefault<PersistedMethodId>();
+                if (_methodId != null)
                 {
-                    var routineRecord = _fabric.DataStore.GetRoutineRecord(_routineDescriptor.RoutineId);
+                    var routineRecord = _fabric.DataStore.GetRoutineRecord(_methodId.RoutineId);
                     if (routineRecord != null)
                     {
-                        _routineDescriptor.ETag = routineRecord.ETag;
+                        _methodId.ETag = routineRecord.ETag;
                     }
                 }
             }
@@ -51,7 +51,7 @@ namespace Dasync.Fabric.InMemory
             {
                 List<ContinuationDescriptor> result = null;
 
-                var routineRecord = _fabric.DataStore.GetRoutineRecord(_routineDescriptor.RoutineId);
+                var routineRecord = _fabric.DataStore.GetRoutineRecord(_methodId.RoutineId);
 
                 if (!string.IsNullOrEmpty(routineRecord.Continuation))
                 {
@@ -69,9 +69,9 @@ namespace Dasync.Fabric.InMemory
                 return Task.FromResult(result);
             }
 
-            public Task<RoutineDescriptor> GetRoutineDescriptorAsync(CancellationToken ct)
+            public Task<PersistedMethodId> GetRoutineDescriptorAsync(CancellationToken ct)
             {
-                return Task.FromResult(_routineDescriptor);
+                return Task.FromResult(_methodId);
             }
 
             public Task<ServiceId> GetServiceIdAsync(CancellationToken ct)
@@ -95,7 +95,7 @@ namespace Dasync.Fabric.InMemory
 
             public Task ReadRoutineStateAsync(IValueContainer target, CancellationToken ct)
             {
-                var routineRecord = _fabric.DataStore.GetRoutineRecord(_routineDescriptor.RoutineId);
+                var routineRecord = _fabric.DataStore.GetRoutineRecord(_methodId.RoutineId);
                 _fabric.Serializer.Populate(routineRecord.State, target);
                 return Task.FromResult(true);
             }

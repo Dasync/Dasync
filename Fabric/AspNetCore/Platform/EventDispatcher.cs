@@ -50,7 +50,7 @@ namespace Dasync.AspNetCore.Platform
 
         public void Subscribe(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber)
         {
-            var publisherServiceDefinition = GetServiceDefinition(eventDesc.ServiceId);
+            var publisherServiceDefinition = GetServiceDefinition(eventDesc.Service);
 
             lock (_eventHandlers)
             {
@@ -61,11 +61,11 @@ namespace Dasync.AspNetCore.Platform
 
             if (publisherServiceDefinition.Type == ServiceType.Local)
             {
-                OnSubscriberAdded(eventDesc, subscriber.ServiceId);
+                OnSubscriberAdded(eventDesc, subscriber.Service);
             }
             if (publisherServiceDefinition.Type == ServiceType.External)
             {
-                SubscribePeriodicallyInBackground(eventDesc, subscriber.ServiceId, publisherServiceDefinition);
+                SubscribePeriodicallyInBackground(eventDesc, subscriber.Service, publisherServiceDefinition);
             }
         }
 
@@ -81,7 +81,7 @@ namespace Dasync.AspNetCore.Platform
 
         public async Task PublishEvent(RaiseEventIntent intent)
         {
-            var eventDesc = new EventDescriptor { ServiceId = intent.ServiceId, EventId = intent.EventId };
+            var eventDesc = new EventDescriptor { Service = intent.Service, Event = intent.Event };
             if (_eventListeners.TryGetValue(eventDesc, out var subscribers))
             {
                 foreach (var subscriber in subscribers)

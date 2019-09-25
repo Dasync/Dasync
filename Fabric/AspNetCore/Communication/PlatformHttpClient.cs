@@ -47,7 +47,7 @@ namespace Dasync.AspNetCore.Communication
 
         public async Task<RoutineInfo> ScheduleRoutineAsync(ExecuteRoutineIntent intent, NameValueCollection context, CancellationToken ct)
         {
-            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(_serviceDefinition), "/", intent.MethodId.Name);
+            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(_serviceDefinition), "/", intent.Method.Name);
 
             var json = _dasyncJsonSerializer.SerializeToString(intent);
             while (true)
@@ -90,7 +90,7 @@ namespace Dasync.AspNetCore.Communication
 
         public async Task SubscribeToEvent(EventDescriptor eventDesc, ServiceId subscriber, IServiceDefinition publisherServiceDefinition)
         {
-            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(publisherServiceDefinition), "/", eventDesc.EventId.Name, "?subscribe&service=", subscriber.Name);
+            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(publisherServiceDefinition), "/", eventDesc.Event.Name, "?subscribe&service=", subscriber.Name);
 
             if (!string.IsNullOrEmpty(subscriber.Proxy))
                 uri += string.Concat("&proxy=", subscriber.Proxy);
@@ -104,7 +104,7 @@ namespace Dasync.AspNetCore.Communication
 
         public async Task PublishEvent(RaiseEventIntent intent, IServiceDefinition subscriberServiceDefinition, NameValueCollection context)
         {
-            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(subscriberServiceDefinition), "?react&event=", intent.EventId.Name, "&service=", intent.ServiceId.Name);
+            var uri = string.Concat(_serviceHttpConfigurator.GetUrl(subscriberServiceDefinition), "?react&event=", intent.Event.Name, "&service=", intent.Service.Name);
 
             var json = _dasyncJsonSerializer.SerializeToString(intent);
 

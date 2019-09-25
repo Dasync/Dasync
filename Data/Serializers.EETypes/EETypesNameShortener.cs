@@ -24,9 +24,9 @@ namespace Dasync.Serializers.EETypes
             RegisterType(typeof(TriggerReference), nameof(TriggerReference));
             RegisterType(typeof(CancellationTokenSourceState), nameof(CancellationTokenSourceState));
             RegisterType(typeof(ServiceId), nameof(ServiceId));
-            RegisterType(typeof(RoutineMethodId), nameof(RoutineMethodId));
+            RegisterType(typeof(MethodId), nameof(MethodId));
             RegisterType(typeof(ContinuationDescriptor), nameof(ContinuationDescriptor));
-            RegisterType(typeof(RoutineDescriptor), nameof(RoutineDescriptor));
+            RegisterType(typeof(PersistedMethodId), nameof(PersistedMethodId));
             RegisterType(typeof(ResultDescriptor), nameof(ResultDescriptor));
             RegisterType(typeof(ServiceDescriptor), nameof(ServiceDescriptor));
             RegisterType(typeof(CallerDescriptor), nameof(CallerDescriptor));

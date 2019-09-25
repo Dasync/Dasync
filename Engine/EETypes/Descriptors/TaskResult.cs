@@ -10,19 +10,19 @@ namespace Dasync.EETypes.Descriptors
         /// The value of the result if the <see cref="IsSucceeded"/>.
         /// Always NULL for a <see cref="Task"/>.
         /// </summary>
-        public object Value;
+        public object Value { get; set; }
 
         /// <summary>
         /// An exception object if <see cref="IsFaulted"/>.
         /// </summary>
-        public Exception Exception;
+        public Exception Exception { get; set; }
 
         /// <summary>
         /// When TRUE, the routine has been canceled by a <see cref="CancellationToken"/>
         /// that is associated with it. This flag is mutually exclusive with
         /// <see cref="IsSucceeded"/> and <see cref="IsFaulted"/>.
         /// </summary>
-        public bool IsCanceled;
+        public bool IsCanceled { get; set; }
 
         /// <summary>
         /// When TRUE, the routine has failed with an error described in the

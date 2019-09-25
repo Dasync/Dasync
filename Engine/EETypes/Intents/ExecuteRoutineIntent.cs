@@ -11,17 +11,17 @@ namespace Dasync.EETypes.Intents
         /// <summary>
         /// An intent ID, which must be unique within a scope of a routine being executed.
         /// </summary>
-        public string Id;
+        public string Id { get; set; }
 
-        public ServiceId ServiceId;
+        public ServiceId Service { get; set; }
 
-        public RoutineMethodId MethodId;
+        public MethodId Method { get; set; }
 
 #warning Allow multiple continuations. Multicast continuation?
-        public ContinuationDescriptor Continuation;
+        public ContinuationDescriptor Continuation { get; set; }
 
-        public DateTimeOffset Timestamp = DateTimeOffset.Now;
+        public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.Now;
 
-        public IValueContainer Parameters;
+        public IValueContainer Parameters { get; set; }
     }
 }

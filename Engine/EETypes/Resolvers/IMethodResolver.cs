@@ -5,12 +5,12 @@ namespace Dasync.EETypes.Resolvers
 {
     public interface IMethodResolver
     {
-        bool TryResolve(IServiceDefinition serviceDefinition, RoutineMethodId methodId, out IMethodReference methodReference);
+        bool TryResolve(IServiceDefinition serviceDefinition, MethodId methodId, out IMethodReference methodReference);
     }
 
     public static class MethodResolverExtensions
     {
-        public static IMethodReference Resolve(this IMethodResolver resolver, IServiceDefinition serviceDefinition, RoutineMethodId methodId)
+        public static IMethodReference Resolve(this IMethodResolver resolver, IServiceDefinition serviceDefinition, MethodId methodId)
         {
             if (resolver.TryResolve(serviceDefinition, methodId, out var methodReference))
                 return methodReference;
@@ -25,7 +25,7 @@ namespace Dasync.EETypes.Resolvers
         {
         }
 
-        public MethodResolveException(string serviceName, RoutineMethodId methodId)
+        public MethodResolveException(string serviceName, MethodId methodId)
             : base($"Could not resolve method '{methodId.Name}' in service '{serviceName}'.")
         {
             ServiceName = serviceName;
@@ -34,6 +34,6 @@ namespace Dasync.EETypes.Resolvers
 
         public string ServiceName { get; }
 
-        public RoutineMethodId MethodId { get; }
+        public MethodId MethodId { get; }
     }
 }

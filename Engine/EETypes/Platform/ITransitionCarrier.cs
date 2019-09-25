@@ -15,7 +15,8 @@ namespace Dasync.EETypes.Platform
 
         Task<ServiceId> GetServiceIdAsync(CancellationToken ct);
 
-        Task<RoutineDescriptor> GetRoutineDescriptorAsync(CancellationToken ct);
+        [Obsolete]
+        Task<PersistedMethodId> GetRoutineDescriptorAsync(CancellationToken ct);
 
         Task<List<ContinuationDescriptor>> GetContinuationsAsync(CancellationToken ct);
 

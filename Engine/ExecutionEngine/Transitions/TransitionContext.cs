@@ -11,7 +11,7 @@ namespace Dasync.ExecutionEngine.Transitions
     {
         public TransitionDescriptor TransitionDescriptor;
         public ServiceId ServiceId;
-        public RoutineDescriptor RoutineDescriptor;
+        public PersistedMethodId MethodId;
         public object ServiceInstance;
         public MethodInfo RoutineMethod;
         public IAsyncStateMachine RoutineStateMachine;

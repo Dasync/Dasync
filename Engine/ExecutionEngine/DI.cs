@@ -9,7 +9,6 @@ using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Cancellation;
 using Dasync.ExecutionEngine.Continuation;
 using Dasync.ExecutionEngine.Extensions;
-using Dasync.ExecutionEngine.Intents;
 using Dasync.ExecutionEngine.IntrinsicFlow;
 using Dasync.ExecutionEngine.Proxy;
 using Dasync.ExecutionEngine.Resolvers;
@@ -29,7 +28,7 @@ namespace Dasync.ExecutionEngine
             [typeof(ITaskContinuationTracker)] = typeof(TaskContinuationTracker),
             [typeof(ITaskContinuationClassifier)] = typeof(TaskContinuationClassifier),
             [typeof(ICancellationTokenSourceRegistry)] = typeof(CancellationTokenSourceRegistry),
-            [typeof(IRoutineMethodIdProvider)] = typeof(RoutineMethodIdProvider),
+            [typeof(IMethodIdProvider)] = typeof(MethodIdProvider),
             [typeof(IEventIdProvider)] = typeof(EventIdProvider),
             [typeof(IIntrinsicFlowController)] = typeof(IntrinsicFlowController),
             [typeof(ITransitionScope)] = typeof(TransitionScope),

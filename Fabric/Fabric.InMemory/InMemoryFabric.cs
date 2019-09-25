@@ -86,7 +86,7 @@ namespace Dasync.Fabric.InMemory
             {
                 var serviceId = Serializer.Deserialize<ServiceId>(message[nameof(ServiceId)]);
                 var eventId = Serializer.Deserialize<EventId>(message[nameof(EventId)]);
-                var eventDesc = new EventDescriptor { EventId = eventId, ServiceId = serviceId };
+                var eventDesc = new EventDescriptor { Event = eventId, Service = serviceId };
                 var subscribers = DataStore.GetEventSubscribers(eventDesc);
 
                 foreach (var subscriber in subscribers)
@@ -111,20 +111,20 @@ namespace Dasync.Fabric.InMemory
                         ETag = routineRecord.ETag
                     };
 
-                    var routineDescriptor = new RoutineDescriptor
-                    {
-                        MethodId = subscriber.MethodId,
-                        IntentId = _uniqueIdGenerator.NewId(),
-                        RoutineId = routineRecord.Id,
-                        ETag = routineRecord.ETag
-                    };
+                    var methodId = subscriber.Method.CopyTo(
+                        new PersistedMethodId
+                        {
+                            IntentId = _uniqueIdGenerator.NewId(),
+                            RoutineId = routineRecord.Id,
+                            ETag = routineRecord.ETag
+                        });
 
                     var invokeRoutineMessage = new Message
                     {
                         //["IntentId"] = _serializer.Serialize(intent.Id),
                         [nameof(TransitionDescriptor)] = Serializer.SerializeToString(transitionDescriptor),
-                        [nameof(ServiceId)] = Serializer.SerializeToString(subscriber.ServiceId),
-                        [nameof(RoutineDescriptor)] = Serializer.SerializeToString(routineDescriptor),
+                        [nameof(ServiceId)] = Serializer.SerializeToString(subscriber.Service),
+                        [nameof(PersistedMethodId)] = Serializer.SerializeToString(methodId),
                         ["Parameters"] = message["Parameters"]
                     };
 
@@ -195,7 +195,7 @@ namespace Dasync.Fabric.InMemory
 
             if (intent.RoutineState != null || intent.RoutineResult != null)
             {
-                var routineRecord = DataStore.GetRoutineRecord(intent.Routine.RoutineId);
+                var routineRecord = DataStore.GetRoutineRecord(intent.Method.RoutineId);
                 string stateData = null;
                 string resultData = null;
                 if (intent.RoutineResult == null && intent.RoutineState != null)
@@ -205,8 +205,8 @@ namespace Dasync.Fabric.InMemory
 
                 lock (routineRecord)
                 {
-                    if (!string.IsNullOrEmpty(intent.Routine.ETag) &&
-                        intent.Routine.ETag != routineRecord.ETag)
+                    if (!string.IsNullOrEmpty(intent.Method.ETag) &&
+                        intent.Method.ETag != routineRecord.ETag)
                         throw new ConcurrentRoutineExecutionException(
                             new ETagMismatchException());
 

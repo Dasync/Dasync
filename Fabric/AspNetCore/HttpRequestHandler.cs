@@ -215,7 +215,7 @@ namespace DasyncAspNetCore
                 return;
             }
 
-            var methodId = new RoutineMethodId
+            var methodId = new MethodId
             {
                 Name = methodName
             };
@@ -343,8 +343,8 @@ namespace DasyncAspNetCore
                 var intent = new ExecuteRoutineIntent
                 {
                     Id = intentId,
-                    ServiceId = new ServiceId { Name = serviceDefinition.Name },
-                    MethodId = methodId,
+                    Service = new ServiceId { Name = serviceDefinition.Name },
+                    Method = methodId,
                     Parameters = parameterContainer,
                     Continuation = continuationDescriptor
                 };
@@ -400,7 +400,7 @@ namespace DasyncAspNetCore
                 Name = serviceName
             };
 
-            var methodId = new RoutineMethodId
+            var methodId = new MethodId
             {
                 Name = methodName
             };
@@ -523,7 +523,7 @@ namespace DasyncAspNetCore
 
             var eventId = new EventId { Name = eventName };
             var publisherServiceId = new ServiceId { Name = serviceDefinition.Name };
-            var eventDesc = new EventDescriptor { ServiceId = publisherServiceId, EventId = eventId };
+            var eventDesc = new EventDescriptor { Service = publisherServiceId, Event = eventId };
 
             _eventDispatcher.OnSubscriberAdded(eventDesc, subscriberServiceId);
 
@@ -560,8 +560,8 @@ namespace DasyncAspNetCore
 
             var eventDesc = new EventDescriptor
             {
-                EventId = new EventId { Name = eventName },
-                ServiceId = new ServiceId { Name = serviceName }
+                Event = new EventId { Name = eventName },
+                Service = new ServiceId { Name = serviceName }
             };
 
             var eventHandlers = _eventDispatcher.GetEventHandlers(eventDesc);
@@ -601,14 +601,14 @@ namespace DasyncAspNetCore
 
             foreach (var subscriber in eventHandlers)
             {
-                if (serviceDefinitionFilter != null && !string.Equals(subscriber.ServiceId.Name, serviceDefinitionFilter.Name, StringComparison.OrdinalIgnoreCase))
+                if (serviceDefinitionFilter != null && !string.Equals(subscriber.Service.Name, serviceDefinitionFilter.Name, StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                var subscriberServiceDefinition = _communicationModel.FindServiceByName(subscriber.ServiceId.Name);
+                var subscriberServiceDefinition = _communicationModel.FindServiceByName(subscriber.Service.Name);
 
-                var eventHandlerRoutineMethodId = new RoutineMethodId
+                var eventHandlerRoutineMethodId = new MethodId
                 {
-                    Name = subscriber.MethodId.Name
+                    Name = subscriber.Method.Name
                 };
                 var methodReference = _methodResolver.Resolve(subscriberServiceDefinition, eventHandlerRoutineMethodId);
 
@@ -630,11 +630,11 @@ namespace DasyncAspNetCore
                 var intentId = _idGenerator.NewId();
 
                 _intentPreprocessor.PrepareContext(context);
-                if (await _intentPreprocessor.PreprocessAsync(context, subscriberServiceDefinition, subscriber.MethodId, parameterContainer).ConfigureAwait(false))
+                if (await _intentPreprocessor.PreprocessAsync(context, subscriberServiceDefinition, subscriber.Method, parameterContainer).ConfigureAwait(false))
                     return;
 
                 foreach (var postAction in _transitionActions)
-                    await postAction.OnRoutineStartAsync(subscriberServiceDefinition, subscriber.ServiceId, subscriber.MethodId, intentId);
+                    await postAction.OnRoutineStartAsync(subscriberServiceDefinition, subscriber.Service, subscriber.Method, intentId);
 
                 var serviceInstance = _domainServiceProvider.GetService(subscriberServiceDefinition.Implementation);
                 Task task;
@@ -659,8 +659,8 @@ namespace DasyncAspNetCore
 
                 results.Add(new RaiseEventResult
                 {
-                    ServiceName = subscriber.ServiceId.Name,
-                    MethodName = subscriber.MethodId.Name,
+                    ServiceName = subscriber.Service.Name,
+                    MethodName = subscriber.Method.Name,
                     Result = taskResult
                 });
             }

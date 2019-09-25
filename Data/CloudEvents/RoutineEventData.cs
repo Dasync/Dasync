@@ -11,7 +11,7 @@ namespace Dasync.CloudEvents
     {
         public ServiceId ServiceId { get; set; }
 
-        public RoutineDescriptor Routine { get; set; }
+        public PersistedMethodId MethodId { get; set; }
 
         public EventId EventId { get; set; }
 

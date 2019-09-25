@@ -42,7 +42,7 @@ namespace Dasync.Fabric.Sample.Base
 
         public Task<TaskResult> TryPollCompletionAsync(
             ServiceId serviceId,
-            RoutineMethodId methodId,
+            MethodId methodId,
             string intentId,
             CancellationToken ct)
         {
@@ -55,7 +55,7 @@ namespace Dasync.Fabric.Sample.Base
 
         public async void NotifyCompletion(
             ServiceId serviceId,
-            RoutineMethodId methodId,
+            MethodId methodId,
             string intentId,
             TaskCompletionSource<TaskResult> completionSink,
             CancellationToken ct)

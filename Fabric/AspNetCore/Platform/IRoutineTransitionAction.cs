@@ -7,7 +7,7 @@ namespace Dasync.AspNetCore.Platform
 {
     public interface IRoutineTransitionAction
     {
-        ValueTask OnRoutineStartAsync(IServiceDefinition serviceDefinition, ServiceId serviceId, RoutineMethodId methodId, string routineId);
-        ValueTask OnRoutineCompleteAsync(IServiceDefinition serviceDefinition, ServiceId serviceId, RoutineMethodId methodId, string routineId, TaskResult result);
+        ValueTask OnRoutineStartAsync(IServiceDefinition serviceDefinition, ServiceId serviceId, MethodId methodId, string routineId);
+        ValueTask OnRoutineCompleteAsync(IServiceDefinition serviceDefinition, ServiceId serviceId, MethodId methodId, string routineId, TaskResult result);
     }
 }
