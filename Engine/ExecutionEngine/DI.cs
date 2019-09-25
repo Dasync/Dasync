@@ -48,6 +48,7 @@ namespace Dasync.ExecutionEngine
             [typeof(IServiceResolver)] = typeof(ServiceResolver),
             [typeof(IMethodResolver)] = typeof(MethodResolver),
             [typeof(IEventResolver)] = typeof(EventResolver),
+            [typeof(IDomainServiceProvider)] = typeof(DomainServiceProvider),
             [typeof(ICommunicationModelEnricher)] = typeof(CommunicationModelEnricher),
         };
     }
