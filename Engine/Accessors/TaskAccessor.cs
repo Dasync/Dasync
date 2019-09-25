@@ -39,6 +39,17 @@ namespace Dasync.Accessors
             CompletedTask.TrySetResult(null);
         }
 
+        public static Task FromResult(Type resultType, object result)
+        {
+            if (resultType == VoidTaskResultType || resultType == typeof(void))
+                return CompletedTask;
+            if (result == null && !resultType.IsClass)
+                result = Activator.CreateInstance(resultType);
+            var task = CreateTask(null, resultType);
+            task.TrySetResult(result);
+            return task;
+        }
+
         public static Task CreateTask(object state)
         {
             return CreateTask(state, VoidTaskResultType);
