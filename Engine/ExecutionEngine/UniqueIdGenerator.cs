@@ -7,7 +7,7 @@ namespace Dasync.ExecutionEngine
     {
         private readonly Random _random = new Random();
 
-        private static string Alphabet = "abcdefghklmnpqrstuvwxyz123456789";
+        private const string Alphabet = "abcdefghklmnpqrstuvwxyz123456789";
 
         public string NewId()
         {
