@@ -103,11 +103,7 @@ namespace Dasync.Modeling
                 "Find",
                 "Search",
                 "List",
-                "Fetch",
-                "Retrieve",
-                "Collect",
-                "Select",
-                "Take"
+                "Select"
             };
     }
 }
