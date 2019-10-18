@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Dasync.Modeling
 {
@@ -23,6 +24,10 @@ namespace Dasync.Modeling
 
         IMethodDefinition FindMethod(string methodName);
 
+        IMethodDefinition FindMethod(MethodInfo methodInfo);
+
         IEventDefinition FindEvent(string eventName);
+
+        IEventDefinition FindEvent(EventInfo eventInfo);
     }
 }

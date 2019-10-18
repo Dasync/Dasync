@@ -16,8 +16,14 @@ namespace Dasync.Modeling
         private readonly Dictionary<string, MethodDefinition> _methodsByName =
             new Dictionary<string, MethodDefinition>(StringComparer.OrdinalIgnoreCase);
 
+        private readonly Dictionary<MethodInfo, MethodDefinition> _methodsByInfo =
+            new Dictionary<MethodInfo, MethodDefinition>();
+
         private readonly Dictionary<string, EventDefinition> _eventsByName =
             new Dictionary<string, EventDefinition>(StringComparer.OrdinalIgnoreCase);
+
+        private readonly Dictionary<EventInfo, EventDefinition> _eventsByInfo =
+            new Dictionary<EventInfo, EventDefinition>();
 
         public ServiceDefinition(CommunicationModel model)
         {
@@ -125,12 +131,14 @@ namespace Dasync.Modeling
                             if (ReferenceEquals(methodInfo, map.TargetMethods[i]))
                             {
                                 methodDefinition.AddInterfaceMethod(map.InterfaceMethods[i]);
+                                _methodsByInfo.Add(map.InterfaceMethods[i], methodDefinition);
                                 break;
                             }
                         }
                     }
                     methodDefinition.IsQuery = methodInfo.HasQueryImplyingName() && methodInfo.IsQueryCandidate();
                     _methodsByName.Add(methodInfo.Name, methodDefinition);
+                    _methodsByInfo.Add(methodInfo, methodDefinition);
                     return methodDefinition;
                 }
             }
@@ -150,6 +158,7 @@ namespace Dasync.Modeling
                     methodDefinition = new MethodDefinition(this, methodInfo);
                     methodDefinition.IsQuery = methodInfo.HasQueryImplyingName();
                     _methodsByName.Add(methodInfo.Name, methodDefinition);
+                    _methodsByInfo.Add(methodInfo, methodDefinition);
                     return methodDefinition;
                 }
             }
@@ -160,6 +169,12 @@ namespace Dasync.Modeling
         public IMethodDefinition FindMethod(string methodName)
         {
             _methodsByName.TryGetValue(methodName, out var methodDefinition);
+            return methodDefinition;
+        }
+
+        public IMethodDefinition FindMethod(MethodInfo methodInfo)
+        {
+            _methodsByInfo.TryGetValue(methodInfo, out var methodDefinition);
             return methodDefinition;
         }
 
@@ -196,9 +211,13 @@ namespace Dasync.Modeling
                         var interfaceEvent = interfaceType.GetEvent(eventInfo.Name,
                             BindingFlags.Instance | BindingFlags.Public);
                         if (interfaceEvent.EventHandlerType == eventInfo.EventHandlerType)
+                        {
                             eventDefinition.AddInterfaceEvent(interfaceEvent);
+                            _eventsByInfo.Add(interfaceEvent, eventDefinition);
+                        }
                     }
                     _eventsByName.Add(eventInfo.Name, eventDefinition);
+                    _eventsByInfo.Add(eventInfo, eventDefinition);
                     return eventDefinition;
                 }
             }
@@ -217,6 +236,7 @@ namespace Dasync.Modeling
                     var eventInfo = events[0];
                     eventDefinition = new EventDefinition(this, eventInfo);
                     _eventsByName.Add(eventInfo.Name, eventDefinition);
+                    _eventsByInfo.Add(eventInfo, eventDefinition);
                     return eventDefinition;
                 }
             }
@@ -227,6 +247,12 @@ namespace Dasync.Modeling
         public IEventDefinition FindEvent(string eventName)
         {
             _eventsByName.TryGetValue(eventName, out var eventDefinition);
+            return eventDefinition;
+        }
+
+        public IEventDefinition FindEvent(EventInfo eventInfo)
+        {
+            _eventsByInfo.TryGetValue(eventInfo, out var eventDefinition);
             return eventDefinition;
         }
     }

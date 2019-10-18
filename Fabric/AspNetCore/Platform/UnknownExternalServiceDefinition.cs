@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Dasync.Modeling;
 
 namespace Dasync.AspNetCore.Platform
@@ -33,5 +34,9 @@ namespace Dasync.AspNetCore.Platform
         public IMethodDefinition FindMethod(string methodName) => null;
 
         public IEventDefinition FindEvent(string eventName) => null;
+
+        public IMethodDefinition FindMethod(MethodInfo methodInfo) => null;
+
+        public IEventDefinition FindEvent(EventInfo eventInfo) => null;
     }
 }
