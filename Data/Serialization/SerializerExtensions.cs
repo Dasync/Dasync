@@ -27,9 +27,15 @@ namespace Dasync.Serialization
             }
             else
             {
-                using (var stream = new MemoryStream(Convert.FromBase64String(data)))
+                using (var stream = new MemoryStream(Convert.FromBase64String(data), writable: false))
                     return serializer.Deserialize<T>(stream);
             }
+        }
+
+        public static T Deserialize<T>(this ISerializer serializer, byte[] data) where T : new()
+        {
+            using (var stream = new MemoryStream(data, writable: false))
+                return serializer.Deserialize<T>(stream);
         }
 
         public static T Deserialize<T>(this ITextSerializer serializer, string data) where T : new()
@@ -56,6 +62,12 @@ namespace Dasync.Serialization
                 using (var stream = new MemoryStream(Convert.FromBase64String(data)))
                     serializer.Populate(stream, target);
             }
+        }
+
+        public static void Populate(this ISerializer serializer, byte[] data, IValueContainer target)
+        {
+            using (var stream = new MemoryStream(data, writable: false))
+                serializer.Populate(stream, target);
         }
 
         public static void Populate(this ITextSerializer serializer, string data, IValueContainer target)
@@ -107,6 +119,25 @@ namespace Dasync.Serialization
             {
                 serializer.Serialize(textWriter, @object);
                 return textWriter.ToString();
+            }
+        }
+
+        public static byte[] SerializeToBytes(this ISerializer serializer, object @object)
+        {
+            if (@object is ISerializedValueContainer serializedValueContainer &&
+                serializedValueContainer.GetContentType() == serializer.ContentType)
+            {
+                var serializedForm = serializedValueContainer.GetSerializedForm();
+                if (serializedForm is byte[] serializedData)
+                {
+                    return serializedData;
+                }
+            }
+
+            using (var stream = new MemoryStream())
+            {
+                serializer.Serialize(stream, @object);
+                return stream.ToArray();
             }
         }
     }
