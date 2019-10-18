@@ -15,10 +15,13 @@ namespace Dasync.ExecutionEngine.Transitions
 
     public class TransitionScope : ITransitionScope
     {
-        private struct ScopeData
+        private class ScopeData
         {
-            public TransitionContext Context;
-            public ITransitionMonitor Monitor;
+            public ScopeData Previous { get; set; }
+
+            public TransitionContext Context { get; set; }
+
+            public ITransitionMonitor Monitor { get; set; }
         }
 
         private static AsyncLocal<ScopeData> _currentScope = new AsyncLocal<ScopeData>();
@@ -30,7 +33,7 @@ namespace Dasync.ExecutionEngine.Transitions
             _transitionMonitorFactory = transitionMonitorFactory;
         }
 
-        public bool IsActive => _currentScope.Value.Monitor != null;
+        public bool IsActive => _currentScope.Value != null;
 
         public ITransitionMonitor CurrentMonitor =>
             _currentScope.Value.Monitor ?? throw new InvalidOperationException(
@@ -38,10 +41,6 @@ namespace Dasync.ExecutionEngine.Transitions
 
         public IDisposable Enter(TransitionDescriptor transitionDescriptor)
         {
-            if (IsActive)
-                throw new InvalidOperationException(
-                    "Cannot start transition of while another one is still running.");
-
             var context = new TransitionContext
             {
                 TransitionDescriptor = transitionDescriptor
@@ -62,7 +61,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
         private void Exit(ScopeData scopeData)
         {
-            _currentScope.Value = default(ScopeData);
+            _currentScope.Value = _currentScope.Value?.Previous;
         }
 
         private sealed class DisposeTarget : IDisposable
