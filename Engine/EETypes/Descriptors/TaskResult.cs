@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Dasync.EETypes.Descriptors
 {
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public sealed class TaskResult
     {
         /// <summary>
@@ -38,5 +40,18 @@ namespace Dasync.EETypes.Descriptors
         /// <see cref="IsFaulted"/> and <see cref="IsCanceled"/>.
         /// </summary>
         public bool IsSucceeded => !IsCanceled && !IsFaulted;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay
+        {
+            get
+            {
+                if (IsCanceled)
+                    return "😶";
+                if (IsFaulted)
+                    return "🙁 " + Exception.GetType().FullName;
+                return "🙂 " + Value.ToString();
+            }
+        }
     }
 }

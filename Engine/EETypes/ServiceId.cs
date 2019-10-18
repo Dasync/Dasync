@@ -1,5 +1,8 @@
-﻿namespace Dasync.EETypes
+﻿using System.Diagnostics;
+
+namespace Dasync.EETypes
 {
+    [DebuggerDisplay("{DebuggerDisplay}")]
     public class ServiceId
     {
         public string Name { get; set; }
@@ -24,6 +27,17 @@
         // a service instance is created with a factory.
         // If so, who is considered a 'parent'?
         //public ServiceId ParentId;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Proxy))
+                    return Name;
+                return $"{Name} ({Proxy})";
+            }
+        }
 
         public override bool Equals(object obj) =>
             (obj is ServiceId serviceId)

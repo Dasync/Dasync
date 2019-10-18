@@ -1,11 +1,23 @@
-﻿namespace Dasync.EETypes
+﻿using System.Diagnostics;
+
+namespace Dasync.EETypes
 {
+    [DebuggerDisplay("{DebuggerDisplay}")]
     public class EventId
     {
         /// <summary>
         /// The name of the event which is extracted with reflection.
         /// </summary>
         public string Name { get; set; }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay
+        {
+            get
+            {
+                return Name;
+            }
+        }
 
         public override bool Equals(object obj) =>
             (obj is EventId eventId)

@@ -1,8 +1,11 @@
-﻿namespace Dasync.EETypes
+﻿using System.Diagnostics;
+
+namespace Dasync.EETypes
 {
     /// <summary>
     /// Uniquely identifies a routine method.
     /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay}")]
     public class MethodId
     {
         public string Name { get; set; }
@@ -11,6 +14,15 @@
 #warning Method signature hash?
 #warning Does it matter if it's an interface method or not?
 #warning Method/client version?
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay
+        {
+            get
+            {
+                return Name;
+            }
+        }
 
         public override bool Equals(object obj) =>
             (obj is MethodId methodId)
@@ -32,9 +44,9 @@
             name = Name;
         }
 
-        public MethodId Clone() => CopyTo(new MethodId());
+        public virtual MethodId Clone() => CopyTo(new MethodId());
 
-        public T CopyTo<T>(T copy) where T : MethodId
+        public virtual T CopyTo<T>(T copy) where T : MethodId
         {
             copy.Name = Name;
             return copy;
