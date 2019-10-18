@@ -64,6 +64,8 @@ namespace Dasync.ExecutionEngine.Proxy
 
             var taskState = new RoutineReference
             {
+                ServiceId = intent.Service,
+                MethodId = intent.Method,
                 IntentId = intent.Id
 #warning must have id of actual routine for dynamic subscription (subscribe after a routine already scheduled).
             };

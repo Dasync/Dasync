@@ -220,6 +220,8 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
 
                     state = new WhenAllProxyTaskState
                     {
+                        ServiceId = executeWhenAllIntent.Service,
+                        MethodId = executeWhenAllIntent.Method,
                         IntentId = whenAllIntentId,
                         ExecuteWhenAllIntent = executeWhenAllIntent
                     };
@@ -253,6 +255,8 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
             {
                 whenAllTask.SetAsyncState(new RoutineReference
                 {
+                    ServiceId = executeWhenAllIntent.Service,
+                    MethodId = executeWhenAllIntent.Method,
                     IntentId = executeWhenAllIntent.Id
                 });
             }
