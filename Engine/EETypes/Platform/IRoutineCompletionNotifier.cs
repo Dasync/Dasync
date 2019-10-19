@@ -12,11 +12,13 @@ namespace Dasync.EETypes.Platform
             string intentId,
             CancellationToken ct);
 
-        void NotifyOnCompletion(
+        long NotifyOnCompletion(
             ServiceId serviceId,
             MethodId methodId,
             string intentId,
             TaskCompletionSource<TaskResult> completionSink,
             CancellationToken ct);
+
+        bool StopTracking(long token);
     }
 }

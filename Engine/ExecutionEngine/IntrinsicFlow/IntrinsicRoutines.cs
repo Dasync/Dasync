@@ -24,7 +24,7 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
             = typeof(IntrinsicRoutines).GetMethod(nameof(WhenAll));
 
         [AsyncStateMachine(typeof(WhenAllRoutine))]
-        public Task WhenAll(Task[] tasks, ExecuteRoutineIntent[] intents, Type itemType)
+        public virtual Task WhenAll(Task[] tasks, ExecuteRoutineIntent[] intents, Type itemType)
         {
             var builder = AsyncTaskMethodBuilder<object>.Create();
             return builder.Start(
@@ -70,7 +70,7 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
 
                 var continuation = new ContinuationDescriptor
                 {
-                    Service = context.ServiceId,
+                    Service = context.ServiceRef.Id,
                     Method = context.MethodId,
                     TaskId = context.MethodId.IntentId
                 };

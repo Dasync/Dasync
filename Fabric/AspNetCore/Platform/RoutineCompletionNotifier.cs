@@ -33,7 +33,7 @@ namespace Dasync.AspNetCore.Platform
             }
         }
 
-        public void NotifyOnCompletion(
+        public long NotifyOnCompletion(
             ServiceId serviceId,
             MethodId methodId,
             string intentId,
@@ -44,7 +44,7 @@ namespace Dasync.AspNetCore.Platform
             if (taskResult != null)
             {
                 completionSink.SetResult(taskResult);
-                return;
+                return -1;
             }
 
             lock (_sinks)
@@ -53,6 +53,8 @@ namespace Dasync.AspNetCore.Platform
                     _sinks.Add(intentId, set = new List<TaskCompletionSource<TaskResult>>());
                 set.Add(completionSink);
             }
+
+            return -1;
         }
 
         public void OnRoutineCompleted(string intentId, TaskResult routineResult)
@@ -84,6 +86,11 @@ namespace Dasync.AspNetCore.Platform
                 foreach (var key in keys)
                     _recentResults.Remove(key);
             }
+        }
+
+        public bool StopTracking(long token)
+        {
+            return false;
         }
     }
 }

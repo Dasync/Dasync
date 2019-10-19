@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Dasync.Accessors;
 using Dasync.AsyncStateMachine;
 using Dasync.EETypes;
+using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Intents;
@@ -15,39 +16,52 @@ using Dasync.EETypes.Platform;
 using Dasync.EETypes.Resolvers;
 using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Extensions;
+using Dasync.Serialization;
 using Dasync.ValueContainer;
 
 namespace Dasync.ExecutionEngine.Transitions
 {
-    public class TransitionRunner : ITransitionRunner
+    public partial class TransitionRunner : ITransitionRunner, ILocalMethodRunner
     {
         private readonly ITransitionScope _transitionScope;
-        private readonly ITransitionCommitter _transitionCommitter;
         private readonly IAsyncStateMachineMetadataProvider _asyncStateMachineMetadataProvider;
         //private readonly IServiceStateValueContainerProvider _serviceStateValueContainerProvider;
         private readonly IUniqueIdGenerator _idGenerator;
         private readonly ITaskCompletionSourceRegistry _taskCompletionSourceRegistry;
         private readonly IServiceResolver _serviceResolver;
         private readonly IMethodResolver _methodResolver;
+        private readonly ICommunicatorProvider _communicatorProvider;
+        private readonly IRoutineCompletionSink _routineCompletionSink;
+        private readonly ICommunicationSettingsProvider _communicationSettingsProvider;
+        private readonly ISerializer _defaultSerializer;
+        private readonly ISerializerProvider _serializeProvder;
 
         public TransitionRunner(
             ITransitionScope transitionScope,
-            ITransitionCommitter transitionCommitter,
             IAsyncStateMachineMetadataProvider asyncStateMachineMetadataProvider,
             //IServiceStateValueContainerProvider serviceStateValueContainerProvider,
             IUniqueIdGenerator idGenerator,
             ITaskCompletionSourceRegistry taskCompletionSourceRegistry,
             IServiceResolver serviceResolver,
-            IMethodResolver methodResolver)
+            IMethodResolver methodResolver,
+            ICommunicatorProvider communicatorProvider,
+            IRoutineCompletionSink routineCompletionSink,
+            ICommunicationSettingsProvider communicationSettingsProvider,
+            IDefaultSerializerProvider defaultSerializerProvider,
+            ISerializerProvider serializeProvder)
         {
             _transitionScope = transitionScope;
-            _transitionCommitter = transitionCommitter;
             _asyncStateMachineMetadataProvider = asyncStateMachineMetadataProvider;
             //_serviceStateValueContainerProvider = serviceStateValueContainerProvider;
             _idGenerator = idGenerator;
             _taskCompletionSourceRegistry = taskCompletionSourceRegistry;
             _serviceResolver = serviceResolver;
             _methodResolver = methodResolver;
+            _communicatorProvider = communicatorProvider;
+            _routineCompletionSink = routineCompletionSink;
+            _communicationSettingsProvider = communicationSettingsProvider;
+            _defaultSerializer = defaultSerializerProvider.DefaultSerializer;
+            _serializeProvder = serializeProvder;
         }
 
         public async Task RunAsync(
@@ -67,11 +81,13 @@ namespace Dasync.ExecutionEngine.Transitions
             }
         }
 
-        private async Task RunRoutineAsync(
+        private async Task<InvokeRoutineResult> RunRoutineAsync(
             ITransitionCarrier transitionCarrier,
             TransitionDescriptor transitionDescriptor,
             CancellationToken ct)
         {
+            var invocationResult = new InvokeRoutineResult();
+
             using (_transitionScope.Enter(transitionDescriptor))
             {
                 var transitionMonitor = _transitionScope.CurrentMonitor;
@@ -89,6 +105,11 @@ namespace Dasync.ExecutionEngine.Transitions
                 //if (isStatefullService)
                 //    await transitionCarrier.ReadServiceStateAsync(serviceStateContainer, ct);
 
+                Type taskResultType =
+                    methodReference.Definition.MethodInfo.ReturnType == typeof(void)
+                    ? TaskAccessor.VoidTaskResultType
+                    : TaskAccessor.GetTaskResultType(methodReference.Definition.MethodInfo.ReturnType);
+
                 Task completionTask;
                 IValueContainer asmValueContainer = null;
 
@@ -100,15 +121,15 @@ namespace Dasync.ExecutionEngine.Transitions
                     asmMetadata.Owner.FieldInfo?.SetValue(asmInstance, serviceInstance);
 
                     transitionMonitor.OnRoutineStart(
-                        serviceId,
+                        serviceReference,
+                        methodReference,
                         methodId,
                         serviceInstance,
-                        methodReference.Definition.MethodInfo,
-                        asmInstance);
+                        asmInstance,
+                        (transitionCarrier as TransitionCarrier)?.Caller);
 
                     try
                     {
-#warning possibly need to create a proxy? on a sealed ASM class? How to capture Task.Delay if it's not immediate after first MoveNext?
                         asmInstance.MoveNext();
                         completionTask = GetCompletionTask(asmInstance, asmMetadata);
                     }
@@ -116,7 +137,6 @@ namespace Dasync.ExecutionEngine.Transitions
                     {
                         // The MoveNext() must not throw, but instead complete the task with an error.
                         // try-catch is added just in case for a non-compiler-generated state machine.
-                        var taskResultType = TaskAccessor.GetTaskResultType(methodReference.Definition.MethodInfo.ReturnType);
                         completionTask = TaskAccessor.FromException(taskResultType, ex);
                     }
                 }
@@ -129,11 +149,12 @@ namespace Dasync.ExecutionEngine.Transitions
                     await transitionCarrier.ReadRoutineParametersAsync(parameters, ct);
 
                     transitionMonitor.OnRoutineStart(
-                        serviceId,
+                        serviceReference,
+                        methodReference,
                         methodId,
                         serviceInstance,
-                        methodReference.Definition.MethodInfo,
-                        routineStateMachine: null);
+                        routineStateMachine: null,
+                        (transitionCarrier as TransitionCarrier)?.Caller);
 
                     try
                     {
@@ -141,25 +162,17 @@ namespace Dasync.ExecutionEngine.Transitions
                     }
                     catch (Exception ex)
                     {
-#warning IDisposable.Dispose returns void, not a Task
-                        var taskResultType = TaskAccessor.GetTaskResultType(methodReference.Definition.MethodInfo.ReturnType);
+                        // NOTE: IMethodInvoker always throws TargetInvocationException due to the implementation details.
+                        if (ex is TargetInvocationException)
+                            ex = ex.InnerException;
                         completionTask = TaskAccessor.FromException(taskResultType, ex);
                     }
                 }
 
+                // NOTE: (A) method can return VOID in special cases (the Dispose method),
+                // or (B) the method is not async and return NULL by mistake (assume success).
                 if (completionTask == null)
-                {
-#warning Check if this method is really IDiposable.Dispose() ?
-                    if (methodReference.Definition.MethodInfo.Name == "Dispose")
-                    {
-                        completionTask = TaskAccessor.CompletedTask;
-                    }
-                    else
-                    {
-                        // This is possible if the routine is not marked as 'async' and just returns a NULL result.
-                        throw new Exception("Critical: a routine method returned null task");
-                    }
-                }
+                    completionTask = TaskAccessor.FromResult(taskResultType, null);
 
                 var scheduledActions = await transitionMonitor.TrackRoutineCompletion(completionTask);
 
@@ -195,14 +208,23 @@ namespace Dasync.ExecutionEngine.Transitions
                         routineResult,
                         taskId,
                         ct);
+
+                    invocationResult.Outcome = InvocationOutcome.Complete;
+                    invocationResult.Result = routineResult;
+                }
+                else
+                {
+                    invocationResult.Outcome = InvocationOutcome.Paused;
                 }
 
                 ScanForExtraIntents(scheduledActions);
 
                 var commitOptions = new TransitionCommitOptions();
 
-                await _transitionCommitter.CommitAsync(scheduledActions, transitionCarrier, commitOptions, ct);
+                await CommitAsync(scheduledActions, transitionCarrier, commitOptions, ct);
             }
+
+            return invocationResult;
         }
 
         private bool TryCreateAsyncStateMachine(
@@ -253,6 +275,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
                 await transitionCarrier.ReadRoutineStateAsync(asmValueContainer, ct);
 
+                // TODO: instead of capturing created tasks, it's easier just to go through all awaiters in the state machine
                 if (awaitedResult != null)
                     UpdateTasksWithAwaitedRoutineResult(
                         TaskCapture.FinishCapturing(), awaitedResult);

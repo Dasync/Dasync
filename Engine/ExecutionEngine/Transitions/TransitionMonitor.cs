@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Dasync.AsyncStateMachine;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
+using Dasync.EETypes.Resolvers;
 using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Continuation;
 using Dasync.ExecutionEngine.Extensions;
@@ -50,20 +50,19 @@ namespace Dasync.ExecutionEngine.Transitions
     }
 
     /// <summary>
-    /// Responsible for monitoring various intents (<see cref="ScheduledActions"/>),
-    /// process them, and delegate execution to <see cref="ITransitionCommitter"/>
-    /// when logical end is reached.
+    /// Responsible for monitoring various intents (<see cref="ScheduledActions"/>).
     /// </summary>
     public interface ITransitionMonitor
     {
         TransitionContext Context { get; }
 
         void OnRoutineStart(
-            ServiceId serviceId,
+            IServiceReference serviceRef,
+            IMethodReference methodRef,
             PersistedMethodId methodId,
             object serviceInstance,
-            MethodInfo routineMethod,
-            IAsyncStateMachine routineStateMachine);
+            IAsyncStateMachine routineStateMachine,
+            CallerDescriptor caller);
 
         Task<ScheduledActions> TrackRoutineCompletion(Task routineCompletionTask);
 
@@ -112,17 +111,19 @@ namespace Dasync.ExecutionEngine.Transitions
         public TransitionContext Context { get; }
 
         public void OnRoutineStart(
-            ServiceId serviceId,
+            IServiceReference serviceRef,
+            IMethodReference methodRef,
             PersistedMethodId methodId,
             object serviceInstance,
-            MethodInfo routineMethod,
-            IAsyncStateMachine routineStateMachine)
+            IAsyncStateMachine routineStateMachine,
+            CallerDescriptor caller)
         {
-            Context.ServiceId = serviceId;
+            Context.ServiceRef = serviceRef;
+            Context.MethodRef = methodRef;
             Context.MethodId = methodId;
             Context.ServiceInstance = serviceInstance;
-            Context.RoutineMethod = routineMethod;
             Context.RoutineStateMachine = routineStateMachine;
+            Context.Caller = caller;
 
             _intrinsicFlowController.OnRoutineStart(this);
         }
@@ -172,7 +173,7 @@ namespace Dasync.ExecutionEngine.Transitions
             actions.SaveRoutineState = true;
             actions.ResumeRoutineIntent = new ContinueRoutineIntent
             {
-                Service = transitionContext.ServiceId,
+                Service = transitionContext.ServiceRef.Id,
                 Method = transitionContext.MethodId,
                 ContinueAt = resumeTime
             };
@@ -197,7 +198,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 TriggerId = triggerReference.Id,
                 Continuation = new ContinuationDescriptor
                 {
-                    Service = Context.ServiceId,
+                    Service = Context.ServiceRef.Id,
                     Method = Context.MethodId,
                     TaskId = triggerReference.Id
                 }
@@ -233,7 +234,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 var intent = (ExecuteRoutineIntent)userData;
                 intent.Continuation = new ContinuationDescriptor
                 {
-                    Service = transitionContext.ServiceId,
+                    Service = transitionContext.ServiceRef.Id,
                     Method = transitionContext.MethodId,
                     TaskId = ((IProxyTaskState)routineCompletionTask.AsyncState).TaskId
                 };
@@ -280,13 +281,13 @@ namespace Dasync.ExecutionEngine.Transitions
             if (asm1.GetType() != asm2.GetType())
                 return false;
 
-            // WARNING!
-            // In RELEASE mode a state machine is compiled into a values type, not reference type!
-            // The builder is also is a value type, so the only way to say exactly is to compare
+            // NOTE:
+            // In RELEASE mode a state machine is compiled into a value type, not a reference type.
+            // The builder is also is a value type, so the only way to tell exactly is to compare
             // the completion Tasks, which are always reference types.
             if (asm1.GetType().IsValueType())
             {
-#warning Optimize this code, don't inject IAsyncStateMachineMetadataProvider into this class.
+#warning Optimize this code
                 var metadata = _asyncStateMachineMetadataProvider.GetMetadata(asm1.GetType());
                 var builder1 = metadata.Builder.FieldInfo.GetValue(asm1);
                 var builder2 = metadata.Builder.FieldInfo.GetValue(asm2);

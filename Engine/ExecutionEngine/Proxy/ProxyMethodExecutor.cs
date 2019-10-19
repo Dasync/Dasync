@@ -5,7 +5,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Dasync.Accessors;
 using Dasync.EETypes;
+using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
+using Dasync.EETypes.Engine;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Platform;
 using Dasync.EETypes.Proxy;
@@ -21,37 +23,50 @@ namespace Dasync.ExecutionEngine.Proxy
         private readonly ITransitionScope _transitionScope;
         private readonly IMethodIdProvider _routineMethodIdProvider;
         private readonly IEventIdProvider _eventIdProvider;
-        private readonly IUniqueIdGenerator _numericIdGenerator;
-        private readonly ITransitionCommitter _transitionCommitter;
+        private readonly IUniqueIdGenerator _idGenerator;
         private readonly IRoutineCompletionNotifier _routineCompletionNotifier;
         private readonly IEventSubscriber _eventSubscriber;
+        private readonly ICommunicationSettingsProvider _communicationSettingsProvider;
+        private readonly IMethodInvokerFactory _methodInvokerFactory;
+        private readonly ISingleMethodInvoker _singleMethodInvoker;
 
         public ProxyMethodExecutor(
             ITransitionScope transitionScope,
             IMethodIdProvider routineMethodIdProvider,
             IEventIdProvider eventIdProvider,
             IUniqueIdGenerator numericIdGenerator,
-            ITransitionCommitter transitionCommitter,
             IRoutineCompletionNotifier routineCompletionNotifier,
-            IEventSubscriber eventSubscriber)
+            IEventSubscriber eventSubscriber,
+            ICommunicationSettingsProvider communicationSettingsProvider,
+            IMethodInvokerFactory methodInvokerFactory,
+            ISingleMethodInvoker singleMethodInvoker)
         {
             _transitionScope = transitionScope;
             _routineMethodIdProvider = routineMethodIdProvider;
             _eventIdProvider = eventIdProvider;
-            _numericIdGenerator = numericIdGenerator;
-            _transitionCommitter = transitionCommitter;
+            _idGenerator = numericIdGenerator;
             _routineCompletionNotifier = routineCompletionNotifier;
             _eventSubscriber = eventSubscriber;
+            _communicationSettingsProvider = communicationSettingsProvider;
+            _methodInvokerFactory = methodInvokerFactory;
+            _singleMethodInvoker = singleMethodInvoker;
         }
 
         public Task Execute<TParameters>(IProxy proxy, MethodInfo methodInfo, ref TParameters parameters)
             where TParameters : IValueContainer
         {
             var serviceProxyContext = (ServiceProxyContext)proxy.Context;
+            var methodDefinition = serviceProxyContext.Definition.FindMethod(methodInfo);
+
+            if (methodDefinition == null || methodDefinition.IsIgnored)
+            {
+                var invoker = _methodInvokerFactory.Create(methodInfo);
+                return invoker.Invoke(proxy, parameters);
+            }
 
             var intent = new ExecuteRoutineIntent
             {
-                Id = _numericIdGenerator.NewId(),
+                Id = _idGenerator.NewId(),
                 Service = serviceProxyContext.Descriptor.Id,
                 Method = _routineMethodIdProvider.GetId(methodInfo),
                 Parameters = parameters
@@ -72,13 +87,32 @@ namespace Dasync.ExecutionEngine.Proxy
 
             var proxyTask = TaskAccessor.CreateTask(taskState, taskResultType);
 
-            bool executeInline = !_transitionScope.IsActive || !IsCalledByRoutine(
+            bool invokedByRunningMethod = _transitionScope.IsActive &&
+                IsCalledByRoutine(
                     _transitionScope.CurrentMonitor.Context,
                     // Skip 2 stack frames: current method and dynamically-generated proxy.
                     // WARNING! DO NOT PUT 'new StackFrame()' into a helper method!
                     new StackFrame(skipFrames: 2, fNeedFileInfo: false));
 
-            if (executeInline)
+            bool ignoreTransaction = !invokedByRunningMethod;
+
+            if (!ignoreTransaction && _transitionScope.IsActive)
+            {
+                var runningMethodSettings = _communicationSettingsProvider.GetMethodSettings(
+                    _transitionScope.CurrentMonitor.Context.MethodRef.Definition);
+
+                if (!runningMethodSettings.Transactional)
+                    ignoreTransaction = true;
+            }
+
+            if (!ignoreTransaction)
+            {
+                var methodSettings = _communicationSettingsProvider.GetMethodSettings(methodDefinition);
+                if (methodSettings.IgnoreTransaction)
+                    ignoreTransaction = true;
+            }
+
+            if (ignoreTransaction)
             {
                 ExecuteAndAwaitInBackground(intent, proxyTask);
             }
@@ -95,33 +129,18 @@ namespace Dasync.ExecutionEngine.Proxy
         /// </remarks>
         public async void ExecuteAndAwaitInBackground(ExecuteRoutineIntent intent, Task proxyTask)
         {
-            // Tell platform to track the completion.
-            // Do it before commit as a routine may complete immediately.
-
-            var tcs = new TaskCompletionSource<TaskResult>();
-            _routineCompletionNotifier.NotifyOnCompletion(intent.Service, intent.Method, intent.Id, tcs, default);
-
-            // Commit intent
-
-            var options = new TransitionCommitOptions
+            var result = await _singleMethodInvoker.InvokeAsync(intent);
+            if (result.Outcome == InvocationOutcome.Complete)
             {
-                // Set the hint about the synchronous call mode.
-                NotifyOnRoutineCompletion = true
-            };
-
-            var actions = new ScheduledActions
+                proxyTask.TrySetResult(result.Result);
+            }
+            else
             {
-                ExecuteRoutineIntents = new List<ExecuteRoutineIntent>
-                {
-                    intent
-                }
-            };
-            await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, options: options, ct: default);
-
-            // Await for completion and set the result.
-
-            var routineResult = await tcs.Task;
-            proxyTask.TrySetResult(routineResult);
+                var tcs = new TaskCompletionSource<TaskResult>();
+                _routineCompletionNotifier.NotifyOnCompletion(intent.Service, intent.Method, intent.Id, tcs, default);
+                var taskResult = await tcs.Task;
+                proxyTask.TrySetResult(taskResult);
+            }
         }
 
         public void Subscribe(IProxy proxy, EventInfo @event, Delegate @delegate)
@@ -148,13 +167,13 @@ namespace Dasync.ExecutionEngine.Proxy
             }
             else
             {
-                throw new NotSupportedException("At this moment event subscribers must be routines of services.");
+                throw new NotSupportedException("At this moment event subscribers must be methods of services.");
             }
         }
 
         public void Unsubscribe(IProxy proxy, EventInfo @event, Delegate @delegate)
         {
-            throw new NotSupportedException("Do you ever need to unsubscribe from an event?");
+            throw new NotSupportedException("Do you ever need to unsubscribe from a service event?");
         }
 
         public void RaiseEvent<TParameters>(IProxy proxy, EventInfo @event, ref TParameters parameters)
@@ -164,19 +183,39 @@ namespace Dasync.ExecutionEngine.Proxy
 
             var intent = new RaiseEventIntent
             {
-                Id = _numericIdGenerator.NewId(),
+                Id = _idGenerator.NewId(),
                 Service = serviceProxyContext.Descriptor.Id,
                 Event = _eventIdProvider.GetId(@event),
                 Parameters = parameters
             };
 
-            bool executeInline = !_transitionScope.IsActive || !IsCalledByRoutine(
+            bool invokedByRunningMethod = _transitionScope.IsActive &&
+                IsCalledByRoutine(
                     _transitionScope.CurrentMonitor.Context,
                     // Skip 2 stack frames: current method and dynamically-generated proxy.
                     // WARNING! DO NOT PUT 'new StackFrame()' into a helper method!
                     new StackFrame(skipFrames: 2, fNeedFileInfo: false));
 
-            if (executeInline)
+            bool ignoreTransaction = !invokedByRunningMethod;
+
+            if (!ignoreTransaction && _transitionScope.IsActive)
+            {
+                var runningMethodSettings = _communicationSettingsProvider.GetMethodSettings(
+                    _transitionScope.CurrentMonitor.Context.MethodRef.Definition);
+
+                if (!runningMethodSettings.Transactional)
+                    ignoreTransaction = true;
+            }
+
+            if (!ignoreTransaction)
+            {
+                var eventDefinition = serviceProxyContext.Definition.FindEvent(@event);
+                var eventSettings = _communicationSettingsProvider.GetEventSettings(eventDefinition);
+                if (eventSettings.IgnoreTransaction)
+                    ignoreTransaction = true;
+            }
+
+            if (ignoreTransaction)
             {
                 RaiseEventInBackground(intent);
             }
@@ -198,7 +237,8 @@ namespace Dasync.ExecutionEngine.Proxy
 
             var options = new TransitionCommitOptions();
 
-            await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, options: options, ct: default);
+            throw new NotImplementedException();
+            //await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, options: options, ct: default);
         }
 
         private static bool IsCalledByRoutine(TransitionContext context, StackFrame callerStackFrame)
