@@ -19,6 +19,7 @@ namespace Dasync.EETypes
     public static class TransitionContextExtensions
     {
         public static CallerDescriptor CurrentAsCaller(this ITransitionContext context) =>
+            context?.Service == null || context?.Method == null ? null :
             new CallerDescriptor(context.Service, context.Method, context.IntentId);
     }
 }
