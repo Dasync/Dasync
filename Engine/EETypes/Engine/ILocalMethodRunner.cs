@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Dasync.EETypes.Communication;
+using Dasync.EETypes.Persistence;
 
 namespace Dasync.EETypes.Engine
 {
@@ -8,11 +9,11 @@ namespace Dasync.EETypes.Engine
         Task<InvokeRoutineResult> RunAsync(
             IMethodInvocationData data,
             ICommunicatorMessage message,
-            IMethodContinuationState continuationState);
+            ISerializedMethodContinuationState continuationState);
 
         Task<ContinueRoutineResult> ContinueAsync(
             IMethodContinuationData data,
             ICommunicatorMessage message,
-            IMethodContinuationState continuationState);
+            ISerializedMethodContinuationState continuationState);
     }
 }

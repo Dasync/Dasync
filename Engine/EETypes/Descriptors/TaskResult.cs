@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Dasync.EETypes.Descriptors
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public sealed class TaskResult
+    public class TaskResult
     {
         /// <summary>
         /// The value of the result if the <see cref="IsSucceeded"/>.

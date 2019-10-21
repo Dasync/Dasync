@@ -69,6 +69,15 @@ namespace Dasync.ExecutionEngine.Communication
                     : (isQuery ? "communicationType:queries:local" : "communicationType:commands:local"),
                     defaultValue: null),
 
+                PersistenceType = GetValue<string>(
+                    definition, definition.Service, definition.Service.Model,
+                    "persistenceType",
+                    isQuery ? "persistenceType:queries" : "persistenceType:commands",
+                    isExternal
+                    ? (isQuery ? "persistenceType:queries:external" : "persistenceType:commands:external")
+                    : (isQuery ? "persistenceType:queries:local" : "persistenceType:commands:local"),
+                    defaultValue: null),
+
                 Deduplicate = GetValue(
                     definition, definition.Service, definition.Service.Model,
                     "deduplicate",

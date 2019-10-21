@@ -4,6 +4,8 @@
     {
         public string CommunicationType { get; set; }
 
+        public string PersistenceType { get; set; }
+
         /// <summary>
         /// Deduplicate messages on receive when the receiving communication method supports
         /// such a feature, or if a UoW/cache mechanism is available in the app.

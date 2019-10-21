@@ -1,9 +1,9 @@
-﻿namespace Dasync.EETypes.Communication
+﻿namespace Dasync.EETypes.Persistence
 {
     /// <summary>
     /// Exexution state of a paused routine.
     /// </summary>
-    public interface IMethodContinuationState
+    public interface ISerializedMethodContinuationState
     {
         string ContentType { get; set; }
 

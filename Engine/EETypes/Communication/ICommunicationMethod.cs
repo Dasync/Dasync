@@ -6,6 +6,6 @@ namespace Dasync.EETypes.Communication
     {
         string Type { get; }
 
-        ICommunicator Create(IConfiguration configuration);
+        ICommunicator CreateCommunicator(IConfiguration configuration);
     }
 }

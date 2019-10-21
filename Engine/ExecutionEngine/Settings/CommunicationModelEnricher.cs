@@ -27,6 +27,10 @@ namespace Dasync.ExecutionEngine.Communication
             ReadCommunicationType(localServiceSection, model, ":local");
             ReadCommunicationType(externalServiceSection, model, ":external");
 
+            ReadPersistenceType(_config, model, string.Empty);
+            ReadPersistenceType(localServiceSection, model, ":local");
+            ReadPersistenceType(externalServiceSection, model, ":external");
+
             ReadBehaviorOptions(_config, model, string.Empty);
             ReadBehaviorOptions(localServiceSection, model, ":local");
             ReadBehaviorOptions(externalServiceSection, model, ":external");
@@ -47,6 +51,7 @@ namespace Dasync.ExecutionEngine.Communication
                 var serviceSection = _config.GetSection("services:" + serviceName);
 
                 ReadCommunicationType(serviceSection, service, string.Empty, ":_all");
+                ReadPersistenceType(serviceSection, service, string.Empty, ":_all");
                 ReadBehaviorOptions(serviceSection, service, string.Empty, ":_all");
 
                 var configuredQueryNames =
@@ -134,6 +139,25 @@ namespace Dasync.ExecutionEngine.Communication
             var defaultEventsCommunicationType = config.GetSection("events" + selector + ":communication:type").Value;
             if (!string.IsNullOrWhiteSpace(defaultEventsCommunicationType))
                 propertyBag.AddProperty("communicationType:events" + suffix, defaultEventsCommunicationType);
+        }
+
+        private static void ReadPersistenceType(IConfiguration config, IMutablePropertyBag propertyBag, string suffix, string selector = "")
+        {
+            var persistenceType = config.GetSection("persistence:type").Value;
+            if (!string.IsNullOrWhiteSpace(persistenceType))
+                propertyBag.AddProperty("persistenceType" + suffix, persistenceType);
+
+            var defaultQueriesPersistenceType = config.GetSection("queries" + selector + ":persistence:type").Value;
+            if (!string.IsNullOrWhiteSpace(defaultQueriesPersistenceType))
+                propertyBag.AddProperty("persistenceType:queries" + suffix, defaultQueriesPersistenceType);
+
+            var defaultCommandsPersistenceType = config.GetSection("commands" + selector + ":persistence:type").Value;
+            if (!string.IsNullOrWhiteSpace(defaultCommandsPersistenceType))
+                propertyBag.AddProperty("persistenceType:commands" + suffix, defaultCommandsPersistenceType);
+
+            var defaultEventsPersistenceType = config.GetSection("events" + selector + ":persistence:type").Value;
+            if (!string.IsNullOrWhiteSpace(defaultEventsPersistenceType))
+                propertyBag.AddProperty("persistenceType:events" + suffix, defaultEventsPersistenceType);
         }
 
         private static void ReadBehaviorOptions(IConfiguration config, IMutablePropertyBag propertyBag, string suffix, string selector = "")

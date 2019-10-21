@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Dasync.EETypes.Intents;
+using Dasync.EETypes.Persistence;
 
 namespace Dasync.EETypes.Communication
 {
@@ -21,7 +22,7 @@ namespace Dasync.EETypes.Communication
         Task<InvokeRoutineResult> InvokeAsync(
             ExecuteRoutineIntent intent,
             ITransitionContext context,
-            IMethodContinuationState continuationState,
+            ISerializedMethodContinuationState continuationState,
             InvocationPreferences preferences);
 
         // reply w/ result (invoke continuation)
@@ -32,7 +33,7 @@ namespace Dasync.EETypes.Communication
         Task<ContinueRoutineResult> ContinueAsync(
             ContinueRoutineIntent intent,
             ITransitionContext context,
-            IMethodContinuationState continuationState,
+            ISerializedMethodContinuationState continuationState,
             InvocationPreferences preferences);
 
         // publish event

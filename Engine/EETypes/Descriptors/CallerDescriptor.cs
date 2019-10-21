@@ -16,5 +16,13 @@
         public MethodId Method { get; set; }
 
         public string IntentId { get; set; }
+
+        public CallerDescriptor Clone() =>
+            new CallerDescriptor
+            {
+                Service = Service.Clone(),
+                Method = Method.Clone(),
+                IntentId = IntentId
+            };
     }
 }

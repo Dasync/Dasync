@@ -2,6 +2,8 @@
 {
     public enum InvocationOutcome
     {
+        Unknown = 0,
+
         /// <summary>
         /// Method ran to its completion.
         /// </summary>

@@ -16,6 +16,7 @@ namespace Dasync.ExecutionEngine.Communication
         private readonly IServiceResolver _serviceResolver;
         private readonly IMethodResolver _methodResolver;
         private readonly Dictionary<string, ICommunicationMethod> _communicationMethods;
+        private readonly Dictionary<IMethodDefinition, ICommunicator> _communicatorMap = new Dictionary<IMethodDefinition, ICommunicator>();
 
         public CommunicatorProvider(
             ICommunicationSettingsProvider communicationSettingsProvider,
@@ -41,6 +42,12 @@ namespace Dasync.ExecutionEngine.Communication
 
             var serviceRef = _serviceResolver.Resolve(serviceId);
             var methodRef = _methodResolver.Resolve(serviceRef.Definition, methodId);
+
+            lock (_communicatorMap)
+            {
+                if (_communicatorMap.TryGetValue(methodRef.Definition, out var cachedCommunicator))
+                    return cachedCommunicator;
+            }
 
             var serviceCategory = serviceRef.Definition.Type == ServiceType.External ? "_external" : "_local";
             var methodCategory = methodRef.Definition.IsQuery ? "queries" : "commands";
@@ -79,7 +86,19 @@ namespace Dasync.ExecutionEngine.Communication
                 serviceSection.GetSection(methodCategory).GetSection("_all").GetSection("communication"),
                 serviceSection.GetSection(methodCategory).GetSection(methodRef.Definition.Name).GetSection("communication"));
 
-            return communicationMethod.Create(communicatorConfig);
+            var communicator = communicationMethod.CreateCommunicator(communicatorConfig);
+
+            lock (_communicatorMap)
+            {
+                if (_communicatorMap.TryGetValue(methodRef.Definition, out var cachedCommunicator))
+                {
+                    (communicator as IDisposable)?.Dispose();
+                    return cachedCommunicator;
+                }
+
+                _communicatorMap.Add(methodRef.Definition, communicator);
+                return communicator;
+            }
         }
 
         public ICommunicator GetCommunicator(ServiceId serviceId, EventId methodId)

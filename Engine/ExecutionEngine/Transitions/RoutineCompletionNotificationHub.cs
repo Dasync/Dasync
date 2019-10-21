@@ -2,23 +2,36 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Dasync.Accessors;
 using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
+using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Platform;
+using Dasync.EETypes.Resolvers;
 
 namespace Dasync.ExecutionEngine.Transitions
 {
     public class RoutineCompletionNotificationHub : IRoutineCompletionNotifier, IRoutineCompletionSink
     {
         private readonly ICommunicatorProvider _communicatorProvider;
+        private readonly IServiceResolver _serviceResolver;
+        private readonly IMethodResolver _methodResolver;
+        private readonly IMethodStateStorageProvider _methodStateStorageProvider;
         private readonly LinkedList<TrackedInvocation> _trackedInvocations = new LinkedList<TrackedInvocation>();
         private readonly TimerCallback _onTimerTick;
         private long _tokenCounter = 1;
 
-        public RoutineCompletionNotificationHub(ICommunicatorProvider communicatorProvider)
+        public RoutineCompletionNotificationHub(
+            ICommunicatorProvider communicatorProvider,
+            IServiceResolver serviceResolver,
+            IMethodResolver methodResolver,
+            IMethodStateStorageProvider methodStateStorageProvider)
         {
             _communicatorProvider = communicatorProvider;
+            _serviceResolver = serviceResolver;
+            _methodResolver = methodResolver;
+            _methodStateStorageProvider = methodStateStorageProvider;
             _onTimerTick = OnTimerTick;
         }
 
@@ -72,7 +85,7 @@ namespace Dasync.ExecutionEngine.Transitions
             List<TrackedInvocation> listeners = null;
             lock (_trackedInvocations)
             {
-                for (var node = _trackedInvocations.First; node != null; )
+                for (var node = _trackedInvocations.First; node != null;)
                 {
                     var nextNode = node.Next;
 
@@ -91,7 +104,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     node = nextNode;
                 }
             }
-            
+
             if (listeners == null)
                 return;
 
@@ -161,9 +174,22 @@ namespace Dasync.ExecutionEngine.Transitions
             }
             else
             {
-                // poll persistence directly
-                throw new NotImplementedException();
+                trackedInvocation.StateStorage = _methodStateStorageProvider.GetStorage(trackedInvocation.ServiceId, trackedInvocation.MethodId);
             }
+
+            var methodDefinition = _methodResolver.Resolve(
+                _serviceResolver.Resolve(trackedInvocation.ServiceId).Definition,
+                trackedInvocation.MethodId).Definition;
+
+            Type taskResultType =
+                methodDefinition.MethodInfo.ReturnType == typeof(void)
+                ? TaskAccessor.VoidTaskResultType
+                : TaskAccessor.GetTaskResultType(methodDefinition.MethodInfo.ReturnType);
+
+            trackedInvocation.ResultValueType =
+                taskResultType == TaskAccessor.VoidTaskResultType
+                ? typeof(object)
+                : taskResultType;
         }
 
         private async Task<bool> PollAsync(TrackedInvocation trackedInvocation)
@@ -177,6 +203,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     trackedInvocation.ServiceId,
                     trackedInvocation.MethodId,
                     trackedInvocation.IntentId,
+                    trackedInvocation.ResultValueType,
                     trackedInvocation.CancellationToken);
 
                 if (result.Outcome != InvocationOutcome.Complete)
@@ -187,8 +214,18 @@ namespace Dasync.ExecutionEngine.Transitions
             }
             else
             {
-                // poll persistence directly
-                throw new NotImplementedException();
+                var result = await trackedInvocation.StateStorage.TryReadResultAsync(
+                    trackedInvocation.ServiceId,
+                    trackedInvocation.MethodId,
+                    trackedInvocation.IntentId,
+                    trackedInvocation.ResultValueType,
+                    trackedInvocation.CancellationToken);
+
+                if (result == null)
+                    return false;
+
+                trackedInvocation.CompletionSink.TrySetResult(result);
+                return true;
             }
         }
 
@@ -269,11 +306,15 @@ namespace Dasync.ExecutionEngine.Transitions
 
             public Timer PollTimer { get; set; }
 
+            public Type ResultValueType { get; set; }
+
             public CancellationToken CancellationToken { get; set; }
 
             public TaskCompletionSource<TaskResult> CompletionSink { get; set; }
 
             public ISynchronousCommunicator Communicator { get; set; }
+
+            public IMethodStateStorage StateStorage { get; set; }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,11 +7,11 @@ using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
+using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Platform;
 using Dasync.EETypes.Resolvers;
-using Dasync.ValueContainer;
 using Dasync.Serialization;
-using System;
+using Dasync.ValueContainer;
 
 namespace Dasync.ExecutionEngine.Transitions
 {
@@ -23,28 +24,97 @@ namespace Dasync.ExecutionEngine.Transitions
             CancellationToken ct)
         {
             ITransitionContext context = _transitionScope.CurrentMonitor.Context;
-            IMethodContinuationState continuationState = null;
+            ISerializedMethodContinuationState continuationState = null;
 
             if (actions.SaveStateIntent != null)
             {
+                var intent = actions.SaveStateIntent;
                 var serviceRef = _serviceResolver.Resolve(context.Service);
                 var methodRef = _methodResolver.Resolve(serviceRef.Definition, context.Method);
                 var behaviorSettings = _communicationSettingsProvider.GetMethodSettings(methodRef.Definition);
 
-                var intent = actions.SaveStateIntent;
+                IMethodStateStorage stateStorage = null;
+
                 if (intent.RoutineState != null && intent.RoutineResult == null)
                 {
-                    var preferRoamingState = behaviorSettings.RoamingState;
-                    var canRoamState = true; // TODO: whenall
-                    var hasPersistence = false;
+                    var roamState = behaviorSettings.RoamingState;
 
-                    if ((preferRoamingState || !hasPersistence) && canRoamState)
+                    if (!roamState)
+                    {
+                        stateStorage = _methodStateStorageProvider.GetStorage(context.Service, context.Method, returnNullIfNotFound: true);
+                        if (stateStorage == null)
+                        {
+                            // Fallback: try to roam the state if possible
+                            roamState = true;
+                        }
+                    }
+
+                    if (roamState)
+                    {
+                        // Aggregate methods (WhenAll, WhenAny) must have a concurrency control
+                        // using a persistence mechanism to aggregate multiple results.
+                        roamState = methodRef.Definition.FindProperty("aggregate")?.Value != (object)true;
+                    }
+
+                    if (!roamState && stateStorage == null)
+                    {
+                        throw new InvalidOperationException($"Invoking method '{methodRef.Id}' on '{serviceRef.Id}' requires persistence for aggregating result.");
+                    }
+
+                    if (roamState)
                     {
                         continuationState = EncodeContinuationState(intent, transitionCarrier, context);
                     }
-                    else if (!hasPersistence && !canRoamState)
+                    else
                     {
-                        throw new Exception("Invoking this method requires persistence for aggregation/concurrency.");
+                        try
+                        {
+                            await stateStorage.WriteStateAsync(
+                                context,
+                                actions.SaveStateIntent.RoutineState,
+                                transitionCarrier.GetContinuationsAsync(default).Result?.FirstOrDefault(),
+                                transitionCarrier as ISerializedMethodContinuationState);
+                        }
+                        catch (ETagMismatchException ex)
+                        {
+                            // The record in the storage has changed since the beginning of the transition.
+                            // There must have been a concurrent transition.
+                            // Discard current results and try again.
+                            throw new ConcurrentTransitionException(ex);
+                        }
+                    }
+                }
+                else if (intent.RoutineResult != null)
+                {
+                    // TODO: make this behavior optional if a continuation is present.
+                    // TODO: for the event sourcing style, the result must be written by the receiver of the response.
+                    var writeResult = true;
+
+                    if (stateStorage == null)
+                        stateStorage = _methodStateStorageProvider.GetStorage(context.Service, context.Method, returnNullIfNotFound: true);
+
+                    if (stateStorage == null)
+                    {
+                        // Fallback: if the method has a continuation, assume that no polling is expected,
+                        // so there is no need to write the result into a persisted storage.
+                        // This does not cover 'fire and forget' scenarios.
+                        if (transitionCarrier.GetContinuationsAsync(default).Result?.Count > 0)
+                        {
+                            writeResult = false;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"The method '{methodRef.Id}' of '{serviceRef.Id}' must have persistence for storing its result.");
+                        }
+                    }
+
+                    if (writeResult)
+                    {
+                        await stateStorage.WriteResultAsync(
+                            intent.Service,
+                            intent.Method,
+                            context.IntentId,
+                            intent.RoutineResult);
                     }
                 }
             }
@@ -59,7 +129,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     var preferences = new InvocationPreferences();
                     var communicator = _communicatorProvider.GetCommunicator(intent.Service, intent.Method);
 
-                    IMethodContinuationState thisIntentContinuationState = null;
+                    ISerializedMethodContinuationState thisIntentContinuationState = null;
                     if (continuationState != null && ReferenceEquals(actions.SaveStateIntent.AwaitedRoutine, intent))
                         thisIntentContinuationState = continuationState;
 
@@ -84,7 +154,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 foreach (var intent in actions.ContinuationIntents)
                 {
                     var communicator = _communicatorProvider.GetCommunicator(intent.Service, intent.Method);
-                    await communicator.ContinueAsync(intent, context, transitionCarrier as IMethodContinuationState, preferences: default);
+                    await communicator.ContinueAsync(intent, context, transitionCarrier as ISerializedMethodContinuationState, preferences: default);
                 }
             }
 
@@ -97,22 +167,26 @@ namespace Dasync.ExecutionEngine.Transitions
             }
         }
 
-        private IMethodContinuationState EncodeContinuationState(
+        private ISerializedMethodContinuationState EncodeContinuationState(
             SaveStateIntent saveStateIntent,
             ITransitionCarrier transitionCarrier,
             ITransitionContext context)
         {
-            var data = new RoutineContinuationStateEnvelope
+            var data = new MethodExecutionStateDto
             {
-                CallerDescriptor = transitionCarrier.GetContinuationsAsync(default).Result?.FirstOrDefault(),
-                RoutineState = _defaultSerializer.SerializeToBytes(saveStateIntent.RoutineState),
+                Service = saveStateIntent.Service,
+                Method = saveStateIntent.Method,
+                Caller = context.Caller,
+                Continuation = transitionCarrier.GetContinuationsAsync(default).Result?.FirstOrDefault(),
+                ContentType = _defaultSerializer.ContentType,
+                MethodStateData = _defaultSerializer.SerializeToBytes(saveStateIntent.RoutineState),
                 FlowContext = context.FlowContext
             };
 
-            if (transitionCarrier is IMethodContinuationState continuationState)
+            if (transitionCarrier is ISerializedMethodContinuationState continuationState)
             {
                 data.CallerContentType = continuationState.ContentType;
-                data.CallerState = continuationState.State;
+                data.CallerStateData = continuationState.State;
             }
 
             // TODO: compress
@@ -124,19 +198,18 @@ namespace Dasync.ExecutionEngine.Transitions
             };
         }
 
-        private RoutineContinuationData DecodeContinuationData(IMethodContinuationState state)
+        private IMethodExecutionState DecodeContinuationData(ISerializedMethodContinuationState state)
         {
             if (state?.State == null || state.State.Length == 0)
                 return null;
 
             var serializer = _serializeProvder.GetSerializer(state.ContentType);
-            var routineContinuationData = serializer.Deserialize<RoutineContinuationData>(state.State);
-            routineContinuationData.SetSerializer(serializer);
-            return routineContinuationData;
+            var dto = serializer.Deserialize<MethodExecutionStateDto>(state.State);
+            return new MethodExecutionState(dto, _serializeProvder);
         }
     }
 
-    internal class MethodContinuationState : IMethodContinuationState
+    internal class MethodContinuationState : ISerializedMethodContinuationState
     {
         public string ContentType { get; set; }
 
@@ -144,38 +217,69 @@ namespace Dasync.ExecutionEngine.Transitions
     }
 
     [Serializable]
-    public class RoutineContinuationStateEnvelope
+    public class MethodExecutionStateDto
     {
         // TODO: add headers for reply routing
 
-        public ContinuationDescriptor CallerDescriptor { get; set; }
+        public ServiceId Service { get; set; }
+
+        public PersistedMethodId Method { get; set; }
+
+        public ContinuationDescriptor Continuation { get; set; }
+
+        public string ContentType { get; set; }
+
+        public byte[] MethodStateData { get; set; }
 
         public string CallerContentType { get; set; }
 
-        public byte[] CallerState { get; set; }
+        public byte[] CallerStateData { get; set; }
 
-        public byte[] RoutineState { get; set; }
+        public CallerDescriptor Caller { get; set; }
 
         public Dictionary<string, string> FlowContext { get; set; }
     }
 
-    internal class RoutineContinuationData : RoutineContinuationStateEnvelope
+    internal class MethodExecutionState : IMethodExecutionState
     {
-        private ISerializer _serializer;
-
-        public void SetSerializer(ISerializer serializer) => _serializer = serializer;
-
-        public IMethodContinuationState GetCallerContinuationState()
+        public MethodExecutionState(
+            MethodExecutionStateDto dto,
+            ISerializerProvider serializerProvider)
         {
-            if (CallerState?.Length > 0)
-                return new MethodContinuationState
+            Service = dto.Service;
+            Method = dto.Method;
+            Continuation = dto.Continuation;
+            FlowContext = dto.FlowContext;
+            Caller = dto.Caller;
+            MethodStateData = dto.MethodStateData;
+            Serializer = serializerProvider.GetSerializer(dto.ContentType);
+
+            CallerState = (dto.CallerStateData?.Length > 0)
+                ? new MethodContinuationState
                 {
-                    ContentType = CallerContentType,
-                    State = CallerState
-                };
-            return null;
+                    ContentType = dto.CallerContentType,
+                    State = dto.CallerStateData
+                }
+                : null;
         }
 
-        public void ReadRoutineState(IValueContainer container) => _serializer.Populate(RoutineState, container);
+        private ISerializer Serializer { get; }
+
+        public ServiceId Service { get; }
+
+        public PersistedMethodId Method { get; }
+
+        public ContinuationDescriptor Continuation { get; }
+
+        public byte[] MethodStateData { get; }
+
+        public CallerDescriptor Caller { get; }
+
+        public Dictionary<string, string> FlowContext { get; }
+
+        public ISerializedMethodContinuationState CallerState { get; }
+
+        public void ReadMethodState(IValueContainer container) =>
+            Serializer.Populate(MethodStateData, container);
     }
 }

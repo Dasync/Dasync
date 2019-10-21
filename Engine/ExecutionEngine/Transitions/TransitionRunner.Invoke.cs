@@ -5,6 +5,7 @@ using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
+using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Resolvers;
 using Dasync.Serialization;
 using Dasync.ValueContainer;
@@ -50,7 +51,7 @@ namespace Dasync.ExecutionEngine.Transitions
             return parameters;
         }
 
-        public async Task<InvokeRoutineResult> RunAsync(IMethodInvocationData data, ICommunicatorMessage message, IMethodContinuationState continuationState)
+        public async Task<InvokeRoutineResult> RunAsync(IMethodInvocationData data, ICommunicatorMessage message, ISerializedMethodContinuationState continuationState)
         {
             var serviceReference = _serviceResolver.Resolve(data.Service);
             var methodReference = _methodResolver.Resolve(serviceReference.Definition, data.Method);
@@ -71,7 +72,7 @@ namespace Dasync.ExecutionEngine.Transitions
             }
             if (needsDeduplication &&
                 !message.CommunicatorTraits.HasFlag(CommunicationTraits.MessageDeduplication) &&
-                (message.IsRetry == true || string.IsNullOrEmpty(message.RequestId)))
+                (message.IsRetry != false || string.IsNullOrEmpty(message.RequestId)))
             {
                 // TODO: if has message de-dup'er, check if a dedup
                 // return new InvokeRoutineResult { Outcome = InvocationOutcome.Deduplicated };
@@ -165,7 +166,7 @@ namespace Dasync.ExecutionEngine.Transitions
             }
         }
 
-        public async Task<ContinueRoutineResult> ContinueAsync(IMethodContinuationData data, ICommunicatorMessage message, IMethodContinuationState continuationState)
+        public async Task<ContinueRoutineResult> ContinueAsync(IMethodContinuationData data, ICommunicatorMessage message, ISerializedMethodContinuationState continuationState)
         {
             var serviceReference = _serviceResolver.Resolve(data.Service);
             var methodReference = _methodResolver.Resolve(serviceReference.Definition, data.Method);
@@ -237,6 +238,11 @@ namespace Dasync.ExecutionEngine.Transitions
 
                     var invocationResult = await preferredCommunicator.ContinueAsync(intent, context, continuationState, preferences);
 
+                    if (!preferences.LockMessage || invocationResult.MessageHandle == null)
+                    {
+                        return new ContinueRoutineResult { };
+                    }
+
                     // NOTE: will run synchronously below
                     messageHandle = invocationResult.MessageHandle;
                 }
@@ -248,25 +254,38 @@ namespace Dasync.ExecutionEngine.Transitions
 
             try
             {
+        @TryRun:
                 var adapter = new TransitionCarrier(data);
 
-                var routineContinuationData = DecodeContinuationData(continuationState);
-                if (routineContinuationData != null)
+                IMethodExecutionState methodState = DecodeContinuationData(continuationState);
+                if (methodState == null)
                 {
-                    adapter.SetRoutineContinuationData(routineContinuationData);
-                }
-                else
-                {
-                    throw new NotImplementedException("TODO: persistence");
+                    var stateStorage = _methodStateStorageProvider.GetStorage(data.Service, data.Method, returnNullIfNotFound: true);
+                    if (stateStorage == null)
+                        throw new InvalidOperationException($"Cannot resume method '{data.Service}'.{data.Method} due to absence of persistence mechanism.");
+
+                    methodState = await stateStorage.ReadStateAsync(data.Service, data.Method, default);
                 }
 
+                adapter.SetMethodExecutionState(methodState);
 
-                var transitionDescriptor = new TransitionDescriptor { Type = TransitionType.ContinueRoutine };
-                var result = await RunRoutineAsync(adapter, transitionDescriptor, default);
+                InvokeRoutineResult result;
+                try
+                {
+                    var transitionDescriptor = new TransitionDescriptor { Type = TransitionType.ContinueRoutine };
+                    result = await RunRoutineAsync(adapter, transitionDescriptor, default);
+                }
+                catch (ConcurrentTransitionException)
+                {
+                    goto TryRun;
+                }
+
                 if (result.Outcome == InvocationOutcome.Complete && !string.IsNullOrEmpty(data.Method.IntentId))
                     _routineCompletionSink.OnRoutineCompleted(data.Service, data.Method, data.Method.IntentId, result.Result);
+
                 if (messageHandle != null)
                     await messageHandle.Complete();
+
                 return new ContinueRoutineResult
                 {
                 };

@@ -5,6 +5,7 @@ using Dasync.EETypes.Cancellation;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Ioc;
+using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Platform;
 using Dasync.EETypes.Proxy;
 using Dasync.EETypes.Resolvers;
@@ -15,6 +16,7 @@ using Dasync.ExecutionEngine.Continuation;
 using Dasync.ExecutionEngine.Events;
 using Dasync.ExecutionEngine.Extensions;
 using Dasync.ExecutionEngine.IntrinsicFlow;
+using Dasync.ExecutionEngine.Persistence;
 using Dasync.ExecutionEngine.Proxy;
 using Dasync.ExecutionEngine.Resolvers;
 using Dasync.ExecutionEngine.StateMetadata.Service;
@@ -65,6 +67,7 @@ namespace Dasync.ExecutionEngine
             [typeof(ICommunicationSettingsProvider)] = typeof(CommunicationSettingsProvider),
             [typeof(IEventSubscriber)] = typeof(EventSubscriber),
             [typeof(ISingleMethodInvoker)] = typeof(SingleMethodInvoker),
+            [typeof(IMethodStateStorageProvider)] = typeof(MethodStateStorageProvider),
         };
     }
 }

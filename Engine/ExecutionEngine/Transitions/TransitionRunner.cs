@@ -12,6 +12,7 @@ using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Intents;
+using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Platform;
 using Dasync.EETypes.Resolvers;
 using Dasync.EETypes.Triggers;
@@ -35,6 +36,7 @@ namespace Dasync.ExecutionEngine.Transitions
         private readonly ICommunicationSettingsProvider _communicationSettingsProvider;
         private readonly ISerializer _defaultSerializer;
         private readonly ISerializerProvider _serializeProvder;
+        private readonly IMethodStateStorageProvider _methodStateStorageProvider;
 
         public TransitionRunner(
             ITransitionScope transitionScope,
@@ -48,7 +50,8 @@ namespace Dasync.ExecutionEngine.Transitions
             IRoutineCompletionSink routineCompletionSink,
             ICommunicationSettingsProvider communicationSettingsProvider,
             IDefaultSerializerProvider defaultSerializerProvider,
-            ISerializerProvider serializeProvder)
+            ISerializerProvider serializeProvder,
+            IMethodStateStorageProvider methodStateStorageProvider)
         {
             _transitionScope = transitionScope;
             _asyncStateMachineMetadataProvider = asyncStateMachineMetadataProvider;
@@ -62,6 +65,7 @@ namespace Dasync.ExecutionEngine.Transitions
             _communicationSettingsProvider = communicationSettingsProvider;
             _defaultSerializer = defaultSerializerProvider.DefaultSerializer;
             _serializeProvder = serializeProvder;
+            _methodStateStorageProvider = methodStateStorageProvider;
         }
 
         public async Task RunAsync(
