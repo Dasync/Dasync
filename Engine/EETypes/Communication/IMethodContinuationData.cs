@@ -1,4 +1,5 @@
-﻿using Dasync.EETypes.Descriptors;
+﻿using System;
+using Dasync.EETypes.Descriptors;
 
 namespace Dasync.EETypes.Communication
 {
@@ -18,6 +19,6 @@ namespace Dasync.EETypes.Communication
         /// <summary>
         /// The result of the awaited routine. 
         /// </summary>
-        TaskResult Result { get; }
+        TaskResult ReadResult(Type expectedResultValueType);
     }
 }

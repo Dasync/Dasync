@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Dasync.Accessors;
 using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
@@ -83,7 +84,7 @@ namespace Dasync.ExecutionEngine.Transitions
             //-------------------------------------------------------------------------------
 
             // TODO: Unit of Work - check if there is cached/stored data
-            if (message.IsRetry == true)
+            if (message.IsRetry != false)
             {
                 // TODO: If has entities in transitions and they have been already committed,
                 // skip method transition and re-try sending commands and events.
@@ -179,7 +180,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
             if (behaviorSettings.Deduplicate &&
                 !message.CommunicatorTraits.HasFlag(CommunicationTraits.MessageDeduplication) &&
-                (message.IsRetry == true || string.IsNullOrEmpty(message.RequestId)))
+                (message.IsRetry != false || string.IsNullOrEmpty(message.RequestId)))
             {
                 // TODO: if has message de-dup'er, check if a dedup
                 // return new InvokeRoutineResult { Outcome = InvocationOutcome.Deduplicated };
@@ -190,7 +191,7 @@ namespace Dasync.ExecutionEngine.Transitions
             //-------------------------------------------------------------------------------
 
             // TODO: Unit of Work - check if there is cached/stored data
-            if (message.IsRetry == true)
+            if (message.IsRetry != false)
             {
                 // TODO: If has entities in transitions and they have been already committed,
                 // skip method transition and re-try sending commands and events.
@@ -216,10 +217,23 @@ namespace Dasync.ExecutionEngine.Transitions
                         Service = data.Service,
                         Method = data.Method,
                         TaskId = data.TaskId,
-                        Result = data.Result,
                         // TODO:
                         //ContinueAt = data.ContinueAt
                     };
+
+                    // TODO: helper method
+                    Type expectedResultValueType;
+                    var methodReturnType = methodReference.Definition.MethodInfo.ReturnType;
+                    if (methodReturnType == typeof(void))
+                    {
+                        expectedResultValueType = typeof(object);
+                    }
+                    else
+                    {
+                        var taskResultType = TaskAccessor.GetTaskResultType(methodReturnType);
+                        expectedResultValueType = taskResultType == TaskAccessor.VoidTaskResultType ? typeof(object) : taskResultType;
+                    }
+                    intent.Result = data.ReadResult(expectedResultValueType);
 
                     var preferences = new InvocationPreferences
                     {

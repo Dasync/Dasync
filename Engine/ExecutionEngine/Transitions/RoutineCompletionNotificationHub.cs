@@ -181,11 +181,11 @@ namespace Dasync.ExecutionEngine.Transitions
                 _serviceResolver.Resolve(trackedInvocation.ServiceId).Definition,
                 trackedInvocation.MethodId).Definition;
 
+            // TODO: helper method
             Type taskResultType =
                 methodDefinition.MethodInfo.ReturnType == typeof(void)
                 ? TaskAccessor.VoidTaskResultType
                 : TaskAccessor.GetTaskResultType(methodDefinition.MethodInfo.ReturnType);
-
             trackedInvocation.ResultValueType =
                 taskResultType == TaskAccessor.VoidTaskResultType
                 ? typeof(object)

@@ -27,7 +27,6 @@ namespace Dasync.Serializers.EETypes
             RegisterType(typeof(MethodId), nameof(MethodId));
             RegisterType(typeof(ContinuationDescriptor), nameof(ContinuationDescriptor));
             RegisterType(typeof(PersistedMethodId), nameof(PersistedMethodId));
-            RegisterType(typeof(ResultDescriptor), nameof(ResultDescriptor));
             RegisterType(typeof(ServiceDescriptor), nameof(ServiceDescriptor));
             RegisterType(typeof(CallerDescriptor), nameof(CallerDescriptor));
             RegisterType(typeof(TaskResult), nameof(TaskResult));

@@ -31,6 +31,9 @@ namespace Dasync.EETypes.Platform
         Task ReadRoutineStateAsync(IValueContainer target, CancellationToken ct);
 
         [Obsolete]
-        Task<ResultDescriptor> GetAwaitedResultAsync(CancellationToken ct);
+        string ResultTaskId { get; }
+
+        [Obsolete]
+        TaskResult ReadResult(Type expectedResultValueType);
     }
 }

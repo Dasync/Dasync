@@ -54,18 +54,13 @@ namespace Dasync.ExecutionEngine.Transitions
             Caller = _methodExecutionState.Caller;
         }
 
-        public Task<ResultDescriptor> GetAwaitedResultAsync(CancellationToken ct)
+        public string ResultTaskId => _methodContinuationData?.TaskId;
+
+        public TaskResult ReadResult(Type expectedResultValueType)
         {
-            if (_methodContinuationData != null)
-            {
-                var result = new ResultDescriptor
-                {
-                    TaskId = _methodContinuationData.TaskId,
-                    Result = _methodContinuationData.Result
-                };
-                return Task.FromResult(result);
-            }
-            throw new InvalidOperationException();
+            if (_methodContinuationData == null)
+                throw new InvalidOperationException();
+            return _methodContinuationData.ReadResult(expectedResultValueType);
         }
 
         public Task<List<ContinuationDescriptor>> GetContinuationsAsync(CancellationToken ct)

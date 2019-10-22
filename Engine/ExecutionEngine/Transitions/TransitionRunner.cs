@@ -273,16 +273,15 @@ namespace Dasync.ExecutionEngine.Transitions
 
             if (isContinuation)
             {
-                var awaitedResult = await transitionCarrier.GetAwaitedResultAsync(ct);
-                if (awaitedResult != null)
+                if (!string.IsNullOrEmpty(transitionCarrier.ResultTaskId))
                     TaskCapture.StartCapturing();
 
                 await transitionCarrier.ReadRoutineStateAsync(asmValueContainer, ct);
 
                 // TODO: instead of capturing created tasks, it's easier just to go through all awaiters in the state machine
-                if (awaitedResult != null)
+                if (!string.IsNullOrEmpty(transitionCarrier.ResultTaskId))
                     UpdateTasksWithAwaitedRoutineResult(
-                        TaskCapture.FinishCapturing(), awaitedResult);
+                        TaskCapture.FinishCapturing(), transitionCarrier);
             }
             else
             {
@@ -293,14 +292,19 @@ namespace Dasync.ExecutionEngine.Transitions
         }
 
         private static void UpdateTasksWithAwaitedRoutineResult(
-            List<Task> deserializedTasks, ResultDescriptor awaitedResult)
+            List<Task> deserializedTasks, ITransitionCarrier carrier)
         {
             foreach (var task in deserializedTasks)
             {
                 if (task.AsyncState is IProxyTaskState state &&
-                    state.TaskId == awaitedResult.TaskId)
+                    state.TaskId == carrier.ResultTaskId)
                 {
-                    task.TrySetResult(awaitedResult.Result);
+                    // TODO: helper method
+                    var taskResultType = TaskAccessor.GetResultType(task);
+                    var expectedResultValueType = taskResultType == TaskAccessor.VoidTaskResultType ? typeof(object) : taskResultType;
+                    
+                    var taskResult = carrier.ReadResult(expectedResultValueType);
+                    task.TrySetResult(taskResult);
                 }
             }
         }
