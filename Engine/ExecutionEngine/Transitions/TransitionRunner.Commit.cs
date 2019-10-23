@@ -70,6 +70,8 @@ namespace Dasync.ExecutionEngine.Transitions
                         try
                         {
                             await stateStorage.WriteStateAsync(
+                                actions.SaveStateIntent.Service,
+                                actions.SaveStateIntent.Method,
                                 context,
                                 actions.SaveStateIntent.RoutineState,
                                 transitionCarrier.GetContinuationsAsync(default).Result?.FirstOrDefault(),

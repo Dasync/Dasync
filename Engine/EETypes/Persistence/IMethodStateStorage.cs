@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
 using Dasync.ValueContainer;
 
@@ -10,6 +9,8 @@ namespace Dasync.EETypes.Persistence
     public interface IMethodStateStorage
     {
         Task WriteStateAsync(
+            ServiceId serviceId,
+            PersistedMethodId methodId,
             ITransitionContext context,
             IValueContainer methodState,
             ContinuationDescriptor continuation,

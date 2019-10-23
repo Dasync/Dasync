@@ -94,7 +94,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     });
                 return Task.FromResult(result);
             }
-            if (_methodContinuationData != null)
+            else if (_methodContinuationData != null)
             {
                 return Task.FromResult(_methodContinuationData.Method);
             }
@@ -111,7 +111,7 @@ namespace Dasync.ExecutionEngine.Transitions
             {
                 return Task.FromResult(_methodInvocationData.Service);
             }
-            if (_methodContinuationData != null)
+            else if (_methodContinuationData != null)
             {
                 return Task.FromResult(_methodContinuationData.Service);
             }
