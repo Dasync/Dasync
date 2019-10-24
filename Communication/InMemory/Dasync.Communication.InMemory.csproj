@@ -6,11 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Communication\InMemory\Dasync.Communication.InMemory.csproj" />
+    <PackageReference Include="AsyncEnumerator" Version="4.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.csproj" />
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />
     <ProjectReference Include="..\..\IoC\DependencyInjection\Dasync.DependencyInjection.csproj" />
-    <ProjectReference Include="..\..\Persistence\InMemory\Dasync.Persistence.InMemory.csproj" />
   </ItemGroup>
 
 </Project>

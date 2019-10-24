@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Dasync.DependencyInjection;
+using Dasync.EETypes.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dasync.Fabric.InMemory
+namespace Dasync.Persistence.FileSystem
 {
     public static class DI
     {
@@ -10,8 +12,13 @@ namespace Dasync.Fabric.InMemory
 
         public static IServiceCollection Configure(this IServiceCollection services)
         {
-            Dasync.Communication.InMemory.DI.Configure(services);
-            Dasync.Persistence.InMemory.DI.Configure(services);
+            // .NET Hosting
+
+            // D-ASYNC
+            services.AddSingleton<IPersistenceMethod, FilePersistenceMethod>();
+
+            // Internals
+
             return services;
         }
     }

@@ -2,18 +2,17 @@
 using System.Text;
 using System.Threading.Tasks;
 using Dasync.DependencyInjection;
-using Dasync.EETypes.Ioc;
-using Dasync.Fabric.Sample.Base;
-using Dasync.Modeling;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace DasyncFeatures
 {
     public class Program
     {
-        static async Task Main()
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("DASYNC Feature Showdown [TECH PREVIEW]");
+            Console.WriteLine("DASYNC Feature Showdown");
             Console.WriteLine("Look at the code and its comments to understand the demo!");
             Console.WriteLine();
 
@@ -28,7 +27,8 @@ namespace DasyncFeatures
                 new Feature7.Demo(),
             };
 
-            var feature = SelectFeature(featureDemoSet);
+            //var feature = SelectFeature(featureDemoSet);
+            var feature = featureDemoSet[0];
 
             // !!! LOOK HERE !!!
             //
@@ -44,12 +44,20 @@ namespace DasyncFeatures
             //    this console app, it will pick up any unfinished work. [DEFAULT]
             //    Where does it store the data? In the 'data' folder :)
             //    It should be under '/bin/Debug/netcoreapp2.0' directory.
-            var services = new ServiceCollection();
-            PlugInDasync(services, feature, inMemoryEmulation: false);
 
-            var serviceProvider = services.BuildServiceProvider();
-            StartFabric(serviceProvider);
-            await feature.Run(serviceProvider);
+            IHost host = new HostBuilder()
+                .ConfigureAppConfiguration(_ => _
+                    .AddJsonFile("appsettings.json", optional: true)
+                    .AddEnvironmentVariables()
+                    .AddCommandLine(args))
+                .ConfigureServices(services =>
+                        PlugInDasync(services, feature))
+                .Start();
+
+            await feature.Run(host.Services);
+            await host.StopAsync();
+            await host.WaitForShutdownAsync();
+            host.Dispose();
         }
 
         static IFeatureDemo SelectFeature(IFeatureDemo[] features)
@@ -79,7 +87,7 @@ namespace DasyncFeatures
             return features[featureIndex];
         }
 
-        static void PlugInDasync(IServiceCollection services, IFeatureDemo feature, bool inMemoryEmulation)
+        static void PlugInDasync(IServiceCollection services, IFeatureDemo feature)
         {
             services.AddModules(
                 Dasync.Serialization.DI.Bindings,
@@ -91,47 +99,13 @@ namespace DasyncFeatures
                 Dasync.AsyncStateMachine.DI.Bindings,
                 Dasync.ExecutionEngine.DI.Bindings);
 
-            services.AddSingleton<IDomainServiceProvider, DomainServiceProvider>();
+            services.AddModules(
+                Dasync.Communication.InMemory.DI.Bindings,
+                Dasync.Persistence.InMemory.DI.Bindings);
 
-            services.AddModule(Dasync.Fabric.Sample.Base.DI.Bindings);
-            if (inMemoryEmulation)
-                services.AddModule(Dasync.Fabric.InMemory.DI.Bindings);
-            else
-                services.AddModule(Dasync.Fabric.FileBased.DI.Bindings);
-
-            services.AddSingleton(feature.Model);
             services.AddModule(feature.Bindings);
+            services.AddCommunicationModel(feature.Model);
             services.AddDomainServicesViaDasync(feature.Model);
-        }
-
-        static void StartFabric(IServiceProvider services)
-        {
-            var communicationModel = services.GetService<ICommunicationModel>();
-            var domainServiceProvider = services.GetService<IDomainServiceProvider>();
-
-            var fabric = services.GetService<IFabric>();
-            fabric.InitializeAsync(default).Wait();
-
-            services.GetService<ICurrentFabricSetter>().SetInstance(fabric);
-
-            // ResolveAllDomainServices
-            foreach (var serviceDefinition in communicationModel.Services)
-            {
-                if (serviceDefinition.Implementation != null)
-                {
-                    domainServiceProvider.GetService(serviceDefinition.Implementation);
-                }
-
-                if (serviceDefinition.Interfaces?.Length > 0)
-                {
-                    foreach (var interfaceType in serviceDefinition.Interfaces)
-                    {
-                        domainServiceProvider.GetService(interfaceType);
-                    }
-                }
-            }
-
-            fabric.StartAsync(default).Wait();
         }
     }
 }

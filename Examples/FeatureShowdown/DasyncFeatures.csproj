@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -16,10 +16,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Communication\InMemory\Dasync.Communication.InMemory.csproj" />
     <ProjectReference Include="..\..\Data\Serialization.Json\Dasync.Serialization.Json.csproj" />
     <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.csproj" />
     <ProjectReference Include="..\..\Data\Serializers.DomainTypes\Dasync.Serializers.DomainTypes.csproj" />
@@ -31,11 +36,15 @@
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />
     <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.csproj" />
     <ProjectReference Include="..\..\Engine\Proxy\Dasync.Proxy.csproj" />
-    <ProjectReference Include="..\..\Fabric\Fabric.FileBased\Dasync.Fabric.FileBased.csproj" />
-    <ProjectReference Include="..\..\Fabric\Fabric.InMemory\Dasync.Fabric.InMemory.csproj" />
-    <ProjectReference Include="..\..\Fabric\Sample.Base\Dasync.Fabric.Sample.Base.csproj" />
     <ProjectReference Include="..\..\IoC\DependencyInjection\Dasync.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\Modeling\Dasync.Modeling.csproj" />
+    <ProjectReference Include="..\..\Persistence\InMemory\Dasync.Persistence.InMemory.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -6,11 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Communication\InMemory\Dasync.Communication.InMemory.csproj" />
     <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.csproj" />
     <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />
     <ProjectReference Include="..\..\IoC\DependencyInjection\Dasync.DependencyInjection.csproj" />
-    <ProjectReference Include="..\..\Persistence\InMemory\Dasync.Persistence.InMemory.csproj" />
   </ItemGroup>
 
 </Project>
