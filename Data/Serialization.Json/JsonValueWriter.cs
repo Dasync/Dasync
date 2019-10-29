@@ -32,7 +32,7 @@ namespace Dasync.Serialization.Json
             _jsonWriter = jsonWriter ?? throw new ArgumentNullException(nameof(jsonWriter));
         }
 
-        public bool CanWriteValueWithoutTypeInfo(Type type)
+        public bool CanWriteValueWithoutTypeInfo(Type type, object value)
         {
             return
                 type == typeof(bool) ||

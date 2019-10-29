@@ -49,7 +49,7 @@ namespace Dasync.Serialization
             using (var valueReader = _valueTextReaderFactory.Create(reader))
             {
                 var reconstructor = new ObjectReconstructor(_composerSelector, target, _typeSerializerHelper);
-                valueReader.Read(reconstructor);
+                valueReader.Read(reconstructor, this);
             }
         }
 
@@ -75,7 +75,7 @@ namespace Dasync.Serialization
                 using (var valueReader = _valueTextReaderFactory.Create(textReader))
                 {
                     var reconstructor = new ObjectReconstructor(_composerSelector, target, _typeSerializerHelper);
-                    valueReader.Read(reconstructor);
+                    valueReader.Read(reconstructor, this);
                 }
             }
         }

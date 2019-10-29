@@ -6,7 +6,7 @@ namespace Dasync.Serialization
     {
         void WriteStart();
         void WriteStartValue(ValueInfo info);
-        bool CanWriteValueWithoutTypeInfo(Type type);
+        bool CanWriteValueWithoutTypeInfo(Type type, object value);
         void WriteValue(object value);
         void WriteEndValue();
         void WriteEnd();

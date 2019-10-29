@@ -124,7 +124,7 @@ namespace Dasync.Serialization
                 writer.WriteValue(null);
                 writer.WriteEndValue();
             }
-            else if (writer.CanWriteValueWithoutTypeInfo(type))
+            else if (writer.CanWriteValueWithoutTypeInfo(type, value))
             {
                 writer.WriteStartValue(valueInfo);
                 writer.WriteValue(value);

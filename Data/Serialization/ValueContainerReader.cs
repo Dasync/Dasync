@@ -10,7 +10,7 @@ namespace Dasync.Serialization
         {
             _container = container;
         }
-        public void Read(IObjectReconstructor reconstructor)
+        public void Read(IObjectReconstructor reconstructor, ISerializer serializer)
         {
             var count = _container.GetCount();
             for (var i = 0; i < count; i++)

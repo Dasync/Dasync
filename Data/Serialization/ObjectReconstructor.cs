@@ -24,7 +24,6 @@ namespace Dasync.Serialization
             public bool IsDynamicContainer;
         }
 
-        private Stack<ScopeState> _scopeStack = new Stack<ScopeState>();
         private ScopeState _scope;
         private readonly IObjectComposerSelector _composerSelector;
         private Dictionary<long, object> _objectByIdMap = new Dictionary<long, object>();
@@ -45,12 +44,26 @@ namespace Dasync.Serialization
             _typeSerializerHelper = typeSerializerHelper;
         }
 
+        public Type GetExpectedValueType(string propertyName)
+        {
+            if (_scope.Container != null)
+            {
+                var index = FindIndex(_scope.Container, propertyName, _scope.Index + 1);
+                if (index >= 0)
+                {
+                    return _scope.Container.GetType(index);
+                }
+            }
+            return null;
+        }
+
         public void OnValueStart(ValueInfo info)
         {
             _scope = new ScopeState
             {
                 ParentScope = _scope,
-                Container = _scope == null ? _targetRootContainer : null
+                Container = _scope == null ? _targetRootContainer : null,
+                IsDynamicContainer = _scope == null && _targetRootContainer is ValueContainer.ValueContainer
             };
             _scope.ValueInfo = info;
 
@@ -124,7 +137,7 @@ namespace Dasync.Serialization
             var valueScope = _scope;
             _scope = _scope.ParentScope;
 
-            if (valueScope.ValueReceived)
+            if (valueScope.ValueReceived && _scope != null)
             {
                 var value = valueScope.Value;
 

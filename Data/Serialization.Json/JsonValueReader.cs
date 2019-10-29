@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using Dasync.ValueContainer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -22,7 +25,7 @@ namespace Dasync.Serialization.Json
             public bool ValueEnded;
         }
 
-        public void Read(IObjectReconstructor reconstructor)
+        public void Read(IObjectReconstructor reconstructor, ISerializer serializer)
         {
             var stateStack = new Stack<State>();
             State state = null;
@@ -33,9 +36,49 @@ namespace Dasync.Serialization.Json
                 {
                     case JsonToken.StartObject:
                         {
-                            if (state == null)
-                                state = new State();
-                            state.HasMetadata = true;
+                            if (state?.Info.Name != null && reconstructor.GetExpectedValueType(state.Info.Name) == typeof(IValueContainer))
+                            {
+                                var content = new StringBuilder();
+                                var textWriter = new StringWriter(content);
+                                var jsonWriter = new JsonTextWriter(textWriter);
+                                jsonWriter.WriteToken(_jsonReader, writeChildren: true);
+
+                                var serializedContainer = new SerializedValueContainer(
+                                    "dasync+json",
+                                    content.ToString(),
+                                    null,
+                                    (format, form, state) =>
+                                    {
+                                        var dynamicValueContainer = new ValueContainer.ValueContainer();
+                                        serializer.Populate((string)form, dynamicValueContainer);
+                                        return dynamicValueContainer;
+                                    });
+
+                                reconstructor.OnValueStart(state.Info);
+                                reconstructor.OnValue(serializedContainer);
+                                reconstructor.OnValueEnd();
+
+                                if (stateStack.Count > 0)
+                                {
+                                    state = stateStack.Pop();
+
+                                    if (state.Info.IsCollection)
+                                    {
+                                        stateStack.Push(state);
+                                        state = new State();
+                                    }
+                                }
+                                else
+                                {
+                                    state = null;
+                                }
+                            }
+                            else
+                            {
+                                if (state == null)
+                                    state = new State();
+                                state.HasMetadata = true;
+                            }
                         }
                         break;
 
