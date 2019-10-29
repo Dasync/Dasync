@@ -5,8 +5,14 @@
     /// </summary>
     public interface ISerializedMethodContinuationState
     {
-        string ContentType { get; set; }
+        /// <summary>
+        /// The Format of an ISerializer
+        /// </summary>
+        string Format { get; set; }
 
+        /// <summary>
+        /// Serialized method execution state
+        /// </summary>
         byte[] State { get; set; }
     }
 }

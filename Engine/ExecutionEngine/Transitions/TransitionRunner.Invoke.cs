@@ -30,17 +30,17 @@ namespace Dasync.ExecutionEngine.Transitions
     {
         private IValueContainer GetMethodParameters(IMethodInvocationData data)
         {
-            if (data is IMethodSerializedParameters serializedParameters && !string.IsNullOrEmpty(serializedParameters.ContentType))
+            if (data is IMethodSerializedParameters serializedParameters && !string.IsNullOrEmpty(serializedParameters.Format))
             {
                 return new SerializedValueContainer(
-                    serializedParameters.ContentType,
+                    serializedParameters.Format,
                     serializedParameters.SerializedForm,
                     data, DeserializeMethodParameters);
             }
             return DeserializeMethodParameters(data);
         }
 
-        private IValueContainer DeserializeMethodParameters(string contentType, object serializedForm, object state) =>
+        private IValueContainer DeserializeMethodParameters(string format, object serializedForm, object state) =>
             DeserializeMethodParameters((IMethodInvocationData)state);
 
         private IValueContainer DeserializeMethodParameters(IMethodInvocationData data)

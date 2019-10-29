@@ -35,10 +35,10 @@ namespace Dasync.ExecutionEngine.Transitions
             _methodContinuationData = routineContinuationData;
         }
 
-        string ISerializedMethodContinuationState.ContentType
+        string ISerializedMethodContinuationState.Format
         {
-            get => _continuationState?.ContentType;
-            set { if (_continuationState != null) _continuationState.ContentType = value; }
+            get => _continuationState?.Format;
+            set { if (_continuationState != null) _continuationState.Format = value; }
         }
 
         byte[] ISerializedMethodContinuationState.State

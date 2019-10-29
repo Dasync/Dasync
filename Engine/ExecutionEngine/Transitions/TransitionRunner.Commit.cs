@@ -180,22 +180,22 @@ namespace Dasync.ExecutionEngine.Transitions
                 Method = saveStateIntent.Method,
                 Caller = context.Caller,
                 Continuation = transitionCarrier.GetContinuationsAsync(default).Result?.FirstOrDefault(),
-                ContentType = _defaultSerializer.ContentType,
+                Format = _defaultSerializer.Format,
                 MethodStateData = _defaultSerializer.SerializeToBytes(saveStateIntent.RoutineState),
                 FlowContext = context.FlowContext
             };
 
             if (transitionCarrier is ISerializedMethodContinuationState continuationState)
             {
-                data.CallerContentType = continuationState.ContentType;
-                data.CallerStateData = continuationState.State;
+                data.ContinuationStateFormat = continuationState.Format;
+                data.ContinuationStateData = continuationState.State;
             }
 
             // TODO: compress
             // TODO: encrypt
             return new MethodContinuationState
             {
-                ContentType = _defaultSerializer.ContentType,
+                Format = _defaultSerializer.Format,
                 State = _defaultSerializer.SerializeToBytes(data)
             };
         }
@@ -205,7 +205,7 @@ namespace Dasync.ExecutionEngine.Transitions
             if (state?.State == null || state.State.Length == 0)
                 return null;
 
-            var serializer = _serializeProvder.GetSerializer(state.ContentType);
+            var serializer = _serializeProvder.GetSerializer(state.Format);
             var dto = serializer.Deserialize<MethodExecutionStateDto>(state.State);
             return new MethodExecutionState(dto, _serializeProvder);
         }
@@ -213,7 +213,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
     internal class MethodContinuationState : ISerializedMethodContinuationState
     {
-        public string ContentType { get; set; }
+        public string Format { get; set; }
 
         public byte[] State { get; set; }
     }
@@ -229,13 +229,13 @@ namespace Dasync.ExecutionEngine.Transitions
 
         public ContinuationDescriptor Continuation { get; set; }
 
-        public string ContentType { get; set; }
+        public string Format { get; set; }
 
         public byte[] MethodStateData { get; set; }
 
-        public string CallerContentType { get; set; }
+        public string ContinuationStateFormat { get; set; }
 
-        public byte[] CallerStateData { get; set; }
+        public byte[] ContinuationStateData { get; set; }
 
         public CallerDescriptor Caller { get; set; }
 
@@ -254,13 +254,13 @@ namespace Dasync.ExecutionEngine.Transitions
             FlowContext = dto.FlowContext;
             Caller = dto.Caller;
             MethodStateData = dto.MethodStateData;
-            Serializer = serializerProvider.GetSerializer(dto.ContentType);
+            Serializer = serializerProvider.GetSerializer(dto.Format);
 
-            CallerState = (dto.CallerStateData?.Length > 0)
+            CallerState = (dto.ContinuationStateData?.Length > 0)
                 ? new MethodContinuationState
                 {
-                    ContentType = dto.CallerContentType,
-                    State = dto.CallerStateData
+                    Format = dto.ContinuationStateFormat,
+                    State = dto.ContinuationStateData
                 }
                 : null;
         }

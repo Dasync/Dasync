@@ -58,8 +58,8 @@ namespace Dasync.Persistence.InMemory
 
                 if (callerState != null)
                 {
-                    entry["CallerContentType"] = callerState.ContentType;
-                    entry["CallerState"] = callerState.State;
+                    entry["Continuation:Format"] = callerState.Format;
+                    entry["Continuation:State"] = callerState.State;
                 }
             }
 
@@ -74,8 +74,8 @@ namespace Dasync.Persistence.InMemory
             MethodExecutionState state;
             string serializedFlowContext;
             string serializedContinuation;
-            string callerContentType;
-            byte[] callerState;
+            string continuationStateFormat;
+            byte[] continuationStateData;
 
             lock (_entryMap)
             {
@@ -94,8 +94,8 @@ namespace Dasync.Persistence.InMemory
 
                 serializedFlowContext = entry.TryGetValue("FlowContext", out var flowContextObj) ? flowContextObj as string : null;
                 serializedContinuation = entry.TryGetValue("Continuation", out var continuationObj) ? continuationObj as string : null;
-                callerContentType = entry.TryGetValue("CallerContentType", out var callerContentTypeObj) ? callerContentTypeObj as string : null;
-                callerState = entry.TryGetValue("CallerState", out var callerStateObj) ? callerStateObj as byte[] : null;
+                continuationStateFormat = entry.TryGetValue("Continuation:Format", out var continuationStateFormatObj) ? continuationStateFormatObj as string : null;
+                continuationStateData = entry.TryGetValue("Continuation:State", out var continuationStateDataObj) ? continuationStateDataObj as byte[] : null;
             }
 
             if (!string.IsNullOrEmpty(serializedFlowContext))
@@ -104,12 +104,12 @@ namespace Dasync.Persistence.InMemory
             if (!string.IsNullOrEmpty(serializedContinuation))
                 state.Continuation = _serializer.Deserialize<ContinuationDescriptor>(serializedContinuation);
 
-            if (callerState?.Length > 0)
+            if (continuationStateData?.Length > 0)
             {
                 state.CallerState = new SerializedMethodContinuationState
                 {
-                    ContentType = callerContentType,
-                    State = callerState
+                    Format = continuationStateFormat,
+                    State = continuationStateData
                 };
             }
 

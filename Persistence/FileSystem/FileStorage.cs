@@ -48,11 +48,12 @@ namespace Dasync.Persistence.FileSystem
                 Method = methodId,
                 Caller = context.Caller,
                 Continuation = continuation,
-                ContentType = _serializer.ContentType,
-                StateData = _serializer.SerializeToBytes(methodState),
+                //ContentType = _serializer.ContentType,
+                //StateData = _serializer.SerializeToBytes(methodState),
+                State = methodState,
                 FlowContext = context.FlowContext,
-                CallerContentType = callerState?.ContentType,
-                CallerStateData = callerState?.State
+                ContinuationStateFormat = callerState?.Format,
+                ContinuationStateData = callerState?.State
             };
 
             var data = _serializer.SerializeToBytes(dto);
@@ -119,16 +120,18 @@ namespace Dasync.Persistence.FileSystem
                 FlowContext = dto.FlowContext,
                 Caller = dto.Caller,
                 Continuation = dto.Continuation,
-                MethodStateData = dto.StateData,
-                Serializer = _serializerProvider.GetSerializer(dto.ContentType)
+                //MethodStateData = dto.StateData,
+                //Serializer = _serializerProvider.GetSerializer(dto.ContentType)
+                MethodState = dto.State,
+                SerializerProvider = _serializerProvider
             };
 
-            if (dto.CallerStateData?.Length > 0)
+            if (dto.ContinuationStateData?.Length > 0)
             {
                 state.CallerState = new SerializedMethodContinuationState
                 {
-                    ContentType = dto.CallerContentType,
-                    State = dto.CallerStateData
+                    Format = dto.ContinuationStateFormat,
+                    State = dto.ContinuationStateData
                 };
             }
 

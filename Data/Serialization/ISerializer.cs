@@ -5,7 +5,7 @@ namespace Dasync.Serialization
 {
     public interface ISerializer
     {
-        string ContentType { get; }
+        string Format { get; }
 
         void Serialize(Stream stream, object @object);
 

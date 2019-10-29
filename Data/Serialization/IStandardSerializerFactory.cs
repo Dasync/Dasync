@@ -3,7 +3,7 @@
     public interface IStandardSerializerFactory
     {
         ISerializer Create(
-            string contentType,
+            string format,
             IValueWriterFactory valueWriterFactory,
             IValueReaderFactory valueReaderFactory);
     }

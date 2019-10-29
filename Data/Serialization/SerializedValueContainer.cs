@@ -5,7 +5,7 @@ namespace Dasync.Serialization
 {
     public interface ISerializedValueContainer : IValueContainer
     {
-        string GetContentType();
+        string GetFormat();
 
         object GetSerializedForm();
     }
@@ -13,21 +13,21 @@ namespace Dasync.Serialization
     public class SerializedValueContainer : ISerializedValueContainer
     {
         private Lazy<IValueContainer> _lazyValueContainer;
-        private string _contentType;
+        private string _format;
         private object _serializedForm;
 
         public SerializedValueContainer(
-            string contentType,
+            string format,
             object serializedForm,
             object state,
             Func<string, object, object, IValueContainer> deserializeFunc)
         {
-            _contentType = contentType;
+            _format = format;
             _serializedForm = serializedForm;
-            _lazyValueContainer = new Lazy<IValueContainer>(() => deserializeFunc(contentType, serializedForm, state));
+            _lazyValueContainer = new Lazy<IValueContainer>(() => deserializeFunc(format, serializedForm, state));
         }
 
-        public string GetContentType() => _contentType;
+        public string GetFormat() => _format;
 
         public object GetSerializedForm() => _serializedForm;
 

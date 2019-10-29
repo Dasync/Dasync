@@ -23,7 +23,7 @@ namespace Dasync.Communication.InMemory
             Continuation = (ContinuationDescriptor)message.Data["Continuation"];
             Caller = (CallerDescriptor)message.Data["Caller"];
             FlowContext = (Dictionary<string, string>)message.Data["FlowContext"];
-            ContentType = (string)message.Data["ContentType"];
+            Format = (string)message.Data["Format"];
             SerializedForm = message.Data["Parameters"];
             SerializerProvider = serializerProvider;
         }
@@ -40,7 +40,7 @@ namespace Dasync.Communication.InMemory
 
         public Dictionary<string, string> FlowContext { get; set; }
 
-        public string ContentType { get; set; }
+        public string Format { get; set; }
 
         public object SerializedForm { get; set; }
 
@@ -50,7 +50,7 @@ namespace Dasync.Communication.InMemory
         {
             if (SerializerProvider == null)
                 throw new InvalidOperationException("Serializer provider is not initialized.");
-            var serializer = SerializerProvider.GetSerializer(ContentType);
+            var serializer = SerializerProvider.GetSerializer(Format);
             serializer.Populate((string)SerializedForm, target);
             return Task.CompletedTask;
         }

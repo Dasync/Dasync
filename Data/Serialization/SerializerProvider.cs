@@ -6,7 +6,7 @@ namespace Dasync.Serialization
 {
     public interface ISerializerProvider
     {
-        ISerializer GetSerializer(string contentType);
+        ISerializer GetSerializer(string format);
     }
 
     internal class SerializerProvider : ISerializerProvider
@@ -21,10 +21,10 @@ namespace Dasync.Serialization
                 StringComparer.OrdinalIgnoreCase);
         }
 
-        public ISerializer GetSerializer(string contentType)
+        public ISerializer GetSerializer(string format)
         {
-            if (!_serializers.TryGetValue(contentType, out var serializer))
-                throw new ArgumentException($"No serializer found for '{contentType}'.", nameof(contentType));
+            if (!_serializers.TryGetValue(format, out var serializer))
+                throw new ArgumentException($"No serializer found for '{format}'.", nameof(format));
             return serializer.Value;
         }
     }

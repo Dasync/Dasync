@@ -100,7 +100,7 @@ namespace Dasync.Communication.InMemory
         {
             var continuationData = new MethodContinuationData(message);
             continuationData.SerializedResult = (string)message.Data["Result"];
-            continuationData.Serializer = _serializerProvider.GetSerializer((string)message.Data["ContentType"]);
+            continuationData.Serializer = _serializerProvider.GetSerializer((string)message.Data["Format"]);
             var communicationMessage = new CommunicationMessage(message);
             var continuationState = TryGetMethodContinuationState(message);
             await _localTransitionRunner.ContinueAsync(continuationData, communicationMessage, continuationState);
@@ -118,9 +118,9 @@ namespace Dasync.Communication.InMemory
                 return new SerializedMethodContinuationState
                 {
                     State = state,
-                    ContentType =
-                        message.Data.TryGetValue("Continuation:ContentType", out var contentTypeObj) && contentTypeObj is string contentType
-                        ? contentType
+                    Format =
+                        message.Data.TryGetValue("Continuation:Format", out var contentTypeObj) && contentTypeObj is string format
+                        ? format
                         : null
                 };
             }

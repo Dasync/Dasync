@@ -12,14 +12,14 @@ namespace Dasync.Serialization
         private readonly ITypeSerializerHelper _typeSerializerHelper;
 
         public StandardSerializer(
-            string contentType,
+            string format,
             IValueWriterFactory valueWriterFactory,
             IValueReaderFactory valueReaderFactory,
             IObjectDecomposerSelector decomposerSelector,
             IObjectComposerSelector composerSelector,
             ITypeSerializerHelper typeSerializerHelper)
         {
-            ContentType = contentType;
+            Format = format;
             _valueWriterFactory = valueWriterFactory;
             _valueReaderFactory = valueReaderFactory;
             _decomposerSelector = decomposerSelector;
@@ -27,7 +27,7 @@ namespace Dasync.Serialization
             _typeSerializerHelper = typeSerializerHelper;
         }
 
-        public string ContentType { get; }
+        public string Format { get; }
 
         public void Serialize(Stream stream, object @object)
         {
@@ -46,7 +46,7 @@ namespace Dasync.Serialization
             using (var valueReader = _valueReaderFactory.Create(stream))
             {
                 var reconstructor = new ObjectReconstructor(_composerSelector, target, _typeSerializerHelper);
-                valueReader.Read(reconstructor);
+                valueReader.Read(reconstructor, this);
             }
         }
     }

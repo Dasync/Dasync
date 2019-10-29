@@ -20,8 +20,8 @@ namespace Dasync.Persistence.FileSystem
 
         public CallerDescriptor Caller { get; set; }
 
-        public string CallerContentType { get; set; }
+        public string ContinuationStateFormat { get; set; }
 
-        public byte[] CallerStateData { get; set; }
+        public byte[] ContinuationStateData { get; set; }
     }
 }

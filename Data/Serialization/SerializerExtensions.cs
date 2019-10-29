@@ -84,7 +84,7 @@ namespace Dasync.Serialization
             }
 
             if (@object is ISerializedValueContainer serializedValueContainer &&
-                serializedValueContainer.GetContentType() == serializer.ContentType)
+                serializedValueContainer.GetFormat() == serializer.Format)
             {
                 var serializedForm = serializedValueContainer.GetSerializedForm();
                 if (serializedForm is string serializedString)
@@ -111,7 +111,7 @@ namespace Dasync.Serialization
         public static string SerializeToString(this ITextSerializer serializer, object @object)
         {
             if (@object is ISerializedValueContainer serializedValueContainer &&
-                serializedValueContainer.GetContentType() == serializer.ContentType &&
+                serializedValueContainer.GetFormat() == serializer.Format &&
                 serializedValueContainer.GetSerializedForm() is string serializedString)
                 return serializedString;
 
@@ -125,7 +125,7 @@ namespace Dasync.Serialization
         public static byte[] SerializeToBytes(this ISerializer serializer, object @object)
         {
             if (@object is ISerializedValueContainer serializedValueContainer &&
-                serializedValueContainer.GetContentType() == serializer.ContentType)
+                serializedValueContainer.GetFormat() == serializer.Format)
             {
                 var serializedForm = serializedValueContainer.GetSerializedForm();
                 if (serializedForm is byte[] serializedData)

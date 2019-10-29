@@ -48,9 +48,9 @@ namespace Dasync.Communication.InMemory
                     ["Service"] = intent.Service.Clone(),
                     ["Method"] = intent.Method.Clone(),
                     ["Continuation"] = intent.Continuation,
-                    ["Continuation:ContentType"] = continuationState?.ContentType,
+                    ["Continuation:Format"] = continuationState?.Format,
                     ["Continuation:State"] = continuationState?.State,
-                    ["ContentType"] = _serializer.ContentType,
+                    ["Format"] = _serializer.Format,
                     ["Parameters"] = _serializer.SerializeToString(intent.Parameters),
                     ["Caller"] = context.CurrentAsCaller(),
                     ["FlowContext"] = context.FlowContext
@@ -98,10 +98,10 @@ namespace Dasync.Communication.InMemory
                     ["Service"] = intent.Service.Clone(),
                     ["Method"] = intent.Method.Clone(),
                     ["TaskId"] = intent.TaskId,
-                    ["Continuation:ContentType"] = continuationState?.ContentType,
+                    ["Continuation:Format"] = continuationState?.Format,
                     ["Continuation:State"] = continuationState?.State,
                     ["Caller"] = context.CurrentAsCaller(),
-                    ["ContentType"] = _serializer.ContentType,
+                    ["Format"] = _serializer.Format,
                     ["Result"] = _serializer.SerializeToString(intent.Result)
                 },
                 DeliverAt = intent.ContinueAt

@@ -5,7 +5,7 @@ namespace Dasync.Serialization
 {
     public interface ITextSerializer
     {
-        string ContentType { get; }
+        string Format { get; }
 
         void Serialize(TextWriter writer, object @object);
 

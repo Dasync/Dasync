@@ -2,7 +2,7 @@
 {
     public interface IMethodSerializedParameters
     {
-        string ContentType { get; }
+        string Format { get; }
 
         object SerializedForm { get; }
     }
