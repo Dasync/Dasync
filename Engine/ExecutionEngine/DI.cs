@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Dasync.DependencyInjection;
 using Dasync.EETypes;
 using Dasync.EETypes.Cancellation;
 using Dasync.EETypes.Communication;
@@ -24,50 +24,53 @@ using Dasync.ExecutionEngine.Transitions;
 using Dasync.ExecutionEngine.Triggers;
 using Dasync.Modeling;
 using Dasync.Proxy;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Dasync.ExecutionEngine
 {
     public static class DI
     {
-        public static readonly Dictionary<Type, Type> Bindings = new Dictionary<Type, Type>
+        public static readonly IEnumerable<ServiceDescriptor> Bindings = new ServiceDescriptorList().Configure();
+
+        public static IServiceCollection Configure(this IServiceCollection services)
         {
-            [typeof(IHostedService)] = typeof(StartupHostedService),
-            [typeof(IServiceProxyBuilder)] = typeof(ServiceProxyBuilder),
-            [typeof(IProxyMethodExecutor)] = typeof(ProxyMethodExecutor),
-            [typeof(ITaskContinuationTracker)] = typeof(TaskContinuationTracker),
-            [typeof(ITaskContinuationClassifier)] = typeof(TaskContinuationClassifier),
-            [typeof(ICancellationTokenSourceRegistry)] = typeof(CancellationTokenSourceRegistry),
-            [typeof(IMethodIdProvider)] = typeof(MethodIdProvider),
-            [typeof(IEventIdProvider)] = typeof(EventIdProvider),
-            [typeof(IIntrinsicFlowController)] = typeof(IntrinsicFlowController),
-            [typeof(ITransitionScope)] = typeof(TransitionScope),
-            [typeof(ITransitionMonitorFactory)] = typeof(TransitionMonitorFactory),
-            [typeof(TransitionRunner)] = typeof(TransitionRunner),
-            [typeof(ITransitionRunner)] = typeof(TransitionRunner),
-            [typeof(ILocalMethodRunner)] = typeof(TransitionRunner),
-            [typeof(ITransitionScope)] = typeof(TransitionScope),
-            [typeof(IUniqueIdGenerator)] = typeof(UniqueIdGenerator),
-            [typeof(IServiceStateMetadataProvider)] = typeof(ServiceStateMetadataProvider),
-            [typeof(IServiceStateValueContainerProvider)] = typeof(ServiceStateValueContainerProvider),
-            [typeof(ISerializedServiceProxyBuilder)] = typeof(SerializedServiceProxyBuilderHolder),
-            [typeof(SerializedServiceProxyBuilderHolder)] = typeof(SerializedServiceProxyBuilderHolder),
-            [typeof(ITaskCompletionSourceRegistry)] = typeof(TaskCompletionSourceRegistry),
-            [typeof(IntrinsicRoutines)] = typeof(IntrinsicRoutines),
-            [typeof(ITaskResultConverter)] = typeof(TaskResultConverter),
-            [typeof(IServiceResolver)] = typeof(ServiceResolver),
-            [typeof(IMethodResolver)] = typeof(MethodResolver),
-            [typeof(IEventResolver)] = typeof(EventResolver),
-            [typeof(RoutineCompletionNotificationHub)] = typeof(RoutineCompletionNotificationHub),
-            [typeof(IRoutineCompletionNotifier)] = typeof(RoutineCompletionNotificationHub),
-            [typeof(IRoutineCompletionSink)] = typeof(RoutineCompletionNotificationHub),
-            [typeof(IDomainServiceProvider)] = typeof(DomainServiceProvider),
-            [typeof(ICommunicatorProvider)] = typeof(CommunicatorProvider),
-            [typeof(ICommunicationModelEnricher)] = typeof(CommunicationModelEnricher),
-            [typeof(ICommunicationSettingsProvider)] = typeof(CommunicationSettingsProvider),
-            [typeof(IEventSubscriber)] = typeof(EventSubscriber),
-            [typeof(ISingleMethodInvoker)] = typeof(SingleMethodInvoker),
-            [typeof(IMethodStateStorageProvider)] = typeof(MethodStateStorageProvider),
-        };
+            services.AddSingleton<IHostedService, StartupHostedService>();
+            services.AddSingleton<IServiceProxyBuilder, ServiceProxyBuilder>();
+            services.AddSingleton<IProxyMethodExecutor, ProxyMethodExecutor>();
+            services.AddSingleton<ITaskContinuationTracker, TaskContinuationTracker>();
+            services.AddSingleton<ITaskContinuationClassifier, TaskContinuationClassifier>();
+            services.AddSingleton<ICancellationTokenSourceRegistry, CancellationTokenSourceRegistry>();
+            services.AddSingleton<IMethodIdProvider, MethodIdProvider>();
+            services.AddSingleton<IEventIdProvider, EventIdProvider>();
+            services.AddSingleton<IIntrinsicFlowController, IntrinsicFlowController>();
+            services.AddSingleton<ITransitionScope, TransitionScope>();
+            services.AddSingleton<ITransitionMonitorFactory, TransitionMonitorFactory>();
+            services.AddSingleton<TransitionRunner>();
+            services.AddSingleton<ITransitionRunner>(_ => _.GetService<TransitionRunner>());
+            services.AddSingleton<ILocalMethodRunner>(_ => _.GetService<TransitionRunner>());
+            services.AddSingleton<IUniqueIdGenerator, UniqueIdGenerator>();
+            services.AddSingleton<IServiceStateMetadataProvider, ServiceStateMetadataProvider>();
+            services.AddSingleton<IServiceStateValueContainerProvider, ServiceStateValueContainerProvider>();
+            services.AddSingleton<SerializedServiceProxyBuilderHolder>();
+            services.AddSingleton<ISerializedServiceProxyBuilder>(_ => _.GetService<SerializedServiceProxyBuilderHolder>());
+            services.AddSingleton<ITaskCompletionSourceRegistry, TaskCompletionSourceRegistry>();
+            services.AddSingleton<IntrinsicRoutines>();
+            services.AddSingleton<ITaskResultConverter, TaskResultConverter>();
+            services.AddSingleton<IServiceResolver, ServiceResolver>();
+            services.AddSingleton<IMethodResolver, MethodResolver>();
+            services.AddSingleton<IEventResolver, EventResolver>();
+            services.AddSingleton<RoutineCompletionNotificationHub>();
+            services.AddSingleton<IRoutineCompletionNotifier>(_ => _.GetService<RoutineCompletionNotificationHub>());
+            services.AddSingleton<IRoutineCompletionSink>(_ => _.GetService<RoutineCompletionNotificationHub>());
+            services.AddSingleton<IDomainServiceProvider, DomainServiceProvider>();
+            services.AddSingleton<ICommunicatorProvider, CommunicatorProvider>();
+            services.AddSingleton<ICommunicationModelEnricher, CommunicationModelEnricher>();
+            services.AddSingleton<ICommunicationSettingsProvider, CommunicationSettingsProvider>();
+            services.AddSingleton<IEventSubscriber, EventSubscriber>();
+            services.AddSingleton<ISingleMethodInvoker, SingleMethodInvoker>();
+            services.AddSingleton<IMethodStateStorageProvider, MethodStateStorageProvider>();
+            return services;
+        }
     }
 }

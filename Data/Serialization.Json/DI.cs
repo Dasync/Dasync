@@ -1,13 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Dasync.DependencyInjection;
+using Dasync.Serialization.Json.Converters;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dasync.Serialization.Json
 {
     public static class DI
     {
-        public static readonly Dictionary<Type, Type> Bindings = new Dictionary<Type, Type>
+        public static readonly IEnumerable<ServiceDescriptor> Bindings = new ServiceDescriptorList().Configure();
+
+        public static IServiceCollection Configure(this IServiceCollection services)
         {
-            [typeof(ISerializerFactory)] = typeof(DasyncJsonSerializerFactory),
-        };
-    }
+            services.AddSingleton<ISerializerFactory, JsonSerializerAdapterFactory>();
+            services.AddSingleton<TypeNameConverter>();
+            return services;
+        }
+   }
 }

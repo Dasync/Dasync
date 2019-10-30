@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Dasync.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dasync.Serialization
 {
     public static class DI
     {
-        public static readonly Dictionary<Type, Type> Bindings = new Dictionary<Type, Type>
+        public static readonly IEnumerable<ServiceDescriptor> Bindings = new ServiceDescriptorList().Configure();
+
+        public static IServiceCollection Configure(this IServiceCollection services)
         {
-            [typeof(IAssemblyResolver)] = typeof(AssemblyResolver),
-            [typeof(ITypeResolver)] = typeof(TypeResolver),
-            [typeof(ISerializerFactorySelector)] = typeof(SerializerFactorySelector),
-            [typeof(IStandardSerializerFactory)] = typeof(StandardSerializerFactory),
-            [typeof(ITypeSerializerHelper)] = typeof(TypeSerializerHelper),
-            [typeof(ISerializerProvider)] = typeof(SerializerProvider),
-            [typeof(IDefaultSerializerProvider)] = typeof(DefaultSerializerProvider),
-        };
+            services.AddSingleton<ISerializerProvider, SerializerProvider>();
+            services.AddSingleton<IDefaultSerializerProvider, DefaultSerializerProvider>();
+            return services;
+        }
     }
 }

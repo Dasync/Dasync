@@ -8,11 +8,11 @@ namespace Dasync.Serializers.DomainTypes.Projections
 {
     public class EntityProjectionSerializer : IObjectDecomposer, IObjectComposer
     {
-        private readonly ITypeSerializerHelper _typeSerializerHelper;
+        private readonly ITypeNameShortener _typeNameShortener;
 
-        public EntityProjectionSerializer(ITypeSerializerHelper typeSerializerHelper)
+        public EntityProjectionSerializer(IEnumerable<ITypeNameShortener> typeNameShorteners)
         {
-            _typeSerializerHelper = typeSerializerHelper;
+            _typeNameShortener = new TypeNameShortenerChain(typeNameShorteners);
         }
 
         internal HashSet<Type> KnownEntityProjectionInterfaces { get; set; }
@@ -20,19 +20,19 @@ namespace Dasync.Serializers.DomainTypes.Projections
         public IValueContainer Decompose(object value)
         {
 #warning Add support for multi-projection. Need to know the variable/result type - a bigger serializer problem :( Also possibly need to know if it's a cross-domain derialization to keep the entity instance.
-            var projetionInterface = value.GetType().GetInterfaces()
+            var projectionInterface = value.GetType().GetInterfaces()
                 .First(i => KnownEntityProjectionInterfaces != null
                     ? KnownEntityProjectionInterfaces.Contains(i)
                     : EntityProjection.IsProjectionInterface(i));
 
             var container = new EntityProjectionContainer
             {
-                Type = _typeSerializerHelper.GetTypeSerializationInfo(projetionInterface).ToString(),
+                Type = _typeNameShortener.TryShorten(projectionInterface, out string shortName) ? shortName : projectionInterface.ToString(),
                 Properties = new Dictionary<string, object>()
             };
 
 #warning Add properties of base interface(s)
-            foreach (var property in projetionInterface.GetProperties())
+            foreach (var property in projectionInterface.GetProperties())
                 container.Properties.Add(property.Name, property.GetValue(value));
 
             return container;
@@ -41,8 +41,8 @@ namespace Dasync.Serializers.DomainTypes.Projections
         public object Compose(IValueContainer container, Type valueType)
         {
             var c = (EntityProjectionContainer)container;
-            var projetionInterface = _typeSerializerHelper.ResolveType(TypeSerializationInfo.Parse(c.Type));
-            var result = EntityProjection.CreateInstance(projetionInterface);
+            var projectionInterface = _typeNameShortener.TryExpand(c.Type, out var type) ? type : Type.GetType(c.Type);
+            var result = EntityProjection.CreateInstance(projectionInterface);
             if (c.Properties != null)
             {
                 foreach (var pair in c.Properties)
@@ -53,7 +53,7 @@ namespace Dasync.Serializers.DomainTypes.Projections
                     var value = pair.Value;
                     if (value != null)
                     {
-                        var expectedValueType = projetionInterface.GetProperty(pair.Key).PropertyType;
+                        var expectedValueType = projectionInterface.GetProperty(pair.Key).PropertyType;
                         var actualValueType = value.GetType();
                         if (actualValueType != expectedValueType)
                         {

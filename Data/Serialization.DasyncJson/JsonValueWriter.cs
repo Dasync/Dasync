@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Dasync.Serialization.Json
+namespace Dasync.Serialization.DasyncJson
 {
     public class JsonValueWriter : IValueWriter
     {

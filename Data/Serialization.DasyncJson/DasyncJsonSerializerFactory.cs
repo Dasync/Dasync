@@ -1,4 +1,4 @@
-﻿namespace Dasync.Serialization.Json
+﻿namespace Dasync.Serialization.DasyncJson
 {
     public class DasyncJsonSerializerFactory : ISerializerFactory
     {

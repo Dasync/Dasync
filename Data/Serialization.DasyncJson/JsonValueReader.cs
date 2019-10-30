@@ -6,7 +6,7 @@ using Dasync.ValueContainer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Dasync.Serialization.Json
+namespace Dasync.Serialization.DasyncJson
 {
     public class JsonValueReader : IValueReader
     {

@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Communication\InMemory\Dasync.Communication.InMemory.csproj" />
-    <ProjectReference Include="..\..\Data\Serialization.Json\Dasync.Serialization.Json.csproj" />
+    <ProjectReference Include="..\..\Data\Serialization.DasyncJson\Dasync.Serialization.DasyncJson.csproj" />
     <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.csproj" />
     <ProjectReference Include="..\..\Data\Serializers.DomainTypes\Dasync.Serializers.DomainTypes.csproj" />
     <ProjectReference Include="..\..\Data\Serializers.EETypes\Dasync.Serializers.EETypes.csproj" />

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Dasync.ValueContainer;
 
 namespace Dasync.Serialization
@@ -7,8 +8,10 @@ namespace Dasync.Serialization
     {
         string Format { get; }
 
-        void Serialize(TextWriter writer, object @object);
+        void Serialize(TextWriter writer, object @object, Type objectType = null);
 
         void Populate(TextReader reader, IValueContainer target);
+
+        object Deserialize(TextReader reader, Type objectType = null);
     }
 }

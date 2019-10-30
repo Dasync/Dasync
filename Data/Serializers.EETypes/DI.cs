@@ -1,23 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Dasync.DependencyInjection;
 using Dasync.Serialization;
 using Dasync.Serializers.EETypes.Cancellation;
 using Dasync.Serializers.EETypes.Triggers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dasync.Serializers.EETypes
 {
     public static class DI
     {
-        public static readonly Dictionary<Type, Type> Bindings = new Dictionary<Type, Type>
+        public static readonly IEnumerable<ServiceDescriptor> Bindings = new ServiceDescriptorList().Configure();
+
+        public static IServiceCollection Configure(this IServiceCollection services)
         {
-            [typeof(ITypeNameShortener)] = typeof(EETypesNameShortener),
-            [typeof(IAssemblyNameShortener)] = typeof(EEAssemblyNameShortener),
-            [typeof(EETypesSerializerSelector)] = typeof(EETypesSerializerSelector),
-            [typeof(IObjectDecomposerSelector)] = typeof(EETypesSerializerSelector),
-            [typeof(IObjectComposerSelector)] = typeof(EETypesSerializerSelector),
-            [typeof(ServiceProxySerializer)] = typeof(ServiceProxySerializer),
-            [typeof(CancellationTokenSourceSerializer)] = typeof(CancellationTokenSourceSerializer),
-            [typeof(TaskCompletionSourceSerializer)] = typeof(TaskCompletionSourceSerializer),
-        };
+            services.AddSingleton<ITypeNameShortener, EETypesNameShortener>();
+            services.AddSingleton<IAssemblyNameShortener, EEAssemblyNameShortener>();
+            services.AddSingleton<EETypesSerializerSelector>();
+            services.AddSingleton<IObjectDecomposerSelector>(_ => _.GetService<EETypesSerializerSelector>());
+            services.AddSingleton<IObjectComposerSelector>(_ => _.GetService<EETypesSerializerSelector>());
+            services.AddSingleton<ServiceProxySerializer>();
+            services.AddSingleton<CancellationTokenSourceSerializer>();
+            services.AddSingleton<TaskCompletionSourceSerializer>();
+            return services;
+        }
     }
 }

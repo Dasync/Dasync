@@ -17,7 +17,6 @@ namespace Dasync.Serializers.StandardTypes
         static StandardTypeNameShortener()
         {
 #warning process nullables and arrays differently
-            RegisterType(typeof(TypeSerializationInfo), "$type");
             RegisterType(typeof(Type), "Type");
             RegisterType(typeof(void), "void");
             RegisterType(typeof(object), "object");

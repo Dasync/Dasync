@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -9,11 +10,11 @@ namespace Dasync.Serializers.StandardTypes.Runtime
 {
     public sealed class ExceptionSerializer : IObjectDecomposer, IObjectComposer
     {
-        private readonly ITypeSerializerHelper _typeSerializerHelper;
+        private readonly ITypeNameShortener _typeNameShortener;
 
-        public ExceptionSerializer(ITypeSerializerHelper typeSerializerHelper)
+        public ExceptionSerializer(IEnumerable<ITypeNameShortener> typeNameShorteners)
         {
-            _typeSerializerHelper = typeSerializerHelper;
+            _typeNameShortener = new TypeNameShortenerChain(typeNameShorteners);
         }
 
         public IValueContainer Decompose(object value)
@@ -21,7 +22,7 @@ namespace Dasync.Serializers.StandardTypes.Runtime
             var ex = (Exception)value;
             return new ExceptionContainer
             {
-                Type = _typeSerializerHelper.GetTypeSerializationInfo(ex.GetType()).ToString(),
+                Type = _typeNameShortener.TryShorten(ex.GetType(), out string shortName) ? shortName : ex.GetType().ToString(),
                 Message = ex.Message,
                 InnerException = (ex is AggregateException) ? null : ex.InnerException,
                 InnerExceptions = (ex is AggregateException aggregateException) ? aggregateException.InnerExceptions.ToArray() : null,
@@ -37,7 +38,7 @@ namespace Dasync.Serializers.StandardTypes.Runtime
             var exceptionTypeResolved = false;
             try
             {
-                exceptionType = _typeSerializerHelper.ResolveType(TypeSerializationInfo.Parse(c.Type));
+                exceptionType = _typeNameShortener.TryExpand(c.Type, out var type) ? type : Type.GetType(c.Type);
                 exceptionTypeResolved = true;
             }
             catch

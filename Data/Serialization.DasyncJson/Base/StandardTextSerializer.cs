@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using Dasync.ValueContainer;
 
@@ -32,7 +33,7 @@ namespace Dasync.Serialization
 
         public string Format { get; }
 
-        public void Serialize(TextWriter writer, object @object)
+        public void Serialize(TextWriter writer, object @object, Type objectType = null)
         {
             if (@object == null)
                 return;
@@ -53,7 +54,7 @@ namespace Dasync.Serialization
             }
         }
 
-        public void Serialize(Stream stream, object @object)
+        public void Serialize(Stream stream, object @object, Type objectType = null)
         {
             if (@object == null)
                 return;
@@ -78,6 +79,16 @@ namespace Dasync.Serialization
                     valueReader.Read(reconstructor, this);
                 }
             }
+        }
+
+        public object Deserialize(TextReader reader, Type objectType = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object Deserialize(Stream stream, Type objectType = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

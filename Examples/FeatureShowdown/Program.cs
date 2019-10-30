@@ -91,7 +91,7 @@ namespace DasyncFeatures
         {
             services.AddModules(
                 Dasync.Serialization.DI.Bindings,
-                Dasync.Serialization.Json.DI.Bindings,
+                Dasync.Serialization.DasyncJson.DI.Bindings,
                 Dasync.Serializers.StandardTypes.DI.Bindings,
                 Dasync.Serializers.EETypes.DI.Bindings,
                 Dasync.Serializers.DomainTypes.DI.Bindings,

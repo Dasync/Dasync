@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Newtonsoft.Json;
 
-namespace Dasync.Serialization.Json
+namespace Dasync.Serialization.DasyncJson
 {
     public class JsonValueReaderFactory : IValueReaderFactory, IValueTextReaderFactory
     {

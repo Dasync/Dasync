@@ -1,19 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Dasync.DependencyInjection;
 using Dasync.Serialization;
 using Dasync.Serializers.StandardTypes.Runtime;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dasync.Serializers.StandardTypes
 {
     public static class DI
     {
-        public static readonly Dictionary<Type, Type> Bindings = new Dictionary<Type, Type>
+        public static readonly IEnumerable<ServiceDescriptor> Bindings = new ServiceDescriptorList().Configure();
+
+        public static IServiceCollection Configure(this IServiceCollection services)
         {
-            [typeof(ITypeNameShortener)] = typeof(StandardTypeNameShortener),
-            [typeof(IAssemblyNameShortener)] = typeof(StandardAssemblyNameShortener),
-            [typeof(IObjectDecomposerSelector)] = typeof(StandardTypeDecomposerSelector),
-            [typeof(IObjectComposerSelector)] = typeof(StandardTypeComposerSelector),
-            [typeof(ExceptionSerializer)] = typeof(ExceptionSerializer),
-        };
+            services.AddSingleton<ITypeNameShortener, StandardTypeNameShortener>();
+            services.AddSingleton<IAssemblyNameShortener, StandardAssemblyNameShortener>();
+            services.AddSingleton<IObjectDecomposerSelector, StandardTypeDecomposerSelector>();
+            services.AddSingleton<IObjectComposerSelector, StandardTypeComposerSelector>();
+            services.AddSingleton<ExceptionSerializer>();
+            return services;
+        }
     }
 }
