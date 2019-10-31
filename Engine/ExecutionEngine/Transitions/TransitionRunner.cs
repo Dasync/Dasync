@@ -339,7 +339,7 @@ namespace Dasync.ExecutionEngine.Transitions
         private async Task AddContinuationIntentsAsync(
             ITransitionCarrier transitionCarrier,
             ScheduledActions actions,
-            TaskResult taskResult,
+            ITaskResult taskResult,
             string taskId,
             CancellationToken ct)
         {

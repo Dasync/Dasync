@@ -154,7 +154,7 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
                 {
                     __builder.SetResult(new OperationCanceledException());
                 }
-                else if (result.IsFaulted)
+                else if (result.IsFaulted())
                 {
                     __builder.SetException(result.Exception);
                 }

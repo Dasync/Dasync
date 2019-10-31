@@ -35,7 +35,7 @@ namespace Dasync.ExecutionEngine.Transitions
             _onTimerTick = OnTimerTick;
         }
 
-        public long NotifyOnCompletion(ServiceId serviceId, MethodId methodId, string intentId, TaskCompletionSource<TaskResult> completionSink, CancellationToken ct)
+        public long NotifyOnCompletion(ServiceId serviceId, MethodId methodId, string intentId, TaskCompletionSource<ITaskResult> completionSink, CancellationToken ct)
         {
             if (ct.IsCancellationRequested)
                 return -1;
@@ -80,7 +80,7 @@ namespace Dasync.ExecutionEngine.Transitions
             return false;
         }
 
-        public void OnRoutineCompleted(ServiceId serviceId, MethodId methodId, string intentId, TaskResult taskResult)
+        public void OnRoutineCompleted(ServiceId serviceId, MethodId methodId, string intentId, ITaskResult taskResult)
         {
             List<TrackedInvocation> listeners = null;
             lock (_trackedInvocations)
@@ -117,7 +117,7 @@ namespace Dasync.ExecutionEngine.Transitions
             }
         }
 
-        public async Task<TaskResult> TryPollCompletionAsync(ServiceId serviceId, MethodId methodId, string intentId, CancellationToken ct)
+        public async Task<ITaskResult> TryPollCompletionAsync(ServiceId serviceId, MethodId methodId, string intentId, CancellationToken ct)
         {
             LinkedListNode<TrackedInvocation> existingListNode = null;
 
@@ -149,7 +149,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     ServiceId = serviceId,
                     MethodId = methodId,
                     IntentId = intentId,
-                    CompletionSink = new TaskCompletionSource<TaskResult>(),
+                    CompletionSink = new TaskCompletionSource<ITaskResult>(),
                     CancellationToken = ct
                 };
 
@@ -310,7 +310,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
             public CancellationToken CancellationToken { get; set; }
 
-            public TaskCompletionSource<TaskResult> CompletionSink { get; set; }
+            public TaskCompletionSource<ITaskResult> CompletionSink { get; set; }
 
             public ISynchronousCommunicator Communicator { get; set; }
 

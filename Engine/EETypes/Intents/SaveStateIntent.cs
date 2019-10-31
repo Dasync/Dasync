@@ -22,6 +22,6 @@ namespace Dasync.EETypes.Intents
 
         public IValueContainer RoutineState { get; set; }
 
-        public TaskResult RoutineResult { get; set; }
+        public ITaskResult RoutineResult { get; set; }
     }
 }

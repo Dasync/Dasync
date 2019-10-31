@@ -22,9 +22,9 @@ namespace Dasync.EETypes.Persistence
             ServiceId serviceId,
             MethodId methodId,
             string intentId,
-            TaskResult result);
+            ITaskResult result);
 
-        Task<TaskResult> TryReadResultAsync(
+        Task<ITaskResult> TryReadResultAsync(
             ServiceId serviceId,
             MethodId methodId,
             string intentId,

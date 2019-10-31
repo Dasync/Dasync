@@ -34,6 +34,6 @@ namespace Dasync.EETypes.Platform
         string ResultTaskId { get; }
 
         [Obsolete]
-        TaskResult ReadResult(Type expectedResultValueType);
+        ITaskResult ReadResult(Type expectedResultValueType);
     }
 }

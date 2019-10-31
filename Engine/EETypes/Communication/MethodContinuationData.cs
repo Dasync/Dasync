@@ -34,7 +34,7 @@ namespace Dasync.EETypes.Communication
         public CallerDescriptor Caller { get; set; }
 
         /// <summary>
-        /// The result of an awaited method or a trigger (represents <see cref="TaskResult"/>).
+        /// The result of an awaited method or a trigger (represents <see cref="ITaskResult"/>).
         /// </summary>
         public IValueContainer Result { get; set; }
     }

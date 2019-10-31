@@ -8,6 +8,6 @@ namespace Dasync.EETypes.Intents
     {
         public string TriggerId { get; set; }
 
-        public TaskResult Value { get; set; }
+        public ITaskResult Value { get; set; }
     }
 }

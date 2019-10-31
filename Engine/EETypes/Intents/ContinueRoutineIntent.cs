@@ -26,7 +26,7 @@ namespace Dasync.EETypes.Intents
         /// <summary>
         /// The result of the awaited routine. 
         /// </summary>
-        public TaskResult Result { get; set; }
+        public ITaskResult Result { get; set; }
 
 #warning Add state of the actual routine being resumed? That option would remove the need of persistant storage for the state - eveything is conveyed in messages. However, that can blow the size of a message - need overflow mechanism.
     }

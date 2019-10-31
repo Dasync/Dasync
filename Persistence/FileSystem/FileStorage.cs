@@ -6,6 +6,7 @@ using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Persistence;
 using Dasync.Serialization;
+using Dasync.ValueContainer;
 
 namespace Dasync.Persistence.FileSystem
 {
@@ -97,7 +98,7 @@ namespace Dasync.Persistence.FileSystem
             return executionState;
         }
 
-        public async Task WriteResultAsync(ServiceId serviceId, MethodId methodId, string intentId, TaskResult result)
+        public async Task WriteResultAsync(ServiceId serviceId, MethodId methodId, string intentId, ITaskResult result)
         {
             var fileName = GetResultFileName(serviceId, methodId, intentId);
             var filePath = Path.Combine(_resultsDirectory, fileName);
@@ -114,7 +115,7 @@ namespace Dasync.Persistence.FileSystem
             }
         }
 
-        public async Task<TaskResult> TryReadResultAsync(ServiceId serviceId, MethodId methodId, string intentId, Type resultValueType, CancellationToken ct)
+        public async Task<ITaskResult> TryReadResultAsync(ServiceId serviceId, MethodId methodId, string intentId, Type resultValueType, CancellationToken ct)
         {
             var fileName = GetResultFileName(serviceId, methodId, intentId);
             var filePath = Path.Combine(_resultsDirectory, fileName);
@@ -128,9 +129,10 @@ namespace Dasync.Persistence.FileSystem
             var bytes = await File.ReadAllBytesAsync(filePath);
 #endif
 
-            // TODO: use 'resultValueType'
             // TODO: select serializer
-            return _serializer.Deserialize<TaskResult>(bytes);
+            var result = TaskResult.Create(resultValueType, null, null, false);
+            _serializer.Populate(bytes, (IValueContainer)result);
+            return result;
         }
 
         private string GetStateFileName(ServiceId serviceId, PersistedMethodId methodId)

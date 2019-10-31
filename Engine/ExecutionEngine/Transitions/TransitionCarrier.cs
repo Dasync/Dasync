@@ -50,30 +50,15 @@ namespace Dasync.ExecutionEngine.Transitions
 
         public string ResultTaskId => _methodContinuationData?.TaskId;
 
-        public TaskResult ReadResult(Type expectedResultValueType)
+        public ITaskResult ReadResult(Type expectedResultValueType)
         {
             if (_methodContinuationData == null)
                 throw new InvalidOperationException();
 
-            var taskResult = new TaskResult();
-
-            if (expectedResultValueType == null || expectedResultValueType == typeof(void) || expectedResultValueType == typeof(object))
-            {
-                _valueContainerCopier.CopyValues(
-                    source: _methodContinuationData.Result,
-                    destination: ValueContainerFactory.CreateProxy(taskResult));
-            }
-            else
-            {
-                var genericTaskResult = (ITaskResult)Activator.CreateInstance(typeof(TaskResult<>).MakeGenericType(expectedResultValueType));
-                _valueContainerCopier.CopyValues(
-                    source: _methodContinuationData.Result,
-                    destination: ValueContainerFactory.CreateProxy(genericTaskResult));
-
-                taskResult.Value = genericTaskResult.Value;
-                taskResult.Exception = genericTaskResult.Exception;
-                taskResult.IsCanceled = genericTaskResult.IsCanceled;
-            }
+            var taskResult = TaskResult.Create(expectedResultValueType, null, null, false);
+            _valueContainerCopier.CopyValues(
+                source: _methodContinuationData.Result,
+                destination: (IValueContainer)taskResult);
 
             return taskResult;
         }

@@ -136,7 +136,7 @@ namespace Dasync.ExecutionEngine.Proxy
             }
             else
             {
-                var tcs = new TaskCompletionSource<TaskResult>();
+                var tcs = new TaskCompletionSource<ITaskResult>();
                 _routineCompletionNotifier.NotifyOnCompletion(intent.Service, intent.Method, intent.Id, tcs, default);
                 var taskResult = await tcs.Task;
                 proxyTask.TrySetResult(taskResult);

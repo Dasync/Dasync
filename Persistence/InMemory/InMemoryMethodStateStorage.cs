@@ -6,6 +6,7 @@ using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Persistence;
 using Dasync.Serialization;
+using Dasync.ValueContainer;
 
 namespace Dasync.Persistence.InMemory
 {
@@ -110,7 +111,7 @@ namespace Dasync.Persistence.InMemory
             return Task.FromResult(executionState);
         }
 
-        public Task WriteResultAsync(ServiceId serviceId, MethodId methodId, string intentId, TaskResult result)
+        public Task WriteResultAsync(ServiceId serviceId, MethodId methodId, string intentId, ITaskResult result)
         {
             var serializedTaskResult = _serializer.SerializeToString(result);
 
@@ -137,7 +138,7 @@ namespace Dasync.Persistence.InMemory
             return Task.CompletedTask;
         }
 
-        public Task<TaskResult> TryReadResultAsync(ServiceId serviceId, MethodId methodId, string intentId, Type resultValueType, CancellationToken ct)
+        public Task<ITaskResult> TryReadResultAsync(ServiceId serviceId, MethodId methodId, string intentId, Type resultValueType, CancellationToken ct)
         {
             object serializedResultObj = null;
 
@@ -145,11 +146,11 @@ namespace Dasync.Persistence.InMemory
             {
                 if (!_entryMap.TryGetValue(intentId, out var entry) ||
                     !entry.TryGetValue("Result", out serializedResultObj))
-                    return Task.FromResult<TaskResult>(null);
+                    return Task.FromResult<ITaskResult>(null);
             }
 
-            // TODO: use 'resultValueType'
-            var result = _serializer.Deserialize<TaskResult>((string)serializedResultObj);
+            var result = TaskResult.Create(resultValueType, null, null, false);
+            _serializer.Populate((string)serializedResultObj, (IValueContainer)result);
             return Task.FromResult(result);
         }
 

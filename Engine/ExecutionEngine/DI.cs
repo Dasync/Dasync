@@ -56,7 +56,6 @@ namespace Dasync.ExecutionEngine
             services.AddSingleton<ISerializedServiceProxyBuilder>(_ => _.GetService<SerializedServiceProxyBuilderHolder>());
             services.AddSingleton<ITaskCompletionSourceRegistry, TaskCompletionSourceRegistry>();
             services.AddSingleton<IntrinsicRoutines>();
-            services.AddSingleton<ITaskResultConverter, TaskResultConverter>();
             services.AddSingleton<IServiceResolver, ServiceResolver>();
             services.AddSingleton<IMethodResolver, MethodResolver>();
             services.AddSingleton<IEventResolver, EventResolver>();

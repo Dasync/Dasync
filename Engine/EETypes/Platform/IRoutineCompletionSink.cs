@@ -4,6 +4,6 @@ namespace Dasync.EETypes.Platform
 {
     public interface IRoutineCompletionSink
     {
-        void OnRoutineCompleted(ServiceId serviceId, MethodId methodId, string intentId, TaskResult taskResult);
+        void OnRoutineCompleted(ServiceId serviceId, MethodId methodId, string intentId, ITaskResult taskResult);
     }
 }

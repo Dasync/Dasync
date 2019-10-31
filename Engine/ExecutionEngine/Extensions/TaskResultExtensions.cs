@@ -7,7 +7,7 @@ namespace Dasync.ExecutionEngine.Extensions
 {
     public static class TaskResultExtensions
     {
-        public static TaskResult ToTaskResult(this Task task)
+        public static ITaskResult ToTaskResult(this Task task)
         {
             var status = task.Status;
             if (status != TaskStatus.RanToCompletion && status != TaskStatus.Canceled && status != TaskStatus.Faulted)
@@ -17,20 +17,35 @@ namespace Dasync.ExecutionEngine.Extensions
                 ? aggregateException.InnerException
                 : task.Exception;
 
-            return new TaskResult
+            var valueType = task.GetResultType();
+            if (valueType == null ||
+                valueType == typeof(void) ||
+                valueType == TaskAccessor.VoidTaskResultType ||
+                valueType == typeof(object))
             {
-                Value = status == TaskStatus.RanToCompletion ? task.GetResult() : null,
-                Exception = status == TaskStatus.Faulted ? exception : null,
-                IsCanceled = status == TaskStatus.Canceled
-            };
+                return new TaskResult
+                {
+                    Value = status == TaskStatus.RanToCompletion ? task.GetResult() : null,
+                    Exception = status == TaskStatus.Faulted ? exception : null,
+                    IsCanceled = status == TaskStatus.Canceled
+                };
+            }
+            else
+            {
+                return TaskResult.Create(
+                    valueType,
+                    status == TaskStatus.RanToCompletion ? task.GetResult() : null,
+                    status == TaskStatus.Faulted ? exception : null,
+                    status == TaskStatus.Canceled);
+            }
         }
 
-        public static bool TrySetResult(this Task task, TaskResult result)
+        public static bool TrySetResult(this Task task, ITaskResult result)
         {
             if (result.IsCanceled)
                 return task.TrySetCanceled();
 
-            if (result.IsFaulted)
+            if (result.IsFaulted())
                 return task.TrySetException(result.Exception);
 
             return task.TrySetResult(result.Value);

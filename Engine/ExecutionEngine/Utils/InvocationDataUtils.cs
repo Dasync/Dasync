@@ -8,8 +8,6 @@ namespace Dasync.ExecutionEngine.Utils
 {
     internal static class InvocationDataUtils
     {
-        private static readonly IValueContainerProxyFactory TaskResultProxyFactory = ValueContainerFactory.GetProxyFactory(typeof(TaskResult));
-
         public static MethodInvocationData CreateMethodInvocationData(ExecuteRoutineIntent intent, ITransitionContext context)
         {
             return new MethodInvocationData
@@ -34,7 +32,7 @@ namespace Dasync.ExecutionEngine.Utils
                 Method = intent.Method,
                 TaskId = intent.TaskId,
                 Caller = context.CurrentAsCaller(),
-                Result = TaskResultProxyFactory.Create(intent.Result)
+                Result = (IValueContainer)intent.Result
             };
         }
     }

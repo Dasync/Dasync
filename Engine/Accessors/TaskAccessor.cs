@@ -117,9 +117,6 @@ namespace Dasync.Accessors
             if (taskResultType == VoidTaskResultType)
                 result = null;
 
-            if (result != null)
-                result = EnsureResultType(taskResultType, result);
-
 #warning pre-compile accessor for Task.TrySetResult
 #warning make sure that the result type matches
             var method = task.GetType().GetMethod("TrySetResult",
@@ -127,39 +124,6 @@ namespace Dasync.Accessors
                 null, new[] { taskResultType }, null);
 
             return (bool)method.Invoke(task, new[] { result });
-        }
-
-        // Quick Fix: JSON serializer deserializes integers as Long, enums as long, URIs as string, GUIDs as string.
-        private static object EnsureResultType(Type targetType, object value)
-        {
-            if (targetType.IsAssignableFrom(value.GetType()))
-                return value;
-
-            if (targetType.IsEnum)
-            {
-                value = Enum.ToObject(targetType, value);
-            }
-            else if ((targetType == typeof(Guid) || targetType == typeof(Guid?)) && value is string strGuid)
-            {
-                value = Guid.Parse(strGuid);
-            }
-            else if (targetType == typeof(Uri))
-            {
-                value = new Uri((string)Convert.ChangeType(value, typeof(string)));
-            }
-            else if (targetType.IsGenericType && !targetType.IsClass && targetType.Name == "Nullable`1")
-            {
-                var nullableValueType = targetType.GetGenericArguments()[0];
-                if (!nullableValueType.IsAssignableFrom(value.GetType()))
-                    value = EnsureResultType(nullableValueType, value);
-                value = Activator.CreateInstance(targetType, value);
-            }
-            else
-            {
-                value = Convert.ChangeType(value, targetType);
-            }
-
-            return value;
         }
 
         public static Type GetResultType(this Task task)
@@ -337,6 +301,6 @@ namespace Dasync.Accessors
             }
         }
 
-#endregion
+        #endregion
     }
 }
