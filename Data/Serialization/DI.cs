@@ -12,6 +12,7 @@ namespace Dasync.Serialization
         {
             services.AddSingleton<ISerializerProvider, SerializerProvider>();
             services.AddSingleton<IDefaultSerializerProvider, DefaultSerializerProvider>();
+            services.AddSingleton<IValueContainerCopier, ValueContainerCopier>();
             return services;
         }
     }

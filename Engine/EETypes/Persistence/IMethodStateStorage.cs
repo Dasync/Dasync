@@ -11,12 +11,9 @@ namespace Dasync.EETypes.Persistence
         Task WriteStateAsync(
             ServiceId serviceId,
             PersistedMethodId methodId,
-            ITransitionContext context,
-            IValueContainer methodState,
-            ContinuationDescriptor continuation,
-            ISerializedMethodContinuationState callerState);
+            MethodExecutionState state);
 
-        Task<IMethodExecutionState> ReadStateAsync(
+        Task<MethodExecutionState> ReadStateAsync(
             ServiceId serviceId,
             PersistedMethodId methodId,
             CancellationToken ct);

@@ -6,7 +6,6 @@ using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Persistence;
 using Dasync.Serialization;
-using Dasync.ValueContainer;
 
 namespace Dasync.Persistence.FileSystem
 {
@@ -34,29 +33,12 @@ namespace Dasync.Persistence.FileSystem
         public async Task WriteStateAsync(
             ServiceId serviceId,
             PersistedMethodId methodId,
-            ITransitionContext context,
-            IValueContainer methodState,
-            ContinuationDescriptor continuation,
-            ISerializedMethodContinuationState callerState)
+            MethodExecutionState state)
         {
             var fileName = GetStateFileName(serviceId, methodId);
             var filePath = Path.Combine(_stateDirectory, fileName);
 
-            var dto = new MethodExecutionStateDto
-            {
-                Service = serviceId,
-                Method = methodId,
-                Caller = context.Caller,
-                Continuation = continuation,
-                //ContentType = _serializer.ContentType,
-                //StateData = _serializer.SerializeToBytes(methodState),
-                State = methodState,
-                FlowContext = context.FlowContext,
-                ContinuationStateFormat = callerState?.Format,
-                ContinuationStateData = callerState?.State
-            };
-
-            var data = _serializer.SerializeToBytes(dto);
+            var data = _serializer.SerializeToBytes(state);
 
             EnsureDirectoryExists(_stateDirectory);
 
@@ -86,7 +68,7 @@ namespace Dasync.Persistence.FileSystem
             }
         }
 
-        public async Task<IMethodExecutionState> ReadStateAsync(ServiceId serviceId, PersistedMethodId methodId, CancellationToken ct)
+        public async Task<MethodExecutionState> ReadStateAsync(ServiceId serviceId, PersistedMethodId methodId, CancellationToken ct)
         {
             var fileName = GetStateFileName(serviceId, methodId);
             var filePath = Path.Combine(_stateDirectory, fileName);
@@ -111,31 +93,8 @@ namespace Dasync.Persistence.FileSystem
             }
 
             // TODO: select serializer
-            var dto = _serializer.Deserialize<MethodExecutionStateDto>(data);
-
-            var state = new MethodExecutionState
-            {
-                Service = serviceId,
-                Method = methodId,
-                FlowContext = dto.FlowContext,
-                Caller = dto.Caller,
-                Continuation = dto.Continuation,
-                //MethodStateData = dto.StateData,
-                //Serializer = _serializerProvider.GetSerializer(dto.ContentType)
-                MethodState = dto.State,
-                SerializerProvider = _serializerProvider
-            };
-
-            if (dto.ContinuationStateData?.Length > 0)
-            {
-                state.CallerState = new SerializedMethodContinuationState
-                {
-                    Format = dto.ContinuationStateFormat,
-                    State = dto.ContinuationStateData
-                };
-            }
-
-            return state;
+            var executionState = _serializer.Deserialize<MethodExecutionState>(data);
+            return executionState;
         }
 
         public async Task WriteResultAsync(ServiceId serviceId, MethodId methodId, string intentId, TaskResult result)

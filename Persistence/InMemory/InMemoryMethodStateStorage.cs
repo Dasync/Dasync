@@ -6,7 +6,6 @@ using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Persistence;
 using Dasync.Serialization;
-using Dasync.ValueContainer;
 
 namespace Dasync.Persistence.InMemory
 {
@@ -23,14 +22,11 @@ namespace Dasync.Persistence.InMemory
         public Task WriteStateAsync(
             ServiceId serviceId,
             PersistedMethodId methodId,
-            ITransitionContext context,
-            IValueContainer methodState,
-            ContinuationDescriptor continuation,
-            ISerializedMethodContinuationState callerState)
+            MethodExecutionState state)
         {
-            var serializedState = _serializer.SerializeToString(methodState);
-            var serializedContinuation = continuation != null ? _serializer.SerializeToString(continuation) : null;
-            var serializedFlowContext = context.FlowContext?.Count > 0 ? _serializer.SerializeToString(context.FlowContext) : null;
+            var serializedState = _serializer.SerializeToString(state.MethodState);
+            var serializedContinuation = state.Continuation != null ? _serializer.SerializeToString(state.Continuation) : null;
+            var serializedFlowContext = state.FlowContext?.Count > 0 ? _serializer.SerializeToString(state.FlowContext) : null;
 
             var expectedETag = methodId.ETag;
             var intentId = methodId.IntentId;
@@ -48,30 +44,29 @@ namespace Dasync.Persistence.InMemory
                 }
 
                 entry.ETag = DateTimeOffset.UtcNow.Ticks.ToString();
-                entry["ServiceId"] = context.Service.Clone();
-                entry["MethodId"] = context.Method.Clone();
-                entry["Caller"] = context.Caller?.Clone();
+                entry["ServiceId"] = state.Service.Clone();
+                entry["MethodId"] = state.Method.Clone();
+                entry["Caller"] = state.Caller?.Clone();
                 entry["State"] = serializedState;
                 entry["Continuation"] = serializedContinuation;
                 entry["FlowContext"] = serializedFlowContext;
-                entry["Caller"] = context.Caller?.Clone();
 
-                if (callerState != null)
+                if (state.ContinuationState != null)
                 {
-                    entry["Continuation:Format"] = callerState.Format;
-                    entry["Continuation:State"] = callerState.State;
+                    entry["Continuation:Format"] = state.ContinuationState.Format;
+                    entry["Continuation:State"] = state.ContinuationState.State;
                 }
             }
 
             return Task.CompletedTask;
         }
 
-        public Task<IMethodExecutionState> ReadStateAsync(
+        public Task<MethodExecutionState> ReadStateAsync(
             ServiceId serviceId,
             PersistedMethodId methodId,
             CancellationToken ct)
         {
-            MethodExecutionState state;
+            MethodExecutionState executionState;
             string serializedFlowContext;
             string serializedContinuation;
             string continuationStateFormat;
@@ -82,15 +77,14 @@ namespace Dasync.Persistence.InMemory
                 if (!_entryMap.TryGetValue(methodId.IntentId, out var entry))
                     throw new StateNotFoundException(serviceId, methodId);
 
-                state = new MethodExecutionState
+                executionState = new MethodExecutionState
                 {
                     Service = serviceId,
                     Method = methodId,
                     Caller = entry.TryGetValue("Caller", out var callerObj) ? callerObj as CallerDescriptor : null,
-                    MethodStateData = (string)entry["State"],
-                    Serializer = _serializer,
+                    MethodState = new SerializedValueContainer((string)entry["State"], _serializer)
                 };
-                state.Method.ETag = entry.ETag;
+                executionState.Method.ETag = entry.ETag;
 
                 serializedFlowContext = entry.TryGetValue("FlowContext", out var flowContextObj) ? flowContextObj as string : null;
                 serializedContinuation = entry.TryGetValue("Continuation", out var continuationObj) ? continuationObj as string : null;
@@ -99,21 +93,21 @@ namespace Dasync.Persistence.InMemory
             }
 
             if (!string.IsNullOrEmpty(serializedFlowContext))
-                state.FlowContext = _serializer.Deserialize<Dictionary<string, string>>(serializedFlowContext);
+                executionState.FlowContext = _serializer.Deserialize<Dictionary<string, string>>(serializedFlowContext);
 
             if (!string.IsNullOrEmpty(serializedContinuation))
-                state.Continuation = _serializer.Deserialize<ContinuationDescriptor>(serializedContinuation);
+                executionState.Continuation = _serializer.Deserialize<ContinuationDescriptor>(serializedContinuation);
 
             if (continuationStateData?.Length > 0)
             {
-                state.CallerState = new SerializedMethodContinuationState
+                executionState.ContinuationState = new SerializedMethodContinuationState
                 {
                     Format = continuationStateFormat,
                     State = continuationStateData
                 };
             }
 
-            return Task.FromResult<IMethodExecutionState>(state);
+            return Task.FromResult(executionState);
         }
 
         public Task WriteResultAsync(ServiceId serviceId, MethodId methodId, string intentId, TaskResult result)

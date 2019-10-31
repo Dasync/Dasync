@@ -8,8 +8,6 @@
         /// </summary>
         public string IntentId { get; set; }
 
-        public string RoutineId { get; set; }
-
         public string ETag { get; set; }
 
         public override MethodId Clone() => CopyTo(new PersistedMethodId());
@@ -19,7 +17,6 @@
             base.CopyTo(copy);
             var x = (PersistedMethodId)(object)copy;
             x.IntentId = IntentId;
-            x.RoutineId = RoutineId;
             x.ETag = ETag;
             return copy;
         }

@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Dasync.EETypes;
 using Dasync.EETypes.Communication;
-using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Resolvers;
 using Dasync.ExecutionEngine.Transitions;
-using Dasync.ValueContainer;
+using Dasync.ExecutionEngine.Utils;
 
 namespace Dasync.ExecutionEngine.Communication
 {
@@ -53,18 +50,8 @@ namespace Dasync.ExecutionEngine.Communication
             bool runInPlace = preferToRunInPlace && (!behaviorSettings.Persistent ||
                 communicator.Traits.HasFlag(CommunicationTraits.MessageLockOnPublish));
 
-            ITransitionContext transitionContext;
-            if (_transitionScope.IsActive)
-            {
-                transitionContext = _transitionScope.CurrentMonitor.Context;
-            }
-            else
-            {
-                transitionContext = new TransitionContextData
-                {
-                    // TODO: hints can be used to set unique intent/request ID
-                };
-            }
+            var invocationData = InvocationDataUtils.CreateMethodInvocationData(intent,
+                _transitionScope.IsActive ? _transitionScope.CurrentMonitor.Context : null);
 
             if (runInPlace)
             {
@@ -73,7 +60,7 @@ namespace Dasync.ExecutionEngine.Communication
                 {
                     var preferences = new InvocationPreferences { LockMessage = true };
 
-                    var invocationResult = await communicator.InvokeAsync(intent, transitionContext, null, preferences);
+                    var invocationResult = await communicator.InvokeAsync(invocationData, null, preferences);
                     if (invocationResult.Outcome == InvocationOutcome.Complete)
                         return invocationResult;
                     messageHandle = invocationResult.MessageHandle;
@@ -81,23 +68,14 @@ namespace Dasync.ExecutionEngine.Communication
 
                 try
                 {
-                    var invocationData = new MethodInvocationData
-                    {
-                        IntentId = intent.Id,
-                        Service = intent.Service,
-                        Method = intent.Method,
-                        Parameters = intent.Parameters
-                    };
+                    var result = await _localMethodRunner.RunAsync(
+                        invocationData,
+                        RuntimeCommunicatorMessage.Instance,
+                        continuationState: null);
 
-                    if (_transitionScope.IsActive)
-                    {
-                        invocationData.FlowContext = transitionContext.FlowContext;
-                        invocationData.Caller = transitionContext.CurrentAsCaller();
-                    }
-
-                    var result = await _localMethodRunner.RunAsync(invocationData, message: invocationData, continuationState: null);
                     if (messageHandle != null)
                         await messageHandle.Complete();
+
                     return result;
                 }
                 catch (Exception ex) // TODO: infra exceptions? should not be there, right?
@@ -118,27 +96,17 @@ namespace Dasync.ExecutionEngine.Communication
                 {
                     // TODO: check this option
                     //LockMessage = behaviorSettings.Resilient && communicator.Traits.HasFlag(CommunicationTraits.MessageLockOnPublish),
-                    
+
                     Synchronous = communicator.Traits.HasFlag(CommunicationTraits.SyncReplies)
                 };
 
-                return await communicator.InvokeAsync(intent, transitionContext, null, preferences);
+                return await communicator.InvokeAsync(invocationData, null, preferences);
             }
         }
 
-        private class MethodInvocationData : IMethodInvocationData, ICommunicatorMessage
+        private class RuntimeCommunicatorMessage : ICommunicatorMessage
         {
-            public ServiceId Service { get; set; }
-
-            public MethodId Method { get; set; }
-
-            public ContinuationDescriptor Continuation => null;
-
-            public string IntentId { get; set; }
-
-            public CallerDescriptor Caller { get; set; }
-
-            public Dictionary<string, string> FlowContext { get; set; }
+            public static ICommunicatorMessage Instance = new RuntimeCommunicatorMessage();
 
             public string CommunicatorType => "_";
 
@@ -147,14 +115,6 @@ namespace Dasync.ExecutionEngine.Communication
             public bool? IsRetry => false;
 
             public string RequestId => null;
-
-            public IValueContainer Parameters { get; set; }
-
-            public Task ReadInputParameters(IValueContainer target)
-            {
-                Parameters.CopyTo(target);
-                return Task.CompletedTask;
-            }
         }
     }
 }

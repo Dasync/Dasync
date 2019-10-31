@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Dasync.Collections;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Engine;
+using Dasync.EETypes.Persistence;
 using Dasync.Serialization;
 
 namespace Dasync.Communication.InMemory
@@ -84,7 +85,7 @@ namespace Dasync.Communication.InMemory
 
         private async Task HandleCommandOrQuery(Message message)
         {
-            var invocationData = new MethodInvocationData(message, _serializerProvider);
+            var invocationData = MethodInvocationDataTransformer.Read(message, _serializerProvider);
             var communicationMessage = new CommunicationMessage(message);
             var continuationState = TryGetMethodContinuationState(message);
             var result = await _localTransitionRunner.RunAsync(invocationData, communicationMessage, continuationState);
@@ -98,9 +99,7 @@ namespace Dasync.Communication.InMemory
 
         private async Task HandleResponse(Message message)
         {
-            var continuationData = new MethodContinuationData(message);
-            continuationData.SerializedResult = (string)message.Data["Result"];
-            continuationData.Serializer = _serializerProvider.GetSerializer((string)message.Data["Format"]);
+            var continuationData = MethodContinuationDataTransformer.Read(message, _serializerProvider);
             var communicationMessage = new CommunicationMessage(message);
             var continuationState = TryGetMethodContinuationState(message);
             await _localTransitionRunner.ContinueAsync(continuationData, communicationMessage, continuationState);

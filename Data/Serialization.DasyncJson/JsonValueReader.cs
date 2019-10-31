@@ -44,15 +44,7 @@ namespace Dasync.Serialization.DasyncJson
                                 jsonWriter.WriteToken(_jsonReader, writeChildren: true);
 
                                 var serializedContainer = new SerializedValueContainer(
-                                    "dasync+json",
-                                    content.ToString(),
-                                    null,
-                                    (format, form, state) =>
-                                    {
-                                        var dynamicValueContainer = new ValueContainer.ValueContainer();
-                                        serializer.Populate((string)form, dynamicValueContainer);
-                                        return dynamicValueContainer;
-                                    });
+                                    content.ToString(), serializer);
 
                                 reconstructor.OnValueStart(state.Info);
                                 reconstructor.OnValue(serializedContainer);

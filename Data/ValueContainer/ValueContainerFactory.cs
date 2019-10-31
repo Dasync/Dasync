@@ -91,6 +91,15 @@ namespace Dasync.ValueContainer
             return (IValueContainerFactory)Activator.CreateInstance(factoryType);
         }
 
+        public static IValueContainerProxyFactory GetProxyFactory(Type delegatedType)
+        {
+            var properties = GetDelegatedMembers(delegatedType);
+#warning Pre-cache
+            var containerType = ValueContainerTypeBuilder.Build(delegatedType, properties);
+            var factoryType = typeof(ValueContainerProxyFactory<,>).MakeGenericType(delegatedType, containerType);
+            return (IValueContainerProxyFactory)Activator.CreateInstance(factoryType);
+        }
+
         public static IValueContainerProxyFactory GetProxyFactory(Type delegatedType, IEnumerable<KeyValuePair<string, MemberInfo>> properties)
         {
 #warning Pre-cache

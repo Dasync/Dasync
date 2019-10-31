@@ -7,13 +7,13 @@ namespace Dasync.EETypes.Engine
     public interface ILocalMethodRunner
     {
         Task<InvokeRoutineResult> RunAsync(
-            IMethodInvocationData data,
+            MethodInvocationData data,
             ICommunicatorMessage message,
-            ISerializedMethodContinuationState continuationState);
+            SerializedMethodContinuationState continuationState);
 
         Task<ContinueRoutineResult> ContinueAsync(
-            IMethodContinuationData data,
+            MethodContinuationData data,
             ICommunicatorMessage message,
-            ISerializedMethodContinuationState continuationState);
+            SerializedMethodContinuationState continuationState);
     }
 }

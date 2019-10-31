@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.EETypes;
 using Dasync.EETypes.Communication;
-using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Platform;
 using Dasync.EETypes.Resolvers;
+using Dasync.ExecutionEngine.Utils;
 using Dasync.Serialization;
-using Dasync.ValueContainer;
 
 namespace Dasync.ExecutionEngine.Transitions
 {
@@ -24,7 +22,7 @@ namespace Dasync.ExecutionEngine.Transitions
             CancellationToken ct)
         {
             ITransitionContext context = _transitionScope.CurrentMonitor.Context;
-            ISerializedMethodContinuationState continuationState = null;
+            SerializedMethodContinuationState continuationState = null;
 
             if (actions.SaveStateIntent != null)
             {
@@ -69,13 +67,8 @@ namespace Dasync.ExecutionEngine.Transitions
                     {
                         try
                         {
-                            await stateStorage.WriteStateAsync(
-                                actions.SaveStateIntent.Service,
-                                actions.SaveStateIntent.Method,
-                                context,
-                                actions.SaveStateIntent.RoutineState,
-                                transitionCarrier.GetContinuationsAsync(default).Result?.FirstOrDefault(),
-                                transitionCarrier as ISerializedMethodContinuationState);
+                            var executionState = GetMethodExecutionState(actions.SaveStateIntent, transitionCarrier, context);
+                            await stateStorage.WriteStateAsync(actions.SaveStateIntent.Service, actions.SaveStateIntent.Method, executionState);
                         }
                         catch (ETagMismatchException ex)
                         {
@@ -131,11 +124,13 @@ namespace Dasync.ExecutionEngine.Transitions
                     var preferences = new InvocationPreferences();
                     var communicator = _communicatorProvider.GetCommunicator(intent.Service, intent.Method);
 
-                    ISerializedMethodContinuationState thisIntentContinuationState = null;
+                    var invocationData = InvocationDataUtils.CreateMethodInvocationData(intent, context);
+
+                    SerializedMethodContinuationState thisIntentContinuationState = null;
                     if (continuationState != null && ReferenceEquals(actions.SaveStateIntent.AwaitedRoutine, intent))
                         thisIntentContinuationState = continuationState;
 
-                    var result = await communicator.InvokeAsync(intent, context, thisIntentContinuationState, preferences);
+                    var result = await communicator.InvokeAsync(invocationData, thisIntentContinuationState, preferences);
 
                     if (result.Outcome == InvocationOutcome.Complete)
                         _routineCompletionSink.OnRoutineCompleted(intent.Service, intent.Method, intent.Id, result.Result);
@@ -147,16 +142,18 @@ namespace Dasync.ExecutionEngine.Transitions
                 // TODO: option to update the incoming message
                 // TODO: option to lock the message and keep executing in-place
                 var intent = actions.ResumeRoutineIntent;
+                var continuationData = InvocationDataUtils.CreateMethodContinuationData(intent, context);
                 var communicator = _communicatorProvider.GetCommunicator(intent.Service, intent.Method);
-                await communicator.ContinueAsync(intent, context, continuationState, preferences: default);
+                await communicator.ContinueAsync(continuationData, continuationState, preferences: default);
             }
 
             if (actions.ContinuationIntents?.Count > 0)
             {
                 foreach (var intent in actions.ContinuationIntents)
                 {
+                    var continuationData = InvocationDataUtils.CreateMethodContinuationData(intent, context);
                     var communicator = _communicatorProvider.GetCommunicator(intent.Service, intent.Method);
-                    await communicator.ContinueAsync(intent, context, transitionCarrier as ISerializedMethodContinuationState, preferences: default);
+                    await communicator.ContinueAsync(continuationData, (transitionCarrier as TransitionCarrier)?.ContinuationState, preferences: default);
                 }
             }
 
@@ -169,119 +166,47 @@ namespace Dasync.ExecutionEngine.Transitions
             }
         }
 
-        private ISerializedMethodContinuationState EncodeContinuationState(
+        private MethodExecutionState GetMethodExecutionState(
             SaveStateIntent saveStateIntent,
             ITransitionCarrier transitionCarrier,
             ITransitionContext context)
         {
-            var data = new MethodExecutionStateDto
+            return new MethodExecutionState
             {
                 Service = saveStateIntent.Service,
                 Method = saveStateIntent.Method,
                 Caller = context.Caller,
                 Continuation = transitionCarrier.GetContinuationsAsync(default).Result?.FirstOrDefault(),
-                Format = _defaultSerializer.Format,
-                MethodStateData = _defaultSerializer.SerializeToBytes(saveStateIntent.RoutineState),
-                FlowContext = context.FlowContext
-            };
-
-            if (transitionCarrier is ISerializedMethodContinuationState continuationState)
-            {
-                data.ContinuationStateFormat = continuationState.Format;
-                data.ContinuationStateData = continuationState.State;
-            }
-
-            // TODO: compress
-            // TODO: encrypt
-            return new MethodContinuationState
-            {
-                Format = _defaultSerializer.Format,
-                State = _defaultSerializer.SerializeToBytes(data)
+                MethodState = saveStateIntent.RoutineState,
+                FlowContext = context.FlowContext,
+                ContinuationState = (transitionCarrier as TransitionCarrier)?.ContinuationState
             };
         }
 
-        private IMethodExecutionState DecodeContinuationData(ISerializedMethodContinuationState state)
+        private SerializedMethodContinuationState EncodeContinuationState(
+            SaveStateIntent saveStateIntent,
+            ITransitionCarrier transitionCarrier,
+            ITransitionContext context)
+        {
+            var executionState = GetMethodExecutionState(saveStateIntent, transitionCarrier, context);
+
+            // TODO: compress
+            // TODO: encrypt
+            return new SerializedMethodContinuationState
+            {
+                Format = _defaultSerializer.Format,
+                State = _defaultSerializer.SerializeToBytes(executionState)
+            };
+        }
+
+        private MethodExecutionState DecodeContinuationData(SerializedMethodContinuationState state)
         {
             if (state?.State == null || state.State.Length == 0)
                 return null;
 
             var serializer = _serializeProvder.GetSerializer(state.Format);
-            var dto = serializer.Deserialize<MethodExecutionStateDto>(state.State);
-            return new MethodExecutionState(dto, _serializeProvder);
+            var executionState = serializer.Deserialize<MethodExecutionState>(state.State);
+            return executionState;
         }
-    }
-
-    internal class MethodContinuationState : ISerializedMethodContinuationState
-    {
-        public string Format { get; set; }
-
-        public byte[] State { get; set; }
-    }
-
-    [Serializable]
-    public class MethodExecutionStateDto
-    {
-        // TODO: add headers for reply routing
-
-        public ServiceId Service { get; set; }
-
-        public PersistedMethodId Method { get; set; }
-
-        public ContinuationDescriptor Continuation { get; set; }
-
-        public string Format { get; set; }
-
-        public byte[] MethodStateData { get; set; }
-
-        public string ContinuationStateFormat { get; set; }
-
-        public byte[] ContinuationStateData { get; set; }
-
-        public CallerDescriptor Caller { get; set; }
-
-        public Dictionary<string, string> FlowContext { get; set; }
-    }
-
-    internal class MethodExecutionState : IMethodExecutionState
-    {
-        public MethodExecutionState(
-            MethodExecutionStateDto dto,
-            ISerializerProvider serializerProvider)
-        {
-            Service = dto.Service;
-            Method = dto.Method;
-            Continuation = dto.Continuation;
-            FlowContext = dto.FlowContext;
-            Caller = dto.Caller;
-            MethodStateData = dto.MethodStateData;
-            Serializer = serializerProvider.GetSerializer(dto.Format);
-
-            CallerState = (dto.ContinuationStateData?.Length > 0)
-                ? new MethodContinuationState
-                {
-                    Format = dto.ContinuationStateFormat,
-                    State = dto.ContinuationStateData
-                }
-                : null;
-        }
-
-        private ISerializer Serializer { get; }
-
-        public ServiceId Service { get; }
-
-        public PersistedMethodId Method { get; }
-
-        public ContinuationDescriptor Continuation { get; }
-
-        public byte[] MethodStateData { get; }
-
-        public CallerDescriptor Caller { get; }
-
-        public Dictionary<string, string> FlowContext { get; }
-
-        public ISerializedMethodContinuationState CallerState { get; }
-
-        public void ReadMethodState(IValueContainer container) =>
-            Serializer.Populate(MethodStateData, container);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Dasync.EETypes.Intents;
 using Dasync.EETypes.Persistence;
 
 namespace Dasync.EETypes.Communication
@@ -20,9 +19,8 @@ namespace Dasync.EETypes.Communication
         // - optionally include continuation data
 
         Task<InvokeRoutineResult> InvokeAsync(
-            ExecuteRoutineIntent intent,
-            ITransitionContext context,
-            ISerializedMethodContinuationState continuationState,
+            MethodInvocationData data,
+            SerializedMethodContinuationState continuationState,
             InvocationPreferences preferences);
 
         // reply w/ result (invoke continuation)
@@ -31,9 +29,8 @@ namespace Dasync.EETypes.Communication
         // - otherwise sync response or future web-hook thing
 
         Task<ContinueRoutineResult> ContinueAsync(
-            ContinueRoutineIntent intent,
-            ITransitionContext context,
-            ISerializedMethodContinuationState continuationState,
+            MethodContinuationData data,
+            SerializedMethodContinuationState continuationState,
             InvocationPreferences preferences);
 
         // publish event

@@ -37,6 +37,7 @@ namespace Dasync.ExecutionEngine.Transitions
         private readonly ISerializer _defaultSerializer;
         private readonly ISerializerProvider _serializeProvder;
         private readonly IMethodStateStorageProvider _methodStateStorageProvider;
+        private readonly IValueContainerCopier _valueContainerCopier;
 
         public TransitionRunner(
             ITransitionScope transitionScope,
@@ -51,7 +52,8 @@ namespace Dasync.ExecutionEngine.Transitions
             ICommunicationSettingsProvider communicationSettingsProvider,
             IDefaultSerializerProvider defaultSerializerProvider,
             ISerializerProvider serializeProvder,
-            IMethodStateStorageProvider methodStateStorageProvider)
+            IMethodStateStorageProvider methodStateStorageProvider,
+            IValueContainerCopier valueContainerCopier)
         {
             _transitionScope = transitionScope;
             _asyncStateMachineMetadataProvider = asyncStateMachineMetadataProvider;
@@ -66,6 +68,7 @@ namespace Dasync.ExecutionEngine.Transitions
             _defaultSerializer = defaultSerializerProvider.DefaultSerializer;
             _serializeProvder = serializeProvder;
             _methodStateStorageProvider = methodStateStorageProvider;
+            _valueContainerCopier = valueContainerCopier;
         }
 
         public async Task RunAsync(

@@ -7,52 +7,46 @@ using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Platform;
+using Dasync.Serialization;
 using Dasync.ValueContainer;
 
 namespace Dasync.ExecutionEngine.Transitions
 {
-    internal class TransitionCarrier : ITransitionCarrier, ISerializedMethodContinuationState
+    internal class TransitionCarrier : ITransitionCarrier
     {
-        private readonly IInvocationData _invocationData;
-        private readonly IMethodInvocationData _methodInvocationData;
-        private readonly IMethodContinuationData _methodContinuationData;
-        private ISerializedMethodContinuationState _continuationState;
-        private IMethodExecutionState _methodExecutionState;
+        private readonly MethodInvocationData _methodInvocationData;
+        private readonly MethodContinuationData _methodContinuationData;
+        private SerializedMethodContinuationState _continuationState;
+        private MethodExecutionState _methodExecutionState;
+        private IValueContainerCopier _valueContainerCopier;
 
         public CallerDescriptor Caller { get; private set; }
 
-        public TransitionCarrier(IMethodInvocationData methodInvocationData, ISerializedMethodContinuationState continuationState)
+        public TransitionCarrier(
+            MethodInvocationData methodInvocationData,
+            SerializedMethodContinuationState continuationState,
+            IValueContainerCopier valueContainerCopier)
         {
-            _invocationData = methodInvocationData;
             _methodInvocationData = methodInvocationData;
             _continuationState = continuationState;
             Caller = methodInvocationData.Caller;
+            _valueContainerCopier = valueContainerCopier;
         }
 
-        public TransitionCarrier(IMethodContinuationData routineContinuationData)
+        public TransitionCarrier(MethodContinuationData routineContinuationData)
         {
-            _invocationData = routineContinuationData;
             _methodContinuationData = routineContinuationData;
         }
 
-        string ISerializedMethodContinuationState.Format
-        {
-            get => _continuationState?.Format;
-            set { if (_continuationState != null) _continuationState.Format = value; }
-        }
-
-        byte[] ISerializedMethodContinuationState.State
-        {
-            get => _continuationState?.State;
-            set { if (_continuationState != null) _continuationState.State = value; }
-        }
-
-        public void SetMethodExecutionState(IMethodExecutionState methodExecutionState)
+        public void SetMethodExecutionState(MethodExecutionState methodExecutionState, IValueContainerCopier valueContainerCopier)
         {
             _methodExecutionState = methodExecutionState;
-            _continuationState = methodExecutionState.CallerState;
+            _continuationState = methodExecutionState.ContinuationState;
             Caller = _methodExecutionState.Caller;
+            _valueContainerCopier = valueContainerCopier;
         }
+
+        public SerializedMethodContinuationState ContinuationState { get; set; }
 
         public string ResultTaskId => _methodContinuationData?.TaskId;
 
@@ -60,7 +54,28 @@ namespace Dasync.ExecutionEngine.Transitions
         {
             if (_methodContinuationData == null)
                 throw new InvalidOperationException();
-            return _methodContinuationData.ReadResult(expectedResultValueType);
+
+            var taskResult = new TaskResult();
+
+            if (expectedResultValueType == null || expectedResultValueType == typeof(void) || expectedResultValueType == typeof(object))
+            {
+                _valueContainerCopier.CopyValues(
+                    source: _methodContinuationData.Result,
+                    destination: ValueContainerFactory.CreateProxy(taskResult));
+            }
+            else
+            {
+                var genericTaskResult = (ITaskResult)Activator.CreateInstance(typeof(TaskResult<>).MakeGenericType(expectedResultValueType));
+                _valueContainerCopier.CopyValues(
+                    source: _methodContinuationData.Result,
+                    destination: ValueContainerFactory.CreateProxy(genericTaskResult));
+
+                taskResult.Value = genericTaskResult.Value;
+                taskResult.Exception = genericTaskResult.Exception;
+                taskResult.IsCanceled = genericTaskResult.IsCanceled;
+            }
+
+            return taskResult;
         }
 
         public Task<List<ContinuationDescriptor>> GetContinuationsAsync(CancellationToken ct)
@@ -131,7 +146,10 @@ namespace Dasync.ExecutionEngine.Transitions
         {
             if (_methodInvocationData != null)
             {
-                return _methodInvocationData.ReadInputParameters(target);
+                _valueContainerCopier.CopyValues(
+                    source: _methodInvocationData.Parameters,
+                    destination: target);
+                return Task.CompletedTask;
             }
             else
             {
@@ -143,7 +161,9 @@ namespace Dasync.ExecutionEngine.Transitions
         {
             if (_methodExecutionState != null)
             {
-                _methodExecutionState.ReadMethodState(target);
+                _valueContainerCopier.CopyValues(
+                    source: _methodExecutionState.MethodState,
+                    destination: target);
                 return Task.CompletedTask;
             }
             else

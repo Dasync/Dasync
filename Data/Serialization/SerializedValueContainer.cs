@@ -24,7 +24,39 @@ namespace Dasync.Serialization
         {
             _format = format;
             _serializedForm = serializedForm;
-            _lazyValueContainer = new Lazy<IValueContainer>(() => deserializeFunc(format, serializedForm, state));
+            _lazyValueContainer = new Lazy<IValueContainer>(() => deserializeFunc(_format, _serializedForm, state));
+        }
+
+        public SerializedValueContainer(
+            object serializedForm,
+            ISerializer serializer)
+        {
+            _format = serializer.Format;
+            _serializedForm = serializedForm;
+            _lazyValueContainer = new Lazy<IValueContainer>(() =>
+            {
+                if (_serializedForm is string text)
+                    return serializer.Deserialize<ValueContainer.ValueContainer>(text);
+                else
+                    return serializer.Deserialize<ValueContainer.ValueContainer>((byte[])_serializedForm);
+            });
+        }
+
+        public SerializedValueContainer(
+            string format,
+            object serializedForm,
+            ISerializerProvider serializerProvider)
+        {
+            _format = format;
+            _serializedForm = serializedForm;
+            _lazyValueContainer = new Lazy<IValueContainer>(() =>
+            {
+                var serializer = serializerProvider.GetSerializer(_format);
+                if (_serializedForm is string text)
+                    return serializer.Deserialize<ValueContainer.ValueContainer>(text);
+                else
+                    return serializer.Deserialize<ValueContainer.ValueContainer>((byte[])_serializedForm);
+            });
         }
 
         public string GetFormat() => _format;

@@ -3,16 +3,16 @@
     /// <summary>
     /// Exexution state of a paused routine.
     /// </summary>
-    public interface ISerializedMethodContinuationState
+    public class SerializedMethodContinuationState
     {
         /// <summary>
         /// The Format of an ISerializer
         /// </summary>
-        string Format { get; set; }
+        public string Format { get; set; }
 
         /// <summary>
         /// Serialized method execution state
         /// </summary>
-        byte[] State { get; set; }
+        public byte[] State { get; set; }
     }
 }

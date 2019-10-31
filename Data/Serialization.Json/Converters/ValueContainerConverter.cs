@@ -80,7 +80,7 @@ namespace Dasync.Serialization.Json.Converters
                         }
                         else
                         {
-
+                            throw new NotImplementedException();
                         }
                         return null;
                     });

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.EETypes;
 using Dasync.EETypes.Communication;
-using Dasync.EETypes.Intents;
 using Dasync.EETypes.Persistence;
 using Dasync.Serialization;
 
@@ -34,28 +32,16 @@ namespace Dasync.Communication.InMemory
             CommunicationTraits.MessageLockOnPublish;
 
         public async Task<InvokeRoutineResult> InvokeAsync(
-            ExecuteRoutineIntent intent,
-            ITransitionContext context,
-            ISerializedMethodContinuationState continuationState,
+            MethodInvocationData data,
+            SerializedMethodContinuationState continuationState,
             InvocationPreferences preferences)
         {
             var message = new Message
             {
                 Type = MessageType.InvokeMethod,
-                Data = new Dictionary<string, object>
-                {
-                    ["IntentId"] = intent.Id,
-                    ["Service"] = intent.Service.Clone(),
-                    ["Method"] = intent.Method.Clone(),
-                    ["Continuation"] = intent.Continuation,
-                    ["Continuation:Format"] = continuationState?.Format,
-                    ["Continuation:State"] = continuationState?.State,
-                    ["Format"] = _serializer.Format,
-                    ["Parameters"] = _serializer.SerializeToString(intent.Parameters),
-                    ["Caller"] = context.CurrentAsCaller(),
-                    ["FlowContext"] = context.FlowContext
-                }
             };
+
+            MethodInvocationDataTransformer.Write(message, data, continuationState, _serializer);
 
             var result = new InvokeRoutineResult
             {
@@ -84,28 +70,17 @@ namespace Dasync.Communication.InMemory
         }
 
         public Task<ContinueRoutineResult> ContinueAsync(
-            ContinueRoutineIntent intent,
-            ITransitionContext context,
-            ISerializedMethodContinuationState continuationState,
+            MethodContinuationData data,
+            SerializedMethodContinuationState continuationState,
             InvocationPreferences preferences)
         {
             var message = new Message
             {
                 Type = MessageType.Response,
-                Data = new Dictionary<string, object>
-                {
-                    ["IntentId"] = intent.Id,
-                    ["Service"] = intent.Service.Clone(),
-                    ["Method"] = intent.Method.Clone(),
-                    ["TaskId"] = intent.TaskId,
-                    ["Continuation:Format"] = continuationState?.Format,
-                    ["Continuation:State"] = continuationState?.State,
-                    ["Caller"] = context.CurrentAsCaller(),
-                    ["Format"] = _serializer.Format,
-                    ["Result"] = _serializer.SerializeToString(intent.Result)
-                },
-                DeliverAt = intent.ContinueAt
+                DeliverAt = data.ContinueAt
             };
+
+            MethodContinuationDataTransformer.Write(message, data, continuationState, _serializer);
 
             var result = new ContinueRoutineResult();
 
