@@ -57,7 +57,7 @@ namespace DasyncFeatures.Feature5
             _baristaWorker = baristaWorker;
         }
 
-        public async Task SolveComplaint()
+        public virtual async Task SolveComplaint()
         {
             Console.WriteLine("[manager] The visitor complained about a fly in the drink.");
 
@@ -81,7 +81,7 @@ namespace DasyncFeatures.Feature5
             _coffeeMachine = coffeeMachine;
         }
 
-        public async Task PleaseMakeAnotherCoffee()
+        public virtual async Task PleaseMakeAnotherCoffee()
         {
             Console.WriteLine("[barista] But that's a latte art! Fine..");
 
@@ -95,7 +95,7 @@ namespace DasyncFeatures.Feature5
 
     public class CoffeeMachine : ICoffeeMachine
     {
-        public async Task BrewCoffee()
+        public virtual async Task BrewCoffee()
         {
             Console.WriteLine("[coffee machine] 'Pshhhhh'");
         }

@@ -32,7 +32,7 @@ namespace DasyncFeatures.Feature3
 
     public class BaristaWorker : IBaristaWorker
     {
-        public async Task LoungeAround()
+        public virtual async Task LoungeAround()
         {
             // "I have nothing to do right now, let me solve this math problem.."
             var a = Environment.TickCount % 100;

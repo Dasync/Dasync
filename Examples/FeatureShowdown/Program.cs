@@ -27,8 +27,7 @@ namespace DasyncFeatures
                 new Feature7.Demo(),
             };
 
-            //var feature = SelectFeature(featureDemoSet);
-            var feature = featureDemoSet[0];
+            var feature = SelectFeature(featureDemoSet);
 
             // !!! LOOK HERE !!!
             //

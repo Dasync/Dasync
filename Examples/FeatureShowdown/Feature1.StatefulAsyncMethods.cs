@@ -37,7 +37,7 @@ namespace DasyncFeatures.Feature1
     public class BaristaWorker : IBaristaWorker
     {
         // An entry point to the workflow - a routine.
-        public async Task PerformDuties()
+        public virtual async Task PerformDuties()
         {
             var order = await TakeOrder();
 

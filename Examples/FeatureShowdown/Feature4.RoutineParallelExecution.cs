@@ -33,7 +33,7 @@ namespace DasyncFeatures.Feature4
 
     public class BaristaWorker : IBaristaWorker
     {
-        public async Task PerformDuties()
+        public virtual async Task PerformDuties()
         {
             // WhenAll is translated into such series of steps:
             // 1. Save state of current routine;

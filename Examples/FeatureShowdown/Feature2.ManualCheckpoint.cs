@@ -32,7 +32,7 @@ namespace DasyncFeatures.Feature2
 
     public class BaristaWorker : IBaristaWorker
     {
-        public async Task TakeOrder()
+        public virtual async Task TakeOrder()
         {
             Console.Write("What beverage would you like? ");
             var beverageName = Console.ReadLine();

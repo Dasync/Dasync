@@ -55,7 +55,7 @@ namespace DasyncFeatures.Feature6
             _warehouse = warehouse;
         }
 
-        public async Task PlaceOrder()
+        public virtual async Task PlaceOrder()
         {
             // Generate unique ID which will be persisted in this routine.
             var transationId = Guid.NewGuid();
@@ -94,13 +94,13 @@ namespace DasyncFeatures.Feature6
 
     public class PaymentProcessor : IPaymentProcessor
     {
-        public async Task Credit(Guid transationId, int amount)
+        public virtual async Task Credit(Guid transationId, int amount)
         {
             // The 'transationId' can be used to make this
             // action idempotent and avoid double charge.
         }
 
-        public async Task Debit(Guid transationId, int amount)
+        public virtual async Task Debit(Guid transationId, int amount)
         {
             // The 'transationId' can be used to make this
             // action idempotent and avoid double refund.
@@ -109,7 +109,7 @@ namespace DasyncFeatures.Feature6
 
     public class Warehouse : IWarehouse
     {
-        public async Task ReserveItem(Guid reservationId, string itemId, int quantity)
+        public virtual async Task ReserveItem(Guid reservationId, string itemId, int quantity)
         {
             // The 'reservationId' can be used to make this
             // action idempotent and avoid double reservation.
