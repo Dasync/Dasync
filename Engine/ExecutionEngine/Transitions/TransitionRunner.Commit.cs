@@ -68,8 +68,17 @@ namespace Dasync.ExecutionEngine.Transitions
                     {
                         try
                         {
-                            var executionState = GetMethodExecutionState(actions.SaveStateIntent, transitionCarrier, context);
-                            await stateStorage.WriteStateAsync(actions.SaveStateIntent.Service, actions.SaveStateIntent.Method, executionState);
+                            var executionState = GetMethodExecutionState(
+                                actions.SaveStateIntent, transitionCarrier, context);
+                            
+                            var etag = await stateStorage.WriteStateAsync(
+                                actions.SaveStateIntent.Service,
+                                actions.SaveStateIntent.Method,
+                                executionState);
+
+                            // NOTE: assume that ContinuationDescriptor instances refer to this instance of
+                            // PersistedMethodId and the ETag gets automatically propagated to the invoke intents.
+                            actions.SaveStateIntent.Method.ETag = etag;
                         }
                         catch (ETagMismatchException ex)
                         {
@@ -82,7 +91,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 }
                 else if (intent.RoutineResult != null)
                 {
-                    // TODO: make this behavior optional if a continuation is present.
+                    // TODO: make this behavior optional if a continuation is present (no polling expected).
                     // TODO: for the event sourcing style, the result must be written by the receiver of the response.
                     var writeResult = true;
 

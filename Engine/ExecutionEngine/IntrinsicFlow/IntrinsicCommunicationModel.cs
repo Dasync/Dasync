@@ -8,6 +8,10 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
             CommunicationModelBuilder.Build(_ => _
             .Service<IntrinsicRoutines>(service =>
             {
+                service.ServiceDefinition.Type = ServiceType.System;
+                service.ServiceDefinition.Name = "_tpl"; // Task Parallel Library
+                service.ServiceDefinition.AddAlternateName(nameof(IntrinsicRoutines));
+
                 service.Command("WhenAll", cmd =>
                 {
                     cmd.MethodDefinition.AddProperty("aggregate", true);

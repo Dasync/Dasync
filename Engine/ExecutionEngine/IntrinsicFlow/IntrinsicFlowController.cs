@@ -202,8 +202,8 @@ namespace Dasync.ExecutionEngine.IntrinsicFlow
 
                         Service = new ServiceId
                         {
-                            Name = awaitedRoutineIntent.Service.Name,
-                            Proxy = nameof(IntrinsicRoutines)
+                            Name = IntrinsicCommunicationModel.IntrinsicRoutinesServiceDefinition.Name,
+                            Proxy = monitor.Context.ServiceRef.Id.Name
                         },
 
                         Method = _routineMethodIdProvider.GetId(

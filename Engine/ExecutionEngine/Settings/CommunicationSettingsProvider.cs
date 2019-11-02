@@ -39,6 +39,9 @@ namespace Dasync.ExecutionEngine.Communication
             _valueFactory = ComposeSettings;
         }
 
+        public MethodCommunicationSettings GetServiceMethodSettings(IServiceDefinition serviceDefinition) =>
+            (MethodCommunicationSettings)_settings.GetOrAdd(serviceDefinition, _valueFactory);
+
         public MethodCommunicationSettings GetMethodSettings(IMethodDefinition methodDefinition) =>
             (MethodCommunicationSettings)_settings.GetOrAdd(methodDefinition, _valueFactory);
 
@@ -47,21 +50,24 @@ namespace Dasync.ExecutionEngine.Communication
 
         private object ComposeSettings(object definition)
         {
-            if (definition is IMethodDefinition methodDefinition)
-                return ComposeMethodCommunicationSettings(methodDefinition);
+            if (definition is IServiceDefinition serviceDefinition)
+                return ComposeMethodCommunicationSettings(serviceDefinition, null);
+            else if (definition is IMethodDefinition methodDefinition)
+                return ComposeMethodCommunicationSettings(methodDefinition.Service, methodDefinition);
             else
                 return ComposeEventCommunicationSettings((IEventDefinition)definition);
         }
 
-        private MethodCommunicationSettings ComposeMethodCommunicationSettings(IMethodDefinition definition)
+        private MethodCommunicationSettings ComposeMethodCommunicationSettings(IServiceDefinition serviceDefinition, IMethodDefinition methodDefinition)
         {
-            var isExternal = definition.Service.Type == ServiceType.External;
-            var isQuery = definition.IsQuery;
+            var model = serviceDefinition.Model;
+            var isExternal = serviceDefinition.Type == ServiceType.External;
+            var isQuery = methodDefinition?.IsQuery == true;
 
             return new MethodCommunicationSettings
             {
                 CommunicationType = GetValue<string>(
-                    definition, definition.Service, definition.Service.Model,
+                    methodDefinition, serviceDefinition, model,
                     "communicationType",
                     isExternal ? "communicationType:external" : "communicationType:local",
                     isQuery ? "communicationType:queries" : "communicationType:commands",
@@ -71,7 +77,7 @@ namespace Dasync.ExecutionEngine.Communication
                     defaultValue: null),
 
                 PersistenceType = GetValue<string>(
-                    definition, definition.Service, definition.Service.Model,
+                    methodDefinition, serviceDefinition, model,
                     "persistenceType",
                     isExternal ? "persistenceType:external" : "persistenceType:local",
                     isQuery ? "persistenceType:queries" : "persistenceType:commands",
@@ -81,7 +87,7 @@ namespace Dasync.ExecutionEngine.Communication
                     defaultValue: null),
 
                 Deduplicate = GetValue(
-                    definition, definition.Service, definition.Service.Model,
+                    methodDefinition, serviceDefinition, model,
                     "deduplicate",
                     isExternal ? "deduplicate:external" : "deduplicate:local",
                     isQuery ? "deduplicate:queries" : "deduplicate:commands",
@@ -91,7 +97,7 @@ namespace Dasync.ExecutionEngine.Communication
                     defaultValue: isQuery ? QueriesDefaults.Deduplicate : CommandsDefaults.Deduplicate),
 
                 Resilient = GetValue(
-                    definition, definition.Service, definition.Service.Model,
+                    methodDefinition, serviceDefinition, model,
                     "resilient",
                     isExternal ? "resilient:external" : "resilient:local",
                     isQuery ? "resilient:queries" : "resilient:commands",
@@ -101,7 +107,7 @@ namespace Dasync.ExecutionEngine.Communication
                     defaultValue: isQuery ? QueriesDefaults.Resilient : CommandsDefaults.Resilient),
 
                 Persistent = GetValue(
-                    definition, definition.Service, definition.Service.Model,
+                    methodDefinition, serviceDefinition, model,
                     "persistent",
                     isExternal ? "persistent:external" : "persistent:local",
                     isQuery ? "persistent:queries" : "persistent:commands",
@@ -111,7 +117,7 @@ namespace Dasync.ExecutionEngine.Communication
                     defaultValue: isQuery ? QueriesDefaults.Persistent : CommandsDefaults.Persistent),
 
                 RoamingState = GetValue(
-                    definition, definition.Service, definition.Service.Model,
+                    methodDefinition, serviceDefinition, model,
                     "roamingstate",
                     isExternal ? "roamingstate:external" : "roamingstate:local",
                     isQuery ? "roamingstate:queries" : "roamingstate:commands",
@@ -121,7 +127,7 @@ namespace Dasync.ExecutionEngine.Communication
                     defaultValue: isQuery ? QueriesDefaults.RoamingState : CommandsDefaults.RoamingState),
 
                 Transactional = GetValue(
-                    definition, definition.Service, definition.Service.Model,
+                    methodDefinition, serviceDefinition, model,
                     "transactional",
                     isExternal ? "transactional:external" : "transactional:local",
                     isQuery ? "transactional:queries" : "transactional:commands",
@@ -131,7 +137,7 @@ namespace Dasync.ExecutionEngine.Communication
                     defaultValue: isQuery ? QueriesDefaults.Transactional : CommandsDefaults.Transactional),
 
                 RunInPlace = GetValue(
-                    definition, definition.Service, definition.Service.Model,
+                    methodDefinition, serviceDefinition, model,
                     "runinplace",
                     isExternal ? "runinplace:external" : "runinplace:local",
                     isQuery ? "runinplace:queries" : "runinplace:commands",
@@ -141,7 +147,7 @@ namespace Dasync.ExecutionEngine.Communication
                     defaultValue: isQuery ? QueriesDefaults.RunInPlace : CommandsDefaults.RunInPlace),
 
                 IgnoreTransaction = GetValue(
-                    definition, definition.Service, definition.Service.Model,
+                    methodDefinition, serviceDefinition, model,
                     "ignoretransaction",
                     isExternal ? "ignoretransaction:external" : "ignoretransaction:local",
                     isQuery ? "ignoretransaction:queries" : "ignoretransaction:commands",
@@ -195,7 +201,7 @@ namespace Dasync.ExecutionEngine.Communication
         private T GetValue<T>(IPropertyBag topBag, IPropertyBag midBag, IPropertyBag lowBag,
             string propertyName, string lowBagPropName, string categoryPropertyName, string subCategoryPropName, T defaultValue)
         {
-            var prop = topBag.FindProperty(propertyName);
+            var prop = topBag?.FindProperty(propertyName);
             if (prop?.Value != null)
                 return (T)prop.Value;
 

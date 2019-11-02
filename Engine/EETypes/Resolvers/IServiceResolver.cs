@@ -25,7 +25,7 @@ namespace Dasync.EETypes.Resolvers
         }
 
         public ServiceResolveException(ServiceId serviceId)
-            : base($"Could not resolve service '{serviceId.Proxy ?? serviceId.Name}'.")
+            : base($"Could not resolve service '{serviceId}'.")
         {
             ServiceId = serviceId;
         }

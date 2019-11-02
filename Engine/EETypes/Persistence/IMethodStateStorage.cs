@@ -2,13 +2,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.EETypes.Descriptors;
-using Dasync.ValueContainer;
 
 namespace Dasync.EETypes.Persistence
 {
     public interface IMethodStateStorage
     {
-        Task WriteStateAsync(
+        Task<string> WriteStateAsync(
             ServiceId serviceId,
             PersistedMethodId methodId,
             MethodExecutionState state);

@@ -20,7 +20,7 @@ namespace Dasync.Persistence.InMemory
             _serializer = serializer;
         }
 
-        public Task WriteStateAsync(
+        public Task<string> WriteStateAsync(
             ServiceId serviceId,
             PersistedMethodId methodId,
             MethodExecutionState state)
@@ -57,9 +57,9 @@ namespace Dasync.Persistence.InMemory
                     entry["Continuation:Format"] = state.ContinuationState.Format;
                     entry["Continuation:State"] = state.ContinuationState.State;
                 }
-            }
 
-            return Task.CompletedTask;
+                return Task.FromResult(entry.ETag);
+            }
         }
 
         public Task<MethodExecutionState> ReadStateAsync(

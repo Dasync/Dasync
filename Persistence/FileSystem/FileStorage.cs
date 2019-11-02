@@ -31,7 +31,7 @@ namespace Dasync.Persistence.FileSystem
             _resultsDirectory = resultsDirectory;
         }
 
-        public async Task WriteStateAsync(
+        public async Task<string> WriteStateAsync(
             ServiceId serviceId,
             PersistedMethodId methodId,
             MethodExecutionState state)
@@ -54,11 +54,12 @@ namespace Dasync.Persistence.FileSystem
                     var etag = TryGetETag(filePath);
                     if (fileStream.Length > 0 && !string.IsNullOrEmpty(methodId.ETag) && methodId.ETag != etag)
                         throw new ETagMismatchException(methodId.ETag, etag);
-                    methodId.ETag = etag;
 
                     await fileStream.WriteAsync(data, 0, data.Length);
 
                     fileStream.SetLength(fileStream.Position);
+
+                    return etag;
                 }
             }
             catch (IOException) when (tryCount > 0)
@@ -138,13 +139,13 @@ namespace Dasync.Persistence.FileSystem
         private string GetStateFileName(ServiceId serviceId, PersistedMethodId methodId)
         {
             // TODO: suffix for the format? e.g. '.json', '.gz'
-            return $"{methodId.IntentId}.{serviceId.Proxy ?? serviceId.Name}.{methodId.Name}.state";
+            return $"{methodId.IntentId}.{serviceId.Name}.{methodId.Name}.state";
         }
 
         private string GetResultFileName(ServiceId serviceId, MethodId methodId, string intentId)
         {
             // TODO: suffix for the format? e.g. '.json', '.gz'
-            return $"{intentId}.{serviceId.Proxy ?? serviceId.Name}.{methodId.Name}.result";
+            return $"{intentId}.{serviceId.Name}.{methodId.Name}.result";
         }
 
         private static string TryGetETag(string filePath)

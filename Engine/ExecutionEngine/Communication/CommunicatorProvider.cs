@@ -18,7 +18,7 @@ namespace Dasync.ExecutionEngine.Communication
         private readonly IMethodResolver _methodResolver;
         private readonly IExternalCommunicationModel _externalCommunicationModel;
         private readonly Dictionary<string, ICommunicationMethod> _communicationMethods;
-        private readonly Dictionary<IMethodDefinition, ICommunicator> _communicatorMap = new Dictionary<IMethodDefinition, ICommunicator>();
+        private readonly Dictionary<object, ICommunicator> _communicatorMap = new Dictionary<object, ICommunicator>();
 
         public CommunicatorProvider(
             ICommunicationSettingsProvider communicationSettingsProvider,
@@ -50,12 +50,21 @@ namespace Dasync.ExecutionEngine.Communication
             if (_serviceResolver.TryResolve(serviceId, out var serviceRef))
             {
                 serviceDefinition = serviceRef.Definition;
-                methodDefinition = _methodResolver.Resolve(serviceDefinition, methodId).Definition;
+
+                // NOTE: system services are not unique within a multi-service ecosystem, thus must
+                // use the configuration of the calling (proxy) service without any specific method.
+                // Otherwise, a continuation can be sent to a wrong instance of a system service.
+                if (serviceDefinition.Type == ServiceType.System && !string.IsNullOrEmpty(serviceId.Proxy))
+                {
+                    return GetCommunicator(new ServiceId { Name = serviceId.Proxy }, null, assumeExternal);
+                }
+
+                methodDefinition = methodId == null ? null : _methodResolver.Resolve(serviceDefinition, methodId).Definition;
             }
             else if (assumeExternal)
             {
                 var externalServiceDefinition = _externalCommunicationModel.GetOrAddService(serviceId);
-                var externalMethodDefinition = externalServiceDefinition.GetOrAddMethod(methodId);
+                var externalMethodDefinition = methodId == null ? null : externalServiceDefinition.GetOrAddMethod(methodId);
                 serviceDefinition = externalServiceDefinition;
                 methodDefinition = externalMethodDefinition;
             }
@@ -64,16 +73,19 @@ namespace Dasync.ExecutionEngine.Communication
                 throw new ServiceResolveException(serviceId);
             }
 
+            var key = (object)methodDefinition ?? serviceDefinition;
             lock (_communicatorMap)
             {
-                if (_communicatorMap.TryGetValue(methodDefinition, out var cachedCommunicator))
+                if (_communicatorMap.TryGetValue(key, out var cachedCommunicator))
                     return cachedCommunicator;
             }
 
-            var serviceCategory = serviceDefinition.Type == ServiceType.External ? "_external" : "_local";
-            var methodCategory = methodDefinition.IsQuery ? "queries" : "commands";
+            MethodCommunicationSettings methodCommunicationSettings =
+                methodDefinition == null
+                ? _communicationSettingsProvider.GetServiceMethodSettings(serviceDefinition)
+                : _communicationSettingsProvider.GetMethodSettings(methodDefinition);
 
-            var communicationType = _communicationSettingsProvider.GetMethodSettings(methodDefinition).CommunicationType;
+            var communicationType = methodCommunicationSettings.CommunicationType;
 
             ICommunicationMethod communicationMethod;
             if (string.IsNullOrWhiteSpace(communicationType))
@@ -98,26 +110,42 @@ namespace Dasync.ExecutionEngine.Communication
             var servicesSection = _configuration.GetSection("services");
             var serviceSection = servicesSection.GetSection(serviceDefinition.Name);
 
-            var communicatorConfig = GetConfiguraion(
-                _configuration.GetSection("communication"),
-                _configuration.GetSection(methodCategory).GetSection("communication"),
-                servicesSection.GetSection(serviceCategory).GetSection("communication"),
-                servicesSection.GetSection(serviceCategory).GetSection(methodCategory).GetSection("communication"),
-                serviceSection.GetSection("communication"),
-                serviceSection.GetSection(methodCategory).GetSection("_all").GetSection("communication"),
-                serviceSection.GetSection(methodCategory).GetSection(methodDefinition.Name).GetSection("communication"));
+            IConfiguration communicatorConfig;
+
+            var serviceCategory = serviceDefinition.Type == ServiceType.External ? "_external" : "_local";
+
+            if (methodDefinition == null)
+            {
+                communicatorConfig = GetConfiguraion(
+                    _configuration.GetSection("communication"),
+                    servicesSection.GetSection(serviceCategory).GetSection("communication"),
+                    serviceSection.GetSection("communication"));
+            }
+            else
+            {
+                var methodCategory = methodDefinition.IsQuery ? "queries" : "commands";
+
+                communicatorConfig = GetConfiguraion(
+                    _configuration.GetSection("communication"),
+                    _configuration.GetSection(methodCategory).GetSection("communication"),
+                    servicesSection.GetSection(serviceCategory).GetSection("communication"),
+                    servicesSection.GetSection(serviceCategory).GetSection(methodCategory).GetSection("communication"),
+                    serviceSection.GetSection("communication"),
+                    serviceSection.GetSection(methodCategory).GetSection("_all").GetSection("communication"),
+                    serviceSection.GetSection(methodCategory).GetSection(methodDefinition.Name).GetSection("communication"));
+            }
 
             var communicator = communicationMethod.CreateCommunicator(communicatorConfig);
 
             lock (_communicatorMap)
             {
-                if (_communicatorMap.TryGetValue(methodDefinition, out var cachedCommunicator))
+                if (_communicatorMap.TryGetValue(key, out var cachedCommunicator))
                 {
                     (communicator as IDisposable)?.Dispose();
                     return cachedCommunicator;
                 }
 
-                _communicatorMap.Add(methodDefinition, communicator);
+                _communicatorMap.Add(key, communicator);
                 return communicator;
             }
         }

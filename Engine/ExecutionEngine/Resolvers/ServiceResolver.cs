@@ -22,7 +22,7 @@ namespace Dasync.ExecutionEngine.Resolvers
         {
             IServiceDefinition serviceDefinition;
 
-            if (string.Equals(serviceId.Proxy, IntrinsicCommunicationModel.IntrinsicRoutinesServiceDefinition.Name, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(serviceId.Name, IntrinsicCommunicationModel.IntrinsicRoutinesServiceDefinition.Name, StringComparison.OrdinalIgnoreCase))
             {
                 serviceDefinition = IntrinsicCommunicationModel.IntrinsicRoutinesServiceDefinition;
             }
