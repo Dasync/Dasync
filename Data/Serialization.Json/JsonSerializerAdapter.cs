@@ -19,7 +19,7 @@ namespace Dasync.Serialization.Json
         public void Serialize(Stream stream, object @object, Type objectType = null)
         {
             using (var writer = new StreamWriter(stream, Encodings.UTF8, 1024, leaveOpen: true))
-                Serialize(stream, @object, objectType);
+                Serialize(writer, @object, objectType);
         }
 
         public void Serialize(TextWriter writer, object @object, Type objectType = null)
