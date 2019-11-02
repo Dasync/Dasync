@@ -15,9 +15,11 @@
         public override T CopyTo<T>(T copy)
         {
             base.CopyTo(copy);
-            var x = (PersistedMethodId)(object)copy;
-            x.IntentId = IntentId;
-            x.ETag = ETag;
+            if (copy is PersistedMethodId x)
+            {
+                x.IntentId = IntentId;
+                x.ETag = ETag;
+            }
             return copy;
         }
     }
