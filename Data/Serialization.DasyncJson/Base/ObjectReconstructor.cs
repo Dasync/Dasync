@@ -118,7 +118,7 @@ namespace Dasync.Serialization
                 _scope.ValueReceived = true;
             }
 
-            if (!_scope.ValueReceived && !_scope.ValueInfo.IsCollection)
+            if (!_scope.ValueReceived && !_scope.ValueInfo.IsCollection && _scope.Container == null)
             {
                 if (_scope.ValueInfo.ReferenceId.HasValue)
                 {
