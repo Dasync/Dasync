@@ -8,7 +8,7 @@ namespace Dasync.Serializers.StandardTypes.Runtime
     {
         public static void SetClassName(this Exception ex, string className)
         {
-            typeof(Exception).GetField("_className", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(ex, className);
+            typeof(Exception).GetField("_className", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(ex, className);
         }
 
         public static void SetMessage(this Exception ex, string message)

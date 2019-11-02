@@ -22,7 +22,7 @@ namespace Dasync.Serializers.StandardTypes.Runtime
             var ex = (Exception)value;
             return new ExceptionContainer
             {
-                Type = _typeNameShortener.TryShorten(ex.GetType(), out string shortName) ? shortName : ex.GetType().ToString(),
+                Type = _typeNameShortener.TryShorten(ex.GetType(), out string shortName) ? shortName : ex.GetType().AssemblyQualifiedName,
                 Message = ex.Message,
                 InnerException = (ex is AggregateException) ? null : ex.InnerException,
                 InnerExceptions = (ex is AggregateException aggregateException) ? aggregateException.InnerExceptions.ToArray() : null,
