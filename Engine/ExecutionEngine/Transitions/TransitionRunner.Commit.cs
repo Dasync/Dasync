@@ -165,7 +165,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 foreach (var intent in actions.ContinuationIntents)
                 {
                     var continuationData = InvocationDataUtils.CreateMethodContinuationData(intent, context);
-                    var communicator = _communicatorProvider.GetCommunicator(intent.Service, intent.Method);
+                    var communicator = _communicatorProvider.GetCommunicator(intent.Service, intent.Method, assumeExternal: true);
                     await communicator.ContinueAsync(continuationData, (transitionCarrier as TransitionCarrier)?.ContinuationState, preferences: default);
                 }
             }

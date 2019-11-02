@@ -14,8 +14,8 @@ using Dasync.ExecutionEngine.Cancellation;
 using Dasync.ExecutionEngine.Communication;
 using Dasync.ExecutionEngine.Continuation;
 using Dasync.ExecutionEngine.Events;
-using Dasync.ExecutionEngine.Extensions;
 using Dasync.ExecutionEngine.IntrinsicFlow;
+using Dasync.ExecutionEngine.Modeling;
 using Dasync.ExecutionEngine.Persistence;
 using Dasync.ExecutionEngine.Proxy;
 using Dasync.ExecutionEngine.Resolvers;
@@ -69,6 +69,7 @@ namespace Dasync.ExecutionEngine
             services.AddSingleton<IEventSubscriber, EventSubscriber>();
             services.AddSingleton<ISingleMethodInvoker, SingleMethodInvoker>();
             services.AddSingleton<IMethodStateStorageProvider, MethodStateStorageProvider>();
+            services.AddSingleton<IExternalCommunicationModel, ExternalCommunicationModel>();
             return services;
         }
     }

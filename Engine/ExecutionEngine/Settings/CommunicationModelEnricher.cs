@@ -15,7 +15,7 @@ namespace Dasync.ExecutionEngine.Communication
             _config = safeConfiguration.FirstOrDefault()?.GetSection("dasync");
         }
 
-        public void Enrich(IMutableCommunicationModel model)
+        public void Enrich(IMutableCommunicationModel model, bool rootOnly = false)
         {
             if (_config == null)
                 return;
@@ -35,6 +35,9 @@ namespace Dasync.ExecutionEngine.Communication
             ReadBehaviorOptions(localServiceSection, model, ":local");
             ReadBehaviorOptions(externalServiceSection, model, ":external");
 
+            if (rootOnly)
+                return;
+
             var configuredServiceNames =
                 _config
                 .GetSection("services")
@@ -47,79 +50,99 @@ namespace Dasync.ExecutionEngine.Communication
                 var service = model.FindServiceByName(serviceName) as IMutableServiceDefinition;
                 if (service == null)
                     continue;
-
                 var serviceSection = _config.GetSection("services:" + serviceName);
-
-                ReadCommunicationType(serviceSection, service, string.Empty, ":_all");
-                ReadPersistenceType(serviceSection, service, string.Empty, ":_all");
-                ReadBehaviorOptions(serviceSection, service, string.Empty, ":_all");
-
-                var configuredQueryNames =
-                    serviceSection
-                    .GetSection("queries")
-                    .GetChildren()
-                    .Select(c => c.Key)
-                    .Where(n => n != "_all");
-
-                foreach (var queryName in configuredQueryNames)
-                {
-                    var method = service.FindMethod(queryName) as IMutableMethodDefinition;
-                    if (method == null || method.IsIgnored || !method.IsQuery) // TODO: use config as an override for the method type?
-                        continue;
-
-                    var methodSection = serviceSection.GetSection("queries:" + queryName);
-
-                    var methodCommunicationType = methodSection.GetSection("communication:type").Value;
-                    if (!string.IsNullOrWhiteSpace(methodCommunicationType))
-                        method.AddProperty("communicationType", methodCommunicationType);
-
-                    ReadMethodBahavior(methodSection, method, string.Empty);
-                }
-
-                var configuredCommandNames =
-                    serviceSection
-                    .GetSection("commands")
-                    .GetChildren()
-                    .Select(c => c.Key)
-                    .Where(n => n != "_all");
-
-                foreach (var commandName in configuredCommandNames)
-                {
-                    var method = service.FindMethod(commandName) as IMutableMethodDefinition;
-                    if (method == null || method.IsIgnored || method.IsQuery) // TODO: use config as an override for the method type?
-                        continue;
-
-                    var methodSection = serviceSection.GetSection("commands:" + commandName);
-
-                    var methodCommunicationType = methodSection.GetSection("communication:type").Value;
-                    if (!string.IsNullOrWhiteSpace(methodCommunicationType))
-                        method.AddProperty("communicationType", methodCommunicationType);
-
-                    ReadMethodBahavior(methodSection, method, string.Empty);
-                }
-
-                var configuredEventNames =
-                    serviceSection
-                    .GetSection("events")
-                    .GetChildren()
-                    .Select(c => c.Key)
-                    .Where(n => n != "_all");
-
-                foreach (var eventName in configuredEventNames)
-                {
-                    var @event = service.FindEvent(eventName) as IMutableEventDefinition;
-                    if (@event == null)
-                        continue;
-
-                    var eventSection = serviceSection.GetSection("events:" + eventName);
-
-                    var eventCommunicationType = eventSection.GetSection("communication:type").Value;
-                    if (!string.IsNullOrWhiteSpace(eventCommunicationType))
-                        @event.AddProperty("communicationType", eventCommunicationType);
-
-                    ReadEventBahavior(eventSection, @event, string.Empty);
-                }
+                Enrich(service, serviceSection);
             }
+        }
+
+        public void Enrich(IMutableServiceDefinition service, bool serviceOnly = false)
+        {
+            var serviceSection = _config.GetSection("services:" + service.Name);
+            Enrich(service, serviceSection, serviceOnly);
+        }
+
+        private void Enrich(IMutableServiceDefinition service, IConfigurationSection serviceSection, bool serviceOnly = false)
+        {
+            ReadCommunicationType(serviceSection, service, string.Empty, ":_all");
+            ReadPersistenceType(serviceSection, service, string.Empty, ":_all");
+            ReadBehaviorOptions(serviceSection, service, string.Empty, ":_all");
+
+            if (serviceOnly)
+                return;
+
+            var configuredQueryNames =
+                serviceSection
+                .GetSection("queries")
+                .GetChildren()
+                .Select(c => c.Key)
+                .Where(n => n != "_all");
+
+            foreach (var queryName in configuredQueryNames)
+            {
+                var method = service.FindMethod(queryName) as IMutableMethodDefinition;
+                if (method == null || method.IsIgnored || !method.IsQuery) // TODO: use config as an override for the method type?
+                    continue;
+
+                var methodSection = serviceSection.GetSection("queries:" + queryName);
+
+                Enrich(method, methodSection);
+            }
+
+            var configuredCommandNames =
+                serviceSection
+                .GetSection("commands")
+                .GetChildren()
+                .Select(c => c.Key)
+                .Where(n => n != "_all");
+
+            foreach (var commandName in configuredCommandNames)
+            {
+                var method = service.FindMethod(commandName) as IMutableMethodDefinition;
+                if (method == null || method.IsIgnored || method.IsQuery) // TODO: use config as an override for the method type?
+                    continue;
+
+                var methodSection = serviceSection.GetSection("commands:" + commandName);
+
+                Enrich(method, methodSection);
+            }
+
+            var configuredEventNames =
+                serviceSection
+                .GetSection("events")
+                .GetChildren()
+                .Select(c => c.Key)
+                .Where(n => n != "_all");
+
+            foreach (var eventName in configuredEventNames)
+            {
+                var @event = service.FindEvent(eventName) as IMutableEventDefinition;
+                if (@event == null)
+                    continue;
+
+                var eventSection = serviceSection.GetSection("events:" + eventName);
+
+                var eventCommunicationType = eventSection.GetSection("communication:type").Value;
+                if (!string.IsNullOrWhiteSpace(eventCommunicationType))
+                    @event.AddProperty("communicationType", eventCommunicationType);
+
+                ReadEventBahavior(eventSection, @event, string.Empty);
+            }
+        }
+
+        public void Enrich(IMutableMethodDefinition method)
+        {
+            var serviceSection = _config.GetSection("services:" + method.Service.Name);
+            var methodSection = serviceSection.GetSection("commands:" + method.Name);
+            Enrich(method, methodSection);
+        }
+
+        private void Enrich(IMutableMethodDefinition method, IConfigurationSection methodSection)
+        {
+            var methodCommunicationType = methodSection.GetSection("communication:type").Value;
+            if (!string.IsNullOrWhiteSpace(methodCommunicationType))
+                method.AddProperty("communicationType", methodCommunicationType);
+
+            ReadMethodBahavior(methodSection, method, string.Empty);
         }
 
         private static void ReadCommunicationType(IConfiguration config, IMutablePropertyBag propertyBag, string suffix, string selector = "")
