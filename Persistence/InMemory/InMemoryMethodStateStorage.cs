@@ -149,7 +149,7 @@ namespace Dasync.Persistence.InMemory
                     return Task.FromResult<ITaskResult>(null);
             }
 
-            var result = TaskResult.Create(resultValueType, null, null, false);
+            var result = TaskResult.CreateEmpty(resultValueType);
             _serializer.Populate((string)serializedResultObj, (IValueContainer)result);
             return Task.FromResult(result);
         }

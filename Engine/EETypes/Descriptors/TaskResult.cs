@@ -47,19 +47,23 @@ namespace Dasync.EETypes.Descriptors
     {
         public static ITaskResult Create(Type valueType, object value, Exception exception, bool isCanceled)
         {
-            IMutableTaskResult taskResult;
-            if (valueType == null || valueType == typeof(void) || valueType == typeof(object))
-            {
-                taskResult = new TaskResult();
-            }
-            else
-            {
-                taskResult = (IMutableTaskResult)Activator.CreateInstance(typeof(TaskResult<>).MakeGenericType(valueType));
-            }
+            var taskResult = (IMutableTaskResult)CreateEmpty(valueType);
             taskResult.Value = value;
             taskResult.Exception = exception;
             taskResult.IsCanceled = isCanceled;
             return taskResult;
+        }
+
+        public static ITaskResult CreateEmpty(Type valueType)
+        {
+            if (valueType == null || valueType == typeof(void) || valueType == typeof(object))
+            {
+                return new TaskResult();
+            }
+            else
+            {
+                return (ITaskResult)Activator.CreateInstance(typeof(TaskResult<>).MakeGenericType(valueType));
+            }
         }
 
         /// <summary>
@@ -89,7 +93,7 @@ namespace Dasync.EETypes.Descriptors
                     return "😶";
                 if (this.IsFaulted())
                     return "🙁 " + Exception.GetType().FullName;
-                return "🙂 " + Value.ToString();
+                return "🙂 " + (Value == null ? "" : Value.ToString());
             }
         }
 
@@ -190,7 +194,7 @@ namespace Dasync.EETypes.Descriptors
                     return "😶";
                 if (this.IsFaulted())
                     return "🙁 " + Exception.GetType().FullName;
-                return "🙂 " + Value.ToString();
+                return "🙂 " + (Value == null ? "" : Value.ToString());
             }
         }
 

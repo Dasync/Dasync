@@ -9,6 +9,7 @@ using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Platform;
 using Dasync.EETypes.Resolvers;
+using Dasync.Modeling;
 
 namespace Dasync.ExecutionEngine.Transitions
 {
@@ -167,19 +168,25 @@ namespace Dasync.ExecutionEngine.Transitions
 
         private void SetPollingMethod(TrackedInvocation trackedInvocation)
         {
-            var communicator = _communicatorProvider.GetCommunicator(trackedInvocation.ServiceId, trackedInvocation.MethodId);
-            if (communicator.Traits.HasFlag(CommunicationTraits.SyncReplies) && communicator is ISynchronousCommunicator syncCommunicator)
-            {
-                trackedInvocation.Communicator = syncCommunicator;
-            }
-            else
-            {
-                trackedInvocation.StateStorage = _methodStateStorageProvider.GetStorage(trackedInvocation.ServiceId, trackedInvocation.MethodId);
-            }
-
             var methodDefinition = _methodResolver.Resolve(
                 _serviceResolver.Resolve(trackedInvocation.ServiceId).Definition,
                 trackedInvocation.MethodId).Definition;
+
+            // TODO: add a preference for polling if has access to the storage of the external service
+            if (methodDefinition.Service.Type == ServiceType.External)
+            {
+                var communicator = _communicatorProvider.GetCommunicator(trackedInvocation.ServiceId, trackedInvocation.MethodId);
+                if (communicator.Traits.HasFlag(CommunicationTraits.SyncReplies) && communicator is ISynchronousCommunicator syncCommunicator)
+                {
+                    trackedInvocation.Communicator = syncCommunicator;
+                }
+            }
+
+            if (trackedInvocation.Communicator == null)
+            {
+                // TODO: somehow make sure that an external service shares the same result storage.
+                trackedInvocation.StateStorage = _methodStateStorageProvider.GetStorage(trackedInvocation.ServiceId, trackedInvocation.MethodId);
+            }
 
             // TODO: helper method
             Type taskResultType =

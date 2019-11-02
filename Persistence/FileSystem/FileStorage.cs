@@ -130,7 +130,7 @@ namespace Dasync.Persistence.FileSystem
 #endif
 
             // TODO: select serializer
-            var result = TaskResult.Create(resultValueType, null, null, false);
+            var result = TaskResult.CreateEmpty(resultValueType);
             _serializer.Populate(bytes, (IValueContainer)result);
             return result;
         }

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Dasync.Accessors;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Resolvers;
 using Dasync.ExecutionEngine.Transitions;
 using Dasync.ExecutionEngine.Utils;
+using Dasync.Modeling;
 
 namespace Dasync.ExecutionEngine.Communication
 {
@@ -46,19 +48,31 @@ namespace Dasync.ExecutionEngine.Communication
 
             ICommunicator communicator = _communicatorProvider.GetCommunicator(serviceRef.Id, methodRef.Id);
 
-            bool preferToRunInPlace = behaviorSettings.RunInPlace && serviceRef.Definition.Type != Modeling.ServiceType.External;
+            bool preferToRunInPlace = behaviorSettings.RunInPlace && serviceRef.Definition.Type != ServiceType.External;
             bool runInPlace = preferToRunInPlace && (!behaviorSettings.Persistent ||
                 communicator.Traits.HasFlag(CommunicationTraits.MessageLockOnPublish));
 
             var invocationData = InvocationDataUtils.CreateMethodInvocationData(intent,
                 _transitionScope.IsActive ? _transitionScope.CurrentMonitor.Context : null);
 
+            var resultValueType = methodRef.Definition.MethodInfo.ReturnType;
+            if (resultValueType != typeof(void))
+            {
+                resultValueType = TaskAccessor.GetTaskResultType(resultValueType);
+                if (resultValueType == TaskAccessor.VoidTaskResultType)
+                    resultValueType = typeof(void);
+            }
+
             if (runInPlace)
             {
                 IMessageHandle messageHandle = null;
                 if (behaviorSettings.Persistent)
                 {
-                    var preferences = new InvocationPreferences { LockMessage = true };
+                    var preferences = new InvocationPreferences
+                    {
+                        LockMessage = true,
+                        ResultValueType = resultValueType
+                    };
 
                     var invocationResult = await communicator.InvokeAsync(invocationData, null, preferences);
                     if (invocationResult.Outcome == InvocationOutcome.Complete)
@@ -97,7 +111,8 @@ namespace Dasync.ExecutionEngine.Communication
                     // TODO: check this option
                     //LockMessage = behaviorSettings.Resilient && communicator.Traits.HasFlag(CommunicationTraits.MessageLockOnPublish),
 
-                    Synchronous = communicator.Traits.HasFlag(CommunicationTraits.SyncReplies)
+                    Synchronous = communicator.Traits.HasFlag(CommunicationTraits.SyncReplies),
+                    ResultValueType = resultValueType
                 };
 
                 return await communicator.InvokeAsync(invocationData, null, preferences);

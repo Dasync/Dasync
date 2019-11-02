@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Dasync.Accessors;
 using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Intents;
@@ -121,7 +122,19 @@ namespace Dasync.ExecutionEngine.Transitions
                     var serviceRef = _serviceResolver.Resolve(intent.Service);
                     var methodRef = _methodResolver.Resolve(serviceRef.Definition, intent.Method);
 
-                    var preferences = new InvocationPreferences();
+                    var resultValueType = methodRef.Definition.MethodInfo.ReturnType;
+                    if (resultValueType != typeof(void))
+                    {
+                        resultValueType = TaskAccessor.GetTaskResultType(resultValueType);
+                        if (resultValueType == TaskAccessor.VoidTaskResultType)
+                            resultValueType = typeof(void);
+                    }
+
+                    var preferences = new InvocationPreferences
+                    {
+                        ResultValueType = resultValueType
+                    };
+
                     var communicator = _communicatorProvider.GetCommunicator(intent.Service, intent.Method);
 
                     var invocationData = InvocationDataUtils.CreateMethodInvocationData(intent, context);

@@ -17,7 +17,7 @@ namespace Dasync.ExecutionEngine.Utils
                 Method = intent.Method,
                 Parameters = intent.Parameters,
                 Continuation = intent.Continuation,
-                Caller = context?.Caller,
+                Caller = context?.CurrentAsCaller(),
                 FlowContext = context?.FlowContext
             };
         }

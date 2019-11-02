@@ -1,4 +1,6 @@
-﻿namespace Dasync.EETypes.Communication
+﻿using System;
+
+namespace Dasync.EETypes.Communication
 {
     public struct InvocationPreferences
     {
@@ -11,5 +13,10 @@
         /// Prefer to receive the result right away instead of saving the state and waiting for continuation.
         /// </summary>
         public bool Synchronous { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Type ResultValueType { get; set; }
     }
 }

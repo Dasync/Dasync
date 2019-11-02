@@ -55,7 +55,7 @@ namespace Dasync.ExecutionEngine.Transitions
             if (_methodContinuationData == null)
                 throw new InvalidOperationException();
 
-            var taskResult = TaskResult.Create(expectedResultValueType, null, null, false);
+            var taskResult = TaskResult.CreateEmpty(expectedResultValueType);
             _valueContainerCopier.CopyValues(
                 source: _methodContinuationData.Result,
                 destination: (IValueContainer)taskResult);

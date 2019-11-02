@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Dasync.Accessors;
 using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
@@ -76,10 +77,19 @@ namespace Dasync.ExecutionEngine.Transitions
                 if (message.CommunicatorType != preferredCommunicator.Type &&
                     !preferredCommunicator.Traits.HasFlag(CommunicationTraits.Volatile))
                 {
+                    var resultValueType = methodReference.Definition.MethodInfo.ReturnType;
+                    if (resultValueType != typeof(void))
+                    {
+                        resultValueType = TaskAccessor.GetTaskResultType(resultValueType);
+                        if (resultValueType == TaskAccessor.VoidTaskResultType)
+                            resultValueType = typeof(void);
+                    }
+
                     var preferences = new InvocationPreferences
                     {
                         LockMessage = behaviorSettings.RunInPlace &&
-                            preferredCommunicator.Traits.HasFlag(CommunicationTraits.MessageLockOnPublish)
+                            preferredCommunicator.Traits.HasFlag(CommunicationTraits.MessageLockOnPublish),
+                        ResultValueType = resultValueType
                     };
 
                     var invocationResult = await preferredCommunicator.InvokeAsync(data, continuationState, preferences);
