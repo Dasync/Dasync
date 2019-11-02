@@ -3,8 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dasync.EETypes;
 using Dasync.EETypes.Communication;
+using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Persistence;
 using Dasync.Serialization;
+using Dasync.ValueContainer;
 
 namespace Dasync.Communication.InMemory
 {
@@ -56,6 +58,12 @@ namespace Dasync.Communication.InMemory
                 _messageHub.Schedule(message);
 
                 result = await completionNotification.Task;
+
+                if (result.Result != null)
+                {
+                    result.Result = TaskResult.CreateEmpty(preferences.ResultValueType);
+                    _serializer.Populate(_serializer.SerializeToString(result.Result), (IValueContainer)result.Result);
+                }
             }
             else if (preferences.LockMessage)
             {
