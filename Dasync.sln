@@ -57,6 +57,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Communication.InMemo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmulatedDemo", "Examples\Emulation\EmulatedDemo.csproj", "{F13B7BF6-DE5F-4850-93C6-8F8C495FB1F5}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Communication.Http", "Communication\Http\Dasync.Communication.Http.csproj", "{7C7876F8-B953-4C0F-928D-9FA371AD3E05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -143,6 +145,10 @@ Global
 		{F13B7BF6-DE5F-4850-93C6-8F8C495FB1F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F13B7BF6-DE5F-4850-93C6-8F8C495FB1F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F13B7BF6-DE5F-4850-93C6-8F8C495FB1F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C7876F8-B953-4C0F-928D-9FA371AD3E05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C7876F8-B953-4C0F-928D-9FA371AD3E05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C7876F8-B953-4C0F-928D-9FA371AD3E05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C7876F8-B953-4C0F-928D-9FA371AD3E05}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -168,6 +174,7 @@ Global
 		{06EA5455-C54B-45E3-BF5F-65975CBC66F6} = {77852154-A737-4DBC-9A06-1E1C543A226A}
 		{67C295ED-E999-44C3-9084-8267F63A5AEA} = {E9E13D4C-4AF7-40AF-9A2E-B50250E72128}
 		{F13B7BF6-DE5F-4850-93C6-8F8C495FB1F5} = {0103B1F1-8F1D-4DB5-9EE5-CA5E8B970D10}
+		{7C7876F8-B953-4C0F-928D-9FA371AD3E05} = {E9E13D4C-4AF7-40AF-9A2E-B50250E72128}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F8B4417C-1BAD-421A-9164-89A427E53FA2}
