@@ -107,7 +107,9 @@ namespace Dasync.Communication.InMemory
 
         private async Task HandleEvent(Message message)
         {
-            throw new NotImplementedException();
+            var eventPublishData = EventPublishDataTransformer.Read(message, _serializerProvider);
+            var communicationMessage = new CommunicationMessage(message);
+            await _localTransitionRunner.ReactAsync(eventPublishData, communicationMessage);
         }
 
         private SerializedMethodContinuationState TryGetMethodContinuationState(Message message)

@@ -4,6 +4,7 @@ using Dasync.EETypes;
 using Dasync.EETypes.Cancellation;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Engine;
+using Dasync.EETypes.Eventing;
 using Dasync.EETypes.Ioc;
 using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Platform;
@@ -13,7 +14,7 @@ using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Cancellation;
 using Dasync.ExecutionEngine.Communication;
 using Dasync.ExecutionEngine.Continuation;
-using Dasync.ExecutionEngine.Events;
+using Dasync.ExecutionEngine.Eventing;
 using Dasync.ExecutionEngine.IntrinsicFlow;
 using Dasync.ExecutionEngine.Modeling;
 using Dasync.ExecutionEngine.Persistence;
@@ -70,6 +71,8 @@ namespace Dasync.ExecutionEngine
             services.AddSingleton<ISingleMethodInvoker, SingleMethodInvoker>();
             services.AddSingleton<IMethodStateStorageProvider, MethodStateStorageProvider>();
             services.AddSingleton<IExternalCommunicationModel, ExternalCommunicationModel>();
+            services.AddSingleton<IEventPublisherProvider, EventPublisherProvider>();
+            services.AddSingleton<ISingleEventPublisher, SingleEventPublisher>();
             return services;
         }
     }

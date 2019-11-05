@@ -150,14 +150,6 @@ namespace Dasync.ExecutionEngine.Communication
             }
         }
 
-        public ICommunicator GetCommunicator(ServiceId serviceId, EventId methodId)
-        {
-            if (_communicationMethods.Count == 0)
-                throw new CommunicationMethodNotFoundException("There are no communication methods registered.");
-
-            throw new NotImplementedException();
-        }
-
         private static IConfiguration GetConfiguraion(params IConfiguration[] sections)
         {
             var configBuilder = new ConfigurationBuilder();

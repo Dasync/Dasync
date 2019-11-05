@@ -11,6 +11,7 @@ using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
+using Dasync.EETypes.Eventing;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Platform;
@@ -31,13 +32,16 @@ namespace Dasync.ExecutionEngine.Transitions
         private readonly ITaskCompletionSourceRegistry _taskCompletionSourceRegistry;
         private readonly IServiceResolver _serviceResolver;
         private readonly IMethodResolver _methodResolver;
+        private readonly IEventResolver _eventResolver;
         private readonly ICommunicatorProvider _communicatorProvider;
+        private readonly IEventPublisherProvider _eventPublisherProvider;
         private readonly IRoutineCompletionSink _routineCompletionSink;
         private readonly ICommunicationSettingsProvider _communicationSettingsProvider;
         private readonly ISerializer _defaultSerializer;
         private readonly ISerializerProvider _serializeProvder;
         private readonly IMethodStateStorageProvider _methodStateStorageProvider;
         private readonly IValueContainerCopier _valueContainerCopier;
+        private readonly IEventSubscriber _eventSubscriber;
 
         public TransitionRunner(
             ITransitionScope transitionScope,
@@ -47,13 +51,16 @@ namespace Dasync.ExecutionEngine.Transitions
             ITaskCompletionSourceRegistry taskCompletionSourceRegistry,
             IServiceResolver serviceResolver,
             IMethodResolver methodResolver,
+            IEventResolver eventResolver,
             ICommunicatorProvider communicatorProvider,
+            IEventPublisherProvider eventPublisherProvider,
             IRoutineCompletionSink routineCompletionSink,
             ICommunicationSettingsProvider communicationSettingsProvider,
             IDefaultSerializerProvider defaultSerializerProvider,
             ISerializerProvider serializeProvder,
             IMethodStateStorageProvider methodStateStorageProvider,
-            IValueContainerCopier valueContainerCopier)
+            IValueContainerCopier valueContainerCopier,
+            IEventSubscriber eventSubscriber)
         {
             _transitionScope = transitionScope;
             _asyncStateMachineMetadataProvider = asyncStateMachineMetadataProvider;
@@ -62,13 +69,16 @@ namespace Dasync.ExecutionEngine.Transitions
             _taskCompletionSourceRegistry = taskCompletionSourceRegistry;
             _serviceResolver = serviceResolver;
             _methodResolver = methodResolver;
+            _eventResolver = eventResolver;
             _communicatorProvider = communicatorProvider;
+            _eventPublisherProvider = eventPublisherProvider;
             _routineCompletionSink = routineCompletionSink;
             _communicationSettingsProvider = communicationSettingsProvider;
             _defaultSerializer = defaultSerializerProvider.DefaultSerializer;
             _serializeProvder = serializeProvder;
             _methodStateStorageProvider = methodStateStorageProvider;
             _valueContainerCopier = valueContainerCopier;
+            _eventSubscriber = eventSubscriber;
         }
 
         public async Task RunAsync(

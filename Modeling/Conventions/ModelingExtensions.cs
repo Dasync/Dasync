@@ -55,6 +55,26 @@ namespace Dasync.Modeling
             return true;
         }
 
+        public static bool IsEventHandlerCandidate(this MethodInfo methodInfo)
+        {
+            if (!methodInfo.IsFamily && !methodInfo.IsPublic)
+                return false;
+
+            if (!methodInfo.IsVirtual)
+                return false;
+
+            if (methodInfo.IsAbstract && !methodInfo.DeclaringType.IsInterface)
+                return false;
+
+            if (methodInfo.ContainsGenericParameters)
+                return false;
+
+            if (methodInfo.ReturnType != typeof(Task) && methodInfo.ReturnType != typeof(void))
+                return false;
+
+            return true;
+        }
+
         public static bool IsEventCandidate(this EventInfo eventInfo)
         {
             if (!eventInfo.AddMethod.IsFamily && !eventInfo.AddMethod.IsPublic)

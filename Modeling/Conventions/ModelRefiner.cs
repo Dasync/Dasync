@@ -21,7 +21,7 @@ namespace Dasync.Modeling
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                 {
                     if (serviceDefinition.FindMethod(methodInfo.Name) == null &&
-                        (methodInfo.IsQueryCandidate() || methodInfo.IsCommandCandidate()))
+                        (methodInfo.IsQueryCandidate() || methodInfo.IsCommandCandidate() || methodInfo.IsEventHandlerCandidate()))
                         serviceDefinition.GetMethod(methodInfo.Name);
                 }
             }

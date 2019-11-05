@@ -17,6 +17,7 @@ namespace Dasync.Communication.InMemory
 
             // D-ASYNC
             services.AddSingleton<ICommunicationMethod, InMemoryCommunicationMethod>();
+            services.AddSingleton<IEventingMethod, InMemoryEventingMethod>();
 
             // Internals
             services.AddSingleton<IMessageHandler, InMemoryMessageHandler>();

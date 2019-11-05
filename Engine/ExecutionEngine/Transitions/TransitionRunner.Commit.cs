@@ -70,7 +70,7 @@ namespace Dasync.ExecutionEngine.Transitions
                         {
                             var executionState = GetMethodExecutionState(
                                 actions.SaveStateIntent, transitionCarrier, context);
-                            
+
                             var etag = await stateStorage.WriteStateAsync(
                                 actions.SaveStateIntent.Service,
                                 actions.SaveStateIntent.Method,
@@ -183,7 +183,18 @@ namespace Dasync.ExecutionEngine.Transitions
             {
                 foreach (var intent in actions.RaiseEventIntents)
                 {
-                    var communicator = _communicatorProvider.GetCommunicator(intent.Service, intent.Event);
+                    var eventData = new EventPublishData
+                    {
+                        IntentId = intent.Id,
+                        Service = intent.Service,
+                        Event = intent.Event,
+                        Caller = context?.CurrentAsCaller(),
+                        FlowContext = context.FlowContext,
+                        Parameters = intent.Parameters
+                    };
+
+                    var publisher = _eventPublisherProvider.GetPublisher(intent.Service, intent.Event);
+                    await publisher.PublishAsync(eventData);
                 }
             }
         }

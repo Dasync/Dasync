@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Dasync.Accessors;
-using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Persistence;
@@ -10,19 +9,6 @@ using Dasync.EETypes.Resolvers;
 
 namespace Dasync.ExecutionEngine.Transitions
 {
-    public class TransitionContextData : ITransitionContext
-    {
-        public ServiceId Service { get; set; }
-
-        public MethodId Method { get; set; }
-
-        public string IntentId { get; set; }
-
-        public CallerDescriptor Caller { get; set; }
-
-        public Dictionary<string, string> FlowContext { get; set; }
-    }
-
     public partial class TransitionRunner
     {
         public async Task<InvokeRoutineResult> RunAsync(MethodInvocationData data, ICommunicatorMessage message, SerializedMethodContinuationState continuationState)
@@ -197,6 +183,14 @@ namespace Dasync.ExecutionEngine.Transitions
             // RUN METHOD TRANSITION
             //-------------------------------------------------------------------------------
 
+            // A communication method may not support a scheduled message delivery.
+            if (data.ContinueAt.HasValue && data.ContinueAt.Value > DateTimeOffset.Now)
+            {
+                var delay = data.ContinueAt.Value - DateTimeOffset.Now;
+                if (delay > TimeSpan.Zero)
+                    await Task.Delay(delay);
+            }
+
             try
             {
             @TryRun:
@@ -239,6 +233,58 @@ namespace Dasync.ExecutionEngine.Transitions
             {
                 messageHandle?.ReleaseLock();
                 throw;
+            }
+        }
+
+        public async Task ReactAsync(EventPublishData data, ICommunicatorMessage message)
+        {
+            var eventDesc = new EventDescriptor { Service = data.Service, Event = data.Event };
+            var subscribers = _eventSubscriber.GetSubscribers(eventDesc).ToList();
+
+            if (subscribers.Count == 0)
+                return;
+
+            var publisherServiceReference = _serviceResolver.Resolve(data.Service);
+            var publisherEventReference = _eventResolver.Resolve(publisherServiceReference.Definition, data.Event);
+
+            var behaviorSettings = _communicationSettingsProvider.GetEventSettings(publisherEventReference.Definition);
+
+            //-------------------------------------------------------------------------------
+            // MESSGE DE-DUPLICATION
+            //-------------------------------------------------------------------------------
+
+            if (behaviorSettings.Deduplicate &&
+                !message.CommunicatorTraits.HasFlag(CommunicationTraits.MessageDeduplication) &&
+                (message.IsRetry != false || string.IsNullOrEmpty(message.RequestId)))
+            {
+                // TODO: if has message de-dup'er, check if a dedup
+                // return new InvokeRoutineResult { Outcome = InvocationOutcome.Deduplicated };
+            }
+
+            //-------------------------------------------------------------------------------
+            // UNIT OF WORK
+            //-------------------------------------------------------------------------------
+
+            // TODO: Unit of Work - check if there is cached/stored data
+            if (message.IsRetry != false)
+            {
+                // TODO: If has entities in transitions and they have been already committed,
+                // skip method transition and re-try sending commands and events.
+            }
+
+            foreach (var subscriber in subscribers)
+            {
+                var invokeData = new MethodInvocationData
+                {
+                    IntentId = _idGenerator.NewId(),
+                    Service = subscriber.Service,
+                    Method = subscriber.Method,
+                    Parameters = data.Parameters,
+                    FlowContext = data.FlowContext,
+                    Caller = new CallerDescriptor(data.Service, data.Event, data.IntentId)
+                };
+
+                await RunAsync(invokeData, message, null);
             }
         }
     }

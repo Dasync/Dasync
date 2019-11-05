@@ -8,6 +8,7 @@ using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
+using Dasync.EETypes.Eventing;
 using Dasync.EETypes.Intents;
 using Dasync.EETypes.Platform;
 using Dasync.EETypes.Proxy;
@@ -29,6 +30,7 @@ namespace Dasync.ExecutionEngine.Proxy
         private readonly ICommunicationSettingsProvider _communicationSettingsProvider;
         private readonly IMethodInvokerFactory _methodInvokerFactory;
         private readonly ISingleMethodInvoker _singleMethodInvoker;
+        private readonly ISingleEventPublisher _singleEventPublisher;
 
         public ProxyMethodExecutor(
             ITransitionScope transitionScope,
@@ -39,7 +41,8 @@ namespace Dasync.ExecutionEngine.Proxy
             IEventSubscriber eventSubscriber,
             ICommunicationSettingsProvider communicationSettingsProvider,
             IMethodInvokerFactory methodInvokerFactory,
-            ISingleMethodInvoker singleMethodInvoker)
+            ISingleMethodInvoker singleMethodInvoker,
+            ISingleEventPublisher singleEventPublisher)
         {
             _transitionScope = transitionScope;
             _routineMethodIdProvider = routineMethodIdProvider;
@@ -50,6 +53,7 @@ namespace Dasync.ExecutionEngine.Proxy
             _communicationSettingsProvider = communicationSettingsProvider;
             _methodInvokerFactory = methodInvokerFactory;
             _singleMethodInvoker = singleMethodInvoker;
+            _singleEventPublisher = singleEventPublisher;
         }
 
         public Task Execute<TParameters>(IProxy proxy, MethodInfo methodInfo, ref TParameters parameters)
@@ -129,6 +133,7 @@ namespace Dasync.ExecutionEngine.Proxy
         /// </remarks>
         public async void ExecuteAndAwaitInBackground(ExecuteRoutineIntent intent, Task proxyTask)
         {
+            // TODO: exception handling
             var result = await _singleMethodInvoker.InvokeAsync(intent);
             if (result.Outcome == InvocationOutcome.Complete)
             {
@@ -227,18 +232,8 @@ namespace Dasync.ExecutionEngine.Proxy
 
         public async void RaiseEventInBackground(RaiseEventIntent intent)
         {
-            var actions = new ScheduledActions
-            {
-                RaiseEventIntents = new List<RaiseEventIntent>
-                {
-                    intent
-                }
-            };
-
-            var options = new TransitionCommitOptions();
-
-            throw new NotImplementedException();
-            //await _transitionCommitter.CommitAsync(actions, transitionCarrier: null, options: options, ct: default);
+            // TODO: exception handling
+            await _singleEventPublisher.PublishAsync(intent);
         }
 
         private static bool IsCalledByRoutine(TransitionContext context, StackFrame callerStackFrame)

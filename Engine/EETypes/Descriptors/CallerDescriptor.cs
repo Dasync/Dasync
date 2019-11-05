@@ -11,9 +11,26 @@
             IntentId = intentId;
         }
 
+        public CallerDescriptor(ServiceId service, EventId @event, string intentId)
+        {
+            Service = service;
+            Event = @event;
+            IntentId = intentId;
+        }
+
+        public CallerDescriptor(ServiceId service, MethodId method, EventId @event, string intentId)
+        {
+            Service = service;
+            Method = method;
+            Event = @event;
+            IntentId = intentId;
+        }
+
         public ServiceId Service { get; set; }
 
         public MethodId Method { get; set; }
+
+        public EventId Event { get; set; }
 
         public string IntentId { get; set; }
 
@@ -22,6 +39,7 @@
             {
                 Service = Service.Clone(),
                 Method = Method.Clone(),
+                Event = Event.Clone(),
                 IntentId = IntentId
             };
     }

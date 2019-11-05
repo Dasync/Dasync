@@ -15,5 +15,9 @@ namespace Dasync.EETypes.Engine
             MethodContinuationData data,
             ICommunicatorMessage message,
             SerializedMethodContinuationState continuationState);
+
+        Task ReactAsync(
+            EventPublishData data,
+            ICommunicatorMessage message);
     }
 }
