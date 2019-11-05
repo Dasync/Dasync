@@ -36,7 +36,7 @@ namespace DasyncFeatures.Feature4
         public virtual async Task PerformDuties()
         {
             // WhenAll is translated into such series of steps:
-            // 1. Save state of current routine;
+            // 1. Save state of current method
             // 2. Schedule WelcomeGuest
             // 3. Schedule BrowseInternet
             // 4. WelcomeGuest signals 'WhenAll' on completion
@@ -45,13 +45,8 @@ namespace DasyncFeatures.Feature4
             await Task.WhenAll(
                 WelcomeGuest(),
                 BrowseInternet());
-
-            // !!! LOOK HERE !!!
-            //
-            // You can put breakpoints both to WelcomeGuest and BrowseInternet
-            // methods, and terminate the application when second breakpoint
-            // hits. Then, after re-starting the demo app with this feature run,
-            // the DASYNC runtime will pick it up from where it left.
+            // In the cloud, this feature requires a persistent storage
+            // that supports concurrency checks (like ETags for example).
 
             Console.WriteLine("I feel very productive today!");
         }

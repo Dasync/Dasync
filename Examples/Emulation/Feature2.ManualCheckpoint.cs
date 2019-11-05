@@ -40,19 +40,14 @@ namespace DasyncFeatures.Feature2
             // Normally, 'Yield' instructs runtime to re-schedule
             // continuation of an async method, thus gives opportunity
             // for other work items on the thread pool to execute.
-            // Similarly, DASYNC Execution Engine will save the sate
+            // Similarly, D-ASYNC engine will save the sate
             // of the routine and will schedule its continuation.
             await Task.Yield();
-
-            // !!! LOOK HERE !!!
-            //
-            // 1. Run the demo, and when it asks about your name, terminate the app.
-            // 2. Simply re-start the app, choose the this feature to run again,
-            //    and you'll see that previously 'crashed' routine will resume
-            //    it's execution from exact point and ask about your name again
-            //    without asking for beverage.
-            //    You won't see an immediate update in the console due to concurrent
-            //    use by multiple threads.
+            // This will save the state of this method (the 'beverageName'
+            // variable in this case), so in case when something fails
+            // down the line the method will be re-tried from this point
+            // instead of starting from the very beginning.
+            // The state can be saved in a cloud tabular or blob/file storage.
 
             Console.Write("And your name is..? ");
             var personName = Console.ReadLine();

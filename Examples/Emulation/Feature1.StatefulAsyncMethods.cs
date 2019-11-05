@@ -28,6 +28,7 @@ namespace DasyncFeatures.Feature1
         }
     }
 
+    // Defines a service contract.
     public interface IBaristaWorker
     {
         Task PerformDuties();
@@ -36,19 +37,16 @@ namespace DasyncFeatures.Feature1
     // This is a 'service', which defines a 'workflow' with async methods.
     public class BaristaWorker : IBaristaWorker
     {
-        // An entry point to the workflow - a routine.
+        // The entry point to a workflow.
         public virtual async Task PerformDuties()
         {
+            // Step 1 of the workflow: call a sub-routine.
+            // The state of the execution is saved here.
+            // The call of 'TakeOrder' can use HTTP, a message
+            // queue, or any other mechanism configured.
             var order = await TakeOrder();
-
-            // !!! LOOK HERE !!!
-            //
-            // 1. Put a breakpoint to the line below.
-            // 2. Run the demo, and when breakpoint hits, terminate the app.
-            // 3. Re-start the app, choose the this feature to run again,
-            //    and you'll see that previously 'crashed' routine will resume
-            //    it's execution from exact point - prints your previous selection.
-            //    You'll also see in the debugger the restored state of this method.
+            // Step 2 of the workflow: react to the result
+            // of the sub-routine and continue form saved state.
 
             Console.WriteLine($"You ordered {order.BeverageName}.");
         }

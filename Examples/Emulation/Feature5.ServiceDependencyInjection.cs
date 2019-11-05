@@ -49,9 +49,9 @@ namespace DasyncFeatures.Feature5
     {
         private readonly IBaristaWorker _baristaWorker;
 
-        // !!! LOOK HERE !!!
-        // IBaristaWorker is injected as a dependency on a distributed service.
-
+        // IBaristaWorker is injected as a dependency.
+        // These two services can be co-located in the same process, or they
+        // can have different deployment and share the interface only.
         public CoffeeShopManager(IBaristaWorker baristaWorker)
         {
             _baristaWorker = baristaWorker;
@@ -61,10 +61,8 @@ namespace DasyncFeatures.Feature5
         {
             Console.WriteLine("[manager] The visitor complained about a fly in the drink.");
 
-            // !!! LOOK HERE !!!
-            // Calling a routine on a distributed service will save the state
-            // of current routine, because together they define a workflow.
-
+            // Similaril to example #1, this is a call to a sub-routine,
+            // but of a different service with a different deployment (usually).
             await _baristaWorker.PleaseMakeAnotherCoffee();
         }
     }
@@ -73,9 +71,8 @@ namespace DasyncFeatures.Feature5
     {
         private readonly ICoffeeMachine _coffeeMachine;
 
-        // !!! LOOK HERE !!!
-        // ICoffeeMachine is injected as a simple dependency (not a distributed service).
-
+        // ICoffeeMachine is not declared as a service in the communication model,
+        // thus injected as a regular dependency (not a service proxy).
         public BaristaWorker(ICoffeeMachine coffeeMachine)
         {
             _coffeeMachine = coffeeMachine;
@@ -85,10 +82,7 @@ namespace DasyncFeatures.Feature5
         {
             Console.WriteLine("[barista] But that's a latte art! Fine..");
 
-            // !!! LOOK HERE !!!
-            // Calling a routine on a simple dependency will NOT save the state
-            // of current routine, because it's not a part of a workflow.
-
+            // This call is not to a sub-routine since ICoffeeMachine is not a service.
             await _coffeeMachine.BrewCoffee();
         }
     }

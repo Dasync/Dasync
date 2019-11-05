@@ -55,18 +55,15 @@ namespace DasyncFeatures.Feature6
             _warehouse = warehouse;
         }
 
+        // The simplified saga implementation in one method (orchestration).
         public virtual async Task PlaceOrder()
         {
-            // Generate unique ID which will be persisted in this routine.
+            // Generate unique ID which will be persisted in this method.
             var transationId = Guid.NewGuid();
 
             var price = 10;
             var itemId = "Whole Coffee Beans 1lb";
             var quantity = 1;
-
-            // !!! LOOK HERE !!!
-            // This is implementation of the Saga Pattern.
-            // Remember, any step will be re-tried if the process fails abruptly.
 
             // 1. First, make sure that payment can be made.
             // This is a call to a service #1.
@@ -88,7 +85,10 @@ namespace DasyncFeatures.Feature6
 
             // All in all, this async method (a routine) acts as an orchestrator.
             // Invoking and subscribing to continuations of async methods of two
-            // services can be viewed as sending commands and listening to events. 
+            // services can be viewed as sending commands and listening to events.
+
+            // Unlike using regular synchronous service client (e.g. http), this
+            // method is guaranteed to reliably execute when a message passing is used.
         }
     }
 

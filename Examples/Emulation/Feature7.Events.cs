@@ -48,8 +48,7 @@ namespace DasyncFeatures.Feature7
     {
         Task RegisterCustomer(CustomerInfo customerInfo);
 
-        // !!! LOOK HERE !!!
-        // This is a true event of a distributed application.
+        // This is a domain event (see Domain-Driven Design).
         event EventHandler<CustomerInfo> CustomerRegistered;
     }
 
@@ -60,11 +59,10 @@ namespace DasyncFeatures.Feature7
             await Console.Out.WriteLineAsync(
                 $"Thank you for becoming the most valuable member with us, {customerInfo.FullName}!");
 
-            // !!! LOOK HERE !!!
             // Raise the event, so any observing service can react to it.
             // In fact the event does not fire immediately, it gets scheduled
-            // and committed in consistent manner as a part of the unit of work
-            // represented by the state transition of this routine.
+            // and committed in consistent manner as a part of the Unit of Work
+            // represented by the state transition of this method.
             CustomerRegistered?.Invoke(this, customerInfo);
         }
 
@@ -75,18 +73,16 @@ namespace DasyncFeatures.Feature7
     {
         public NewsletterService(ICustomerManagementService customerManagementService)
         {
-            // !!! LOOK HERE !!!
             // Subscribe to the event of another service of the distributed app.
             customerManagementService.CustomerRegistered += OnCustomerRegistered;
+            // In a real cloud application, the pub-sub shoud be configured
+            // externally in addition to this runtime declaration.
         }
 
-        // !!! LOOK HERE !!!
         // This is a routine that does not return any result, but executed in
         // stateful and resilient manner as any other regular routine.
         protected virtual async void OnCustomerRegistered(object sender, CustomerInfo customerInfo)
         {
-            // FYI: the 'sender' can be casted to 'ICustomerManagementService'.
-
             await Console.Out.WriteLineAsync(
                 $"We will send news every minute to '{customerInfo.EmailAddress}' with no option to opt out. ");
         }

@@ -12,9 +12,24 @@ namespace DasyncFeatures
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("DASYNC Feature Showdown");
-            Console.WriteLine("Look at the code and its comments to understand the demo!");
+            Console.WriteLine("DASYNC Feature Showdown (emulated in-memory)");
+            Console.WriteLine("Look at the code and its comments to understand the demo");
             Console.WriteLine();
+
+            // This app contains several scenarios that demonstrates capabilities of the D-ASYNC
+            // engine to execute methods and react to events as if it was (were) a cloud service(s).
+
+            // The code for every single feature is very simple and does not utilize any framework,
+            // however the D-ASYNC engine plugs into .NET's runtime to control execution of methods
+            // what makes it possible to serialize their input, output, and state.
+
+            // The ability to plug into the runtime inverts the dependency - there is no need for a
+            // specific framework, but instead you use the programming language to express what the
+            // application should do and configure infrastructure later to tell how it should be done.
+
+            // In this demo the serialized data is conveyed by an in-memory emulator, which can be
+            // replaced by cloud services (http, message queues, event streams, etc.) to run the
+            // business logic code in resilient, scalable, and distributed manner without modification.
 
             var featureDemoSet = new IFeatureDemo[]
             {
@@ -29,34 +44,19 @@ namespace DasyncFeatures
 
             var feature = SelectFeature(featureDemoSet);
 
-            // !!! LOOK HERE !!!
-            //
-            // There are 3 options to play with:
-            //
-            // 1. Comment out PlugInDasync to run a demo code without DASYNC
-            //    as a regular .NET application.
-            //
-            // 2. Run im-memory emulation of DASYNC runtime to test
-            //    serialization only.
-            //
-            // 3. Run with file-based persistence, so next time your re-start
-            //    this console app, it will pick up any unfinished work. [DEFAULT]
-            //    Where does it store the data? In the 'data' folder :)
-            //    It should be under '/bin/Debug/netcoreapp2.0' directory.
-
-            IHost host = new HostBuilder()
+            using (var host = new HostBuilder()
                 .ConfigureAppConfiguration(_ => _
                     .AddJsonFile("appsettings.json", optional: true)
                     .AddEnvironmentVariables()
                     .AddCommandLine(args))
                 .ConfigureServices(services =>
                         PlugInDasync(services, feature))
-                .Start();
-
-            await feature.Run(host.Services);
-            await host.StopAsync();
-            await host.WaitForShutdownAsync();
-            host.Dispose();
+                .Start())
+            {
+                await feature.Run(host.Services);
+                await host.StopAsync();
+                await host.WaitForShutdownAsync();
+            }
         }
 
         static IFeatureDemo SelectFeature(IFeatureDemo[] features)
