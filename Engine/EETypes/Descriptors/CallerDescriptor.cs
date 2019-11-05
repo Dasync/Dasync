@@ -37,9 +37,9 @@
         public CallerDescriptor Clone() =>
             new CallerDescriptor
             {
-                Service = Service.Clone(),
-                Method = Method.Clone(),
-                Event = Event.Clone(),
+                Service = Service?.Clone(),
+                Method = Method?.Clone(),
+                Event = Event?.Clone(),
                 IntentId = IntentId
             };
     }
