@@ -17,6 +17,8 @@ namespace Dasync.ExecutionEngine.Eventing
             subscribers.Add(subscriber);
         }
 
+        public IEnumerable<EventDescriptor> SubscribedEvents => _subscriberMap.Keys;
+
         public IEnumerable<EventSubscriberDescriptor> GetSubscribers(EventDescriptor eventDesc)
         {
             if (_subscriberMap.TryGetValue(eventDesc, out var subscribers))

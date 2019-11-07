@@ -6,6 +6,8 @@ using Dasync.Collections;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Persistence;
+using Dasync.EETypes.Resolvers;
+using Dasync.Modeling;
 using Dasync.Serialization;
 
 namespace Dasync.Communication.InMemory
@@ -20,15 +22,18 @@ namespace Dasync.Communication.InMemory
         private readonly IMessageHub _messageHub;
         private readonly ILocalMethodRunner _localTransitionRunner;
         private readonly ISerializerProvider _serializerProvider;
+        private readonly IServiceResolver _serviceResolver;
 
         public InMemoryMessageHandler(
             IMessageHub messageHub,
             ILocalMethodRunner localTransitionRunner,
-            ISerializerProvider serializerProvider)
+            ISerializerProvider serializerProvider,
+            IServiceResolver serviceResolver)
         {
             _messageHub = messageHub;
             _localTransitionRunner = localTransitionRunner;
             _serializerProvider = serializerProvider;
+            _serviceResolver = serviceResolver;
         }
 
         public async Task Run(CancellationToken stopToken)
@@ -107,7 +112,11 @@ namespace Dasync.Communication.InMemory
 
         private async Task HandleEvent(Message message)
         {
-            var eventPublishData = EventPublishDataTransformer.Read(message, _serializerProvider);
+            var eventPublishData = EventPublishDataTransformer.Read(message, _serializerProvider, out var skipLocalEvents);
+
+            if (skipLocalEvents && _serviceResolver.Resolve(eventPublishData.Service).Definition.Type == ServiceType.Local)
+                return;
+
             var communicationMessage = new CommunicationMessage(message);
             await _localTransitionRunner.ReactAsync(eventPublishData, communicationMessage);
         }

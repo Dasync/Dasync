@@ -23,14 +23,14 @@ namespace Dasync.Communication.InMemory
             CommunicationTraits.Volatile |
             CommunicationTraits.MessageLockOnPublish;
 
-        public Task PublishAsync(EventPublishData data)
+        public Task PublishAsync(EventPublishData data, PublishPreferences preferences)
         {
             var message = new Message
             {
                 Type = MessageType.Event,
             };
 
-            EventPublishDataTransformer.Write(message, data, _serializer);
+            EventPublishDataTransformer.Write(message, data, preferences, _serializer);
 
             _messageHub.Schedule(message);
 

@@ -215,7 +215,7 @@ namespace Dasync.ExecutionEngine.Proxy
             if (!ignoreTransaction)
             {
                 var eventDefinition = serviceProxyContext.Definition.FindEvent(@event);
-                var eventSettings = _communicationSettingsProvider.GetEventSettings(eventDefinition);
+                var eventSettings = _communicationSettingsProvider.GetEventSettings(eventDefinition, external: false);
                 if (eventSettings.IgnoreTransaction)
                     ignoreTransaction = true;
             }

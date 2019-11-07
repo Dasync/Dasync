@@ -6,6 +6,7 @@ using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Resolvers;
+using Dasync.Modeling;
 
 namespace Dasync.ExecutionEngine.Transitions
 {
@@ -247,7 +248,7 @@ namespace Dasync.ExecutionEngine.Transitions
             var publisherServiceReference = _serviceResolver.Resolve(data.Service);
             var publisherEventReference = _eventResolver.Resolve(publisherServiceReference.Definition, data.Event);
 
-            var behaviorSettings = _communicationSettingsProvider.GetEventSettings(publisherEventReference.Definition);
+            var behaviorSettings = _communicationSettingsProvider.GetEventSettings(publisherEventReference.Definition, external: false);
 
             //-------------------------------------------------------------------------------
             // MESSGE DE-DUPLICATION
@@ -274,6 +275,11 @@ namespace Dasync.ExecutionEngine.Transitions
 
             foreach (var subscriber in subscribers)
             {
+                // Skip external services
+                if (!_serviceResolver.TryResolve(subscriber.Service, out var subscriberServiceReference)
+                    || subscriberServiceReference.Definition.Type == ServiceType.External)
+                    continue;
+
                 var invokeData = new MethodInvocationData
                 {
                     IntentId = _idGenerator.NewId(),

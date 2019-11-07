@@ -8,6 +8,6 @@ namespace Dasync.EETypes.Communication
 
         MethodCommunicationSettings GetMethodSettings(IMethodDefinition methodDefinition);
 
-        EventCommunicationSettings GetEventSettings(IEventDefinition eventDefinition);
+        EventCommunicationSettings GetEventSettings(IEventDefinition eventDefinition, bool external);
     }
 }

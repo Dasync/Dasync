@@ -9,7 +9,10 @@ namespace Dasync.ExecutionEngine.Communication
     {
         private readonly ConcurrentDictionary<object, object> _settings =
             new ConcurrentDictionary<object, object>();
+        private readonly ConcurrentDictionary<IEventDefinition, EventCommunicationSettings> _externalEventSettings =
+            new ConcurrentDictionary<IEventDefinition, EventCommunicationSettings>();
         private readonly Func<object, object> _valueFactory;
+        private readonly Func<IEventDefinition, EventCommunicationSettings> _externalEventValueFactory;
 
         private static readonly MethodCommunicationSettings QueriesDefaults =
             new MethodCommunicationSettings
@@ -37,6 +40,7 @@ namespace Dasync.ExecutionEngine.Communication
         public CommunicationSettingsProvider()
         {
             _valueFactory = ComposeSettings;
+            _externalEventValueFactory = ComposeSettingsForExternalEventing;
         }
 
         public MethodCommunicationSettings GetServiceMethodSettings(IServiceDefinition serviceDefinition) =>
@@ -45,8 +49,10 @@ namespace Dasync.ExecutionEngine.Communication
         public MethodCommunicationSettings GetMethodSettings(IMethodDefinition methodDefinition) =>
             (MethodCommunicationSettings)_settings.GetOrAdd(methodDefinition, _valueFactory);
 
-        public EventCommunicationSettings GetEventSettings(IEventDefinition eventDefinition) =>
-            (EventCommunicationSettings)_settings.GetOrAdd(eventDefinition, _valueFactory);
+        public EventCommunicationSettings GetEventSettings(IEventDefinition eventDefinition, bool external) =>
+            external
+            ? _externalEventSettings.GetOrAdd(eventDefinition, _externalEventValueFactory)
+            : (EventCommunicationSettings)_settings.GetOrAdd(eventDefinition, _valueFactory);
 
         private object ComposeSettings(object definition)
         {
@@ -56,6 +62,11 @@ namespace Dasync.ExecutionEngine.Communication
                 return ComposeMethodCommunicationSettings(methodDefinition.Service, methodDefinition);
             else
                 return ComposeEventCommunicationSettings((IEventDefinition)definition);
+        }
+
+        private EventCommunicationSettings ComposeSettingsForExternalEventing(IEventDefinition definition)
+        {
+            return ComposeEventCommunicationSettings(definition, forceExternal: true);
         }
 
         private MethodCommunicationSettings ComposeMethodCommunicationSettings(IServiceDefinition serviceDefinition, IMethodDefinition methodDefinition)
@@ -158,9 +169,9 @@ namespace Dasync.ExecutionEngine.Communication
             };
         }
 
-        private EventCommunicationSettings ComposeEventCommunicationSettings(IEventDefinition definition)
+        private EventCommunicationSettings ComposeEventCommunicationSettings(IEventDefinition definition, bool forceExternal = false)
         {
-            var isExternal = definition.Service.Type == ServiceType.External;
+            var isExternal = forceExternal || definition.Service.Type == ServiceType.External;
 
             return new EventCommunicationSettings
             {

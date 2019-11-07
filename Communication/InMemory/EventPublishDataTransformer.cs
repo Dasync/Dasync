@@ -7,7 +7,7 @@ namespace Dasync.Communication.InMemory
 {
     public class EventPublishDataTransformer
     {
-        public static void Write(Message message, EventPublishData data, ISerializer serializer)
+        public static void Write(Message message, EventPublishData data, PublishPreferences preferences, ISerializer serializer)
         {
             message.Data["IntentId"] = data.IntentId;
             message.Data["Service"] = data.Service.Clone();
@@ -15,10 +15,12 @@ namespace Dasync.Communication.InMemory
             message.Data["Format"] = serializer.Format;
             message.Data["Parameters"] = serializer.SerializeToString(data.Parameters);
             message.Data["Caller"] = data.Caller?.Clone();
+            message.Data["SkipLocal"] = preferences.SkipLocalSubscribers;
         }
 
-        public static EventPublishData Read(Message message, ISerializerProvider serializerProvider)
+        public static EventPublishData Read(Message message, ISerializerProvider serializerProvider, out bool skipLocalEvents)
         {
+            skipLocalEvents = (bool)message.Data["SkipLocal"];
             return new EventPublishData
             {
                 IntentId = (string)message.Data["IntentId"],

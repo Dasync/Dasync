@@ -8,6 +8,6 @@ namespace Dasync.EETypes.Communication
 
         CommunicationTraits Traits { get; }
 
-        Task PublishAsync(EventPublishData data);
+        Task PublishAsync(EventPublishData data, PublishPreferences preferences);
     }
 }

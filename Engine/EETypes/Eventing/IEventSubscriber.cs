@@ -7,6 +7,8 @@ namespace Dasync.EETypes.Eventing
     {
         void Subscribe(EventDescriptor eventDesc, EventSubscriberDescriptor subscriber);
 
+        IEnumerable<EventDescriptor> SubscribedEvents { get; }
+
         IEnumerable<EventSubscriberDescriptor> GetSubscribers(EventDescriptor eventDesc);
     }
 }

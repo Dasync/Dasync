@@ -4,6 +4,7 @@ using System.Linq;
 using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Resolvers;
+using Dasync.ExecutionEngine.Eventing;
 using Dasync.ExecutionEngine.Modeling;
 using Dasync.Modeling;
 using Microsoft.Extensions.Configuration;
@@ -63,48 +64,21 @@ namespace Dasync.ExecutionEngine.Communication
                     return cachedCommunicator;
             }
 
-            EventCommunicationSettings methodCommunicationSettings =
-                _communicationSettingsProvider.GetEventSettings(eventDefinition);
+            var localSettings = _communicationSettingsProvider.GetEventSettings(eventDefinition, external: false);
+            var externalSettings = _communicationSettingsProvider.GetEventSettings(eventDefinition, external: true);
 
-            var communicationType = methodCommunicationSettings.CommunicationType;
+            var localEventingMethod = GetEventingMethod(localSettings.CommunicationType);
+            var externalEventingMethod = GetEventingMethod(externalSettings.CommunicationType);
 
-            IEventingMethod eventingMethod;
-            if (string.IsNullOrWhiteSpace(communicationType))
+            var localPublisher = localEventingMethod.CreateEventPublisher(GetConfiguration(eventDefinition));
+
+            var publisher = localPublisher;
+
+            if (externalEventingMethod.Type != localEventingMethod.Type)
             {
-                if (_eventingMethods.Count == 1)
-                {
-                    eventingMethod = _eventingMethods.First().Value;
-                }
-                else
-                {
-                    throw new CommunicationMethodNotFoundException("Multiple communication methods are available.");
-                }
+                var externalPublisher = externalEventingMethod.CreateEventPublisher(GetConfiguration(eventDefinition, forceExternal: true));
+                publisher = new MulticastEventPublisher(localPublisher, externalPublisher);
             }
-            else
-            {
-                if (!_eventingMethods.TryGetValue(communicationType, out eventingMethod))
-                {
-                    throw new CommunicationMethodNotFoundException($"Communication method '{communicationType}' is not registered.");
-                }
-            }
-
-            var servicesSection = _configuration.GetSection("services");
-            var serviceSection = servicesSection.GetSection(serviceDefinition.Name);
-
-            IConfiguration publisherConfig;
-
-            var serviceCategory = serviceDefinition.Type == ServiceType.External ? "_external" : "_local";
-
-            publisherConfig = GetConfiguraion(
-                _configuration.GetSection("communication"),
-                _configuration.GetSection("events").GetSection("communication"),
-                servicesSection.GetSection(serviceCategory).GetSection("communication"),
-                servicesSection.GetSection(serviceCategory).GetSection("events").GetSection("communication"),
-                serviceSection.GetSection("communication"),
-                serviceSection.GetSection("events").GetSection("_all").GetSection("communication"),
-                serviceSection.GetSection("events").GetSection(eventDefinition.Name).GetSection("communication"));
-
-            var publisher = eventingMethod.CreateEventPublisher(publisherConfig);
 
             lock (_publisherMap)
             {
@@ -119,7 +93,47 @@ namespace Dasync.ExecutionEngine.Communication
             }
         }
 
-        private static IConfiguration GetConfiguraion(params IConfiguration[] sections)
+        private IEventingMethod GetEventingMethod(string type)
+        {
+            if (string.IsNullOrWhiteSpace(type))
+            {
+                if (_eventingMethods.Count == 1)
+                {
+                    return _eventingMethods.First().Value;
+                }
+                else
+                {
+                    throw new CommunicationMethodNotFoundException("Multiple eventing methods are available.");
+                }
+            }
+            else if (_eventingMethods.TryGetValue(type, out var eventingMethod))
+            {
+                return eventingMethod;
+            }
+            else
+            {
+                throw new CommunicationMethodNotFoundException($"Eventing method '{type}' is not registered.");
+            }
+        }
+
+        private IConfiguration GetConfiguration(IEventDefinition eventDefinition, bool forceExternal = false)
+        {
+            var serviceCategory = (forceExternal || eventDefinition.Service.Type == ServiceType.External) ? "_external" : "_local";
+
+            var servicesSection = _configuration.GetSection("services");
+            var serviceSection = servicesSection.GetSection(eventDefinition.Service.Name);
+
+            return CombineConfiguraion(
+                _configuration.GetSection("communication"),
+                _configuration.GetSection("events").GetSection("communication"),
+                servicesSection.GetSection(serviceCategory).GetSection("communication"),
+                servicesSection.GetSection(serviceCategory).GetSection("events").GetSection("communication"),
+                serviceSection.GetSection("communication"),
+                serviceSection.GetSection("events").GetSection("_all").GetSection("communication"),
+                serviceSection.GetSection("events").GetSection(eventDefinition.Name).GetSection("communication"));
+        }
+
+        private static IConfiguration CombineConfiguraion(params IConfiguration[] sections)
         {
             var configBuilder = new ConfigurationBuilder();
             foreach (var section in sections)

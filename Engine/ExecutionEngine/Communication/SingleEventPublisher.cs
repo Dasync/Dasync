@@ -38,7 +38,7 @@ namespace Dasync.ExecutionEngine.Communication
             }
 
             var publisher = _eventPublisherProvider.GetPublisher(intent.Service, intent.Event);
-            await publisher.PublishAsync(eventData);
+            await publisher.PublishAsync(eventData, default);
         }
     }
 }
