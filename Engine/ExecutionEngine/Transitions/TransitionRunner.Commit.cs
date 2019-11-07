@@ -95,15 +95,21 @@ namespace Dasync.ExecutionEngine.Transitions
                     // TODO: for the event sourcing style, the result must be written by the receiver of the response.
                     var writeResult = true;
 
-                    if (stateStorage == null)
+                    if (writeResult && context.Caller?.Event != null)
+                        writeResult = false;
+
+                    if (writeResult && stateStorage == null)
                         stateStorage = _methodStateStorageProvider.GetStorage(context.Service, context.Method, returnNullIfNotFound: true);
 
                     if (stateStorage == null)
                     {
-                        // Fallback: if the method has a continuation, assume that no polling is expected,
+                        // Fallback (A): if the method has a continuation, assume that no polling is expected,
                         // so there is no need to write the result into a persisted storage.
                         // This does not cover 'fire and forget' scenarios.
-                        if (transitionCarrier.GetContinuationsAsync(default).Result?.Count > 0)
+                        // Fallback (B): This method must be an event handler - no need
+                        // to write result because nothing should poll for the result.
+                        if (transitionCarrier.GetContinuationsAsync(default).Result?.Count > 0
+                            || context.Caller?.Event != null)
                         {
                             writeResult = false;
                         }
