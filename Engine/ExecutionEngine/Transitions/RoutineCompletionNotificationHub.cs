@@ -291,7 +291,9 @@ namespace Dasync.ExecutionEngine.Transitions
                 listNode.Value.PollTimer?.Change(Timeout.Infinite, Timeout.Infinite);
                 listNode.Value.PollTimer?.Dispose();
                 listNode.Value.PollTimer = null;
-                _trackedInvocations.Remove(listNode);
+
+                if (listNode.List != null)
+                    _trackedInvocations.Remove(listNode);
             }
         }
 
