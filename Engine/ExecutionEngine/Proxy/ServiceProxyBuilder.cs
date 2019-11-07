@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using Dasync.EETypes;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Ioc;
@@ -96,21 +97,14 @@ namespace Dasync.ExecutionEngine.Proxy
                 }
             };
 
-            var buildingContext = ServiceProxyBuildingContext.EnterScope(serviceProxyContext);
-            try
-            {
-                var proxy = (IProxy)ActivateServiceProxyInstance(proxyType);
-                proxy.Executor = _proxyMethodExecutor;
-                proxy.Context = serviceProxyContext;
-                return proxy;
-            }
-            finally
-            {
-                buildingContext.ExitScope();
-            }
+            var proxy = (IProxy)FormatterServices.GetUninitializedObject(proxyType);
+            proxy.Executor = _proxyMethodExecutor;
+            proxy.Context = serviceProxyContext;
+            ActivateServiceProxyInstance(proxyType, proxy);
+            return proxy;
         }
 
-        private object ActivateServiceProxyInstance(Type type)
+        private void ActivateServiceProxyInstance(Type type, object instance)
         {
             var ctorInfo = SelectConstructor(type);
             var parametersInfo = ctorInfo.GetParameters();
@@ -123,7 +117,7 @@ namespace Dasync.ExecutionEngine.Proxy
                 parameterValues[i] = parameterValue;
             }
 
-            return ctorInfo.Invoke(parameterValues);
+            ctorInfo.Invoke(instance, parameterValues);
         }
 
         protected virtual ConstructorInfo SelectConstructor(Type type)

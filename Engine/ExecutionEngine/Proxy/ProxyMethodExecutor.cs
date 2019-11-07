@@ -158,7 +158,7 @@ namespace Dasync.ExecutionEngine.Proxy
 
             if (@delegate.Target is IProxy subscriberProxy)
             {
-                var subscriberProxyContext = (ServiceProxyContext)(subscriberProxy.Context ?? ServiceProxyBuildingContext.CurrentServiceProxyContext);
+                var subscriberProxyContext = (ServiceProxyContext)subscriberProxy.Context;
                 var subscriberServiceId = subscriberProxyContext.Descriptor.Id;
                 var subscriberMethodId = _routineMethodIdProvider.GetId(@delegate.GetMethodInfo());
 
