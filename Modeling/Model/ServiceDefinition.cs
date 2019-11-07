@@ -147,6 +147,7 @@ namespace Dasync.Modeling
             {
                 var methods = interfaceType
                     .GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                    .Where(mi => mi.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
                 if (methods.Count > 1)
