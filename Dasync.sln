@@ -59,6 +59,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmulatedDemo", "Examples\Em
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Communication.Http", "Communication\Http\Dasync.Communication.Http.csproj", "{7C7876F8-B953-4C0F-928D-9FA371AD3E05}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosting", "Hosting", "{A95FFC95-F225-46F2-A46D-EA4DD547E805}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Hosting.AspNetCore", "Hosting\AspNetCore\Dasync.Hosting.AspNetCore.csproj", "{E8AFE738-73B9-48EA-9182-82C7B50582F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -149,6 +153,10 @@ Global
 		{7C7876F8-B953-4C0F-928D-9FA371AD3E05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C7876F8-B953-4C0F-928D-9FA371AD3E05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C7876F8-B953-4C0F-928D-9FA371AD3E05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8AFE738-73B9-48EA-9182-82C7B50582F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8AFE738-73B9-48EA-9182-82C7B50582F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8AFE738-73B9-48EA-9182-82C7B50582F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8AFE738-73B9-48EA-9182-82C7B50582F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -175,6 +183,7 @@ Global
 		{67C295ED-E999-44C3-9084-8267F63A5AEA} = {E9E13D4C-4AF7-40AF-9A2E-B50250E72128}
 		{F13B7BF6-DE5F-4850-93C6-8F8C495FB1F5} = {0103B1F1-8F1D-4DB5-9EE5-CA5E8B970D10}
 		{7C7876F8-B953-4C0F-928D-9FA371AD3E05} = {E9E13D4C-4AF7-40AF-9A2E-B50250E72128}
+		{E8AFE738-73B9-48EA-9182-82C7B50582F6} = {A95FFC95-F225-46F2-A46D-EA4DD547E805}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F8B4417C-1BAD-421A-9164-89A427E53FA2}

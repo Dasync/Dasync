@@ -35,7 +35,7 @@ namespace Dasync.Communication.Http
             return new HttpCommunicator(serializer, urlTemplate, compressPayload);
         }
 
-        private string GetUrlTemplate(HttpCommunicatorSettings settings)
+        public static string GetUrlTemplate(HttpCommunicatorSettings settings)
         {
             var url = settings.Url;
             if (string.IsNullOrEmpty(url))
