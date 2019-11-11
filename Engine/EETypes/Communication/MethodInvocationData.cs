@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Dasync.EETypes.Descriptors;
+using Dasync.EETypes.Persistence;
 using Dasync.ValueContainer;
 
 namespace Dasync.EETypes.Communication
@@ -16,8 +17,10 @@ namespace Dasync.EETypes.Communication
 
         public Dictionary<string, string> FlowContext { get; set; }
 
+        public IValueContainer Parameters { get; set; }
+
         public ContinuationDescriptor Continuation { get; set; }
 
-        public IValueContainer Parameters { get; set; }
+        public SerializedMethodContinuationState ContinuationState { get; set; }
     }
 }

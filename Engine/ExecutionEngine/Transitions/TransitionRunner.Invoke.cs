@@ -12,7 +12,7 @@ namespace Dasync.ExecutionEngine.Transitions
 {
     public partial class TransitionRunner
     {
-        public async Task<InvokeRoutineResult> RunAsync(MethodInvocationData data, ICommunicatorMessage message, SerializedMethodContinuationState continuationState)
+        public async Task<InvokeRoutineResult> RunAsync(MethodInvocationData data, ICommunicatorMessage message)
         {
             var serviceReference = _serviceResolver.Resolve(data.Service);
             var methodReference = _methodResolver.Resolve(serviceReference.Definition, data.Method);
@@ -79,7 +79,7 @@ namespace Dasync.ExecutionEngine.Transitions
                         ResultValueType = resultValueType
                     };
 
-                    var invocationResult = await preferredCommunicator.InvokeAsync(data, continuationState, preferences);
+                    var invocationResult = await preferredCommunicator.InvokeAsync(data, preferences);
 
                     if (invocationResult.Outcome == InvocationOutcome.Complete && !string.IsNullOrEmpty(data.IntentId))
                         _routineCompletionSink.OnRoutineCompleted(data.Service, data.Method, data.IntentId, invocationResult.Result);
@@ -102,7 +102,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
             try
             {
-                var adapter = new TransitionCarrier(data, continuationState, _valueContainerCopier);
+                var adapter = new TransitionCarrier(data, _valueContainerCopier);
                 var transitionDescriptor = new TransitionDescriptor { Type = TransitionType.InvokeRoutine };
                 var result = await RunRoutineAsync(adapter, transitionDescriptor, default);
                 if (result.Outcome == InvocationOutcome.Complete && !string.IsNullOrEmpty(data.IntentId))
@@ -118,7 +118,7 @@ namespace Dasync.ExecutionEngine.Transitions
             }
         }
 
-        public async Task<ContinueRoutineResult> ContinueAsync(MethodContinuationData data, ICommunicatorMessage message, SerializedMethodContinuationState continuationState)
+        public async Task<ContinueRoutineResult> ContinueAsync(MethodContinuationData data, ICommunicatorMessage message)
         {
             var serviceReference = _serviceResolver.Resolve(data.Service);
             var methodReference = _methodResolver.Resolve(serviceReference.Definition, data.Method);
@@ -168,7 +168,7 @@ namespace Dasync.ExecutionEngine.Transitions
                             preferredCommunicator.Traits.HasFlag(CommunicationTraits.MessageLockOnPublish)
                     };
 
-                    var invocationResult = await preferredCommunicator.ContinueAsync(data, continuationState, preferences);
+                    var invocationResult = await preferredCommunicator.ContinueAsync(data, preferences);
 
                     if (!preferences.LockMessage || invocationResult.MessageHandle == null)
                     {
@@ -197,7 +197,7 @@ namespace Dasync.ExecutionEngine.Transitions
             @TryRun:
                 var adapter = new TransitionCarrier(data);
 
-                MethodExecutionState methodState = DecodeContinuationData(continuationState);
+                MethodExecutionState methodState = DecodeContinuationData(data.State);
                 if (methodState == null)
                 {
                     var stateStorage = _methodStateStorageProvider.GetStorage(data.Service, data.Method, returnNullIfNotFound: true);
@@ -290,7 +290,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     Caller = new CallerDescriptor(data.Service, data.Event, data.IntentId)
                 };
 
-                await RunAsync(invokeData, message, null);
+                await RunAsync(invokeData, message);
             }
         }
     }

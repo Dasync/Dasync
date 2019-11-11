@@ -154,11 +154,10 @@ namespace Dasync.ExecutionEngine.Transitions
 
                     var invocationData = InvocationDataUtils.CreateMethodInvocationData(intent, context);
 
-                    SerializedMethodContinuationState thisIntentContinuationState = null;
                     if (continuationState != null && ReferenceEquals(actions.SaveStateIntent.AwaitedRoutine, intent))
-                        thisIntentContinuationState = continuationState;
+                        invocationData.ContinuationState = continuationState;
 
-                    var result = await communicator.InvokeAsync(invocationData, thisIntentContinuationState, preferences);
+                    var result = await communicator.InvokeAsync(invocationData, preferences);
 
                     if (result.Outcome == InvocationOutcome.Complete)
                         _routineCompletionSink.OnRoutineCompleted(intent.Service, intent.Method, intent.Id, result.Result);
@@ -171,8 +170,9 @@ namespace Dasync.ExecutionEngine.Transitions
                 // TODO: option to lock the message and keep executing in-place
                 var intent = actions.ResumeRoutineIntent;
                 var continuationData = InvocationDataUtils.CreateMethodContinuationData(intent, context);
+                continuationData.State = continuationState;
                 var communicator = _communicatorProvider.GetCommunicator(intent.Service, intent.Method);
-                await communicator.ContinueAsync(continuationData, continuationState, preferences: default);
+                await communicator.ContinueAsync(continuationData, preferences: default);
             }
 
             if (actions.ContinuationIntents?.Count > 0)
@@ -180,8 +180,9 @@ namespace Dasync.ExecutionEngine.Transitions
                 foreach (var intent in actions.ContinuationIntents)
                 {
                     var continuationData = InvocationDataUtils.CreateMethodContinuationData(intent, context);
+                    continuationData.State = (transitionCarrier as TransitionCarrier)?.ContinuationState;
                     var communicator = _communicatorProvider.GetCommunicator(intent.Service, intent.Method, assumeExternal: true);
-                    await communicator.ContinueAsync(continuationData, (transitionCarrier as TransitionCarrier)?.ContinuationState, preferences: default);
+                    await communicator.ContinueAsync(continuationData, preferences: default);
                 }
             }
 

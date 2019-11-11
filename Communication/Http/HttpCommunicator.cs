@@ -5,11 +5,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Dasync.Communication.Http.Envelopes;
 using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
-using Dasync.EETypes.Persistence;
 using Dasync.Serialization;
 using Dasync.ValueContainer;
 
@@ -44,27 +42,10 @@ namespace Dasync.Communication.Http
 
         public async Task<InvokeRoutineResult> InvokeAsync(
             MethodInvocationData data,
-            SerializedMethodContinuationState continuationState,
             InvocationPreferences preferences)
         {
-            var envelope = new InvokeEnvelope
-            {
-                Service = data.Service,
-                Method = data.Method,
-                Caller = data.Caller,
-                Continuation = data.Continuation,
-                FlowContext = data.FlowContext,
-                Parameters = data.Parameters
-            };
-
-            if (continuationState != null)
-            {
-                envelope.ContinuationStateFormat = continuationState.Format;
-                envelope.ContinuationStateData = continuationState.State;
-            }
-
             HttpResponseMessage response;
-            using (var requestContent = CreateContent(envelope))
+            using (var requestContent = CreateContent(data))
             {
                 requestContent.Headers.TryAddWithoutValidation(DasyncHttpHeaders.Envelope, "invoke");
                 requestContent.Headers.TryAddWithoutValidation(DasyncHttpHeaders.IntentId, data.IntentId);
@@ -137,27 +118,10 @@ namespace Dasync.Communication.Http
 
         public async Task<ContinueRoutineResult> ContinueAsync(
             MethodContinuationData data,
-            SerializedMethodContinuationState continuationState,
             InvocationPreferences preferences)
         {
-            var envelope = new ContinueEnvelope
-            {
-                Service = data.Service,
-                Method = data.Method,
-                TaskId = data.TaskId,
-                Caller = data.Caller,
-                ContinueAt = data.ContinueAt,
-                Result = data.Result
-            };
-
-            if (continuationState != null)
-            {
-                envelope.ContinuationStateFormat = continuationState.Format;
-                envelope.ContinuationStateData = continuationState.State;
-            }
-
             HttpResponseMessage response;
-            using (var requestContent = CreateContent(envelope))
+            using (var requestContent = CreateContent(data))
             {
                 requestContent.Headers.TryAddWithoutValidation(DasyncHttpHeaders.Envelope, "continue");
                 requestContent.Headers.TryAddWithoutValidation(DasyncHttpHeaders.IntentId, data.IntentId);

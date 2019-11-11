@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Dasync.EETypes.Communication;
-using Dasync.EETypes.Persistence;
 
 namespace Dasync.EETypes.Engine
 {
@@ -8,13 +7,11 @@ namespace Dasync.EETypes.Engine
     {
         Task<InvokeRoutineResult> RunAsync(
             MethodInvocationData data,
-            ICommunicatorMessage message,
-            SerializedMethodContinuationState continuationState);
+            ICommunicatorMessage message);
 
         Task<ContinueRoutineResult> ContinueAsync(
             MethodContinuationData data,
-            ICommunicatorMessage message,
-            SerializedMethodContinuationState continuationState);
+            ICommunicatorMessage message);
 
         Task ReactAsync(
             EventPublishData data,

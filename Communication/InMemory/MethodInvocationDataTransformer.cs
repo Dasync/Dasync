@@ -9,15 +9,14 @@ namespace Dasync.Communication.InMemory
 {
     public class MethodInvocationDataTransformer
     {
-        public static void Write(Message message, MethodInvocationData data,
-            SerializedMethodContinuationState continuationState, ISerializer serializer)
+        public static void Write(Message message, MethodInvocationData data, ISerializer serializer)
         {
             message.Data["IntentId"] = data.IntentId;
             message.Data["Service"] = data.Service.Clone();
             message.Data["Method"] = data.Method.Clone();
             message.Data["Continuation"] = data.Continuation;
-            message.Data["Continuation:Format"] = continuationState?.Format;
-            message.Data["Continuation:State"] = continuationState?.State;
+            message.Data["Continuation:Format"] = data.ContinuationState?.Format;
+            message.Data["Continuation:State"] = data.ContinuationState?.State;
             message.Data["Format"] = serializer.Format;
             message.Data["Parameters"] = serializer.SerializeToString(data.Parameters);
             message.Data["Caller"] = data.Caller?.Clone();
@@ -32,6 +31,7 @@ namespace Dasync.Communication.InMemory
                 Service = (ServiceId)message.Data["Service"],
                 Method = (MethodId)message.Data["Method"],
                 Continuation = (ContinuationDescriptor)message.Data["Continuation"],
+                ContinuationState = TryGetMethodContinuationState(message),
                 Caller = (CallerDescriptor)message.Data["Caller"],
                 FlowContext = (Dictionary<string, string>)message.Data["FlowContext"],
                 Parameters = new SerializedValueContainer(
@@ -39,6 +39,23 @@ namespace Dasync.Communication.InMemory
                     message.Data["Parameters"],
                     serializerProvider)
             };
+        }
+
+        internal static SerializedMethodContinuationState TryGetMethodContinuationState(Message message)
+        {
+            if (message.Data.TryGetValue("Continuation:State", out var stateObj) && stateObj is byte[] state && state.Length > 0)
+            {
+                return new SerializedMethodContinuationState
+                {
+                    State = state,
+                    Format =
+                        message.Data.TryGetValue("Continuation:Format", out var contentTypeObj) && contentTypeObj is string format
+                        ? format
+                        : null
+                };
+            }
+
+            return null;
         }
     }
 }

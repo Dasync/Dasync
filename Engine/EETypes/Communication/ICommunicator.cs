@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Dasync.EETypes.Persistence;
 
 namespace Dasync.EETypes.Communication
 {
@@ -14,12 +13,10 @@ namespace Dasync.EETypes.Communication
 
         Task<InvokeRoutineResult> InvokeAsync(
             MethodInvocationData data,
-            SerializedMethodContinuationState continuationState,
             InvocationPreferences preferences);
 
         Task<ContinueRoutineResult> ContinueAsync(
             MethodContinuationData data,
-            SerializedMethodContinuationState continuationState,
             InvocationPreferences preferences);
     }
 }

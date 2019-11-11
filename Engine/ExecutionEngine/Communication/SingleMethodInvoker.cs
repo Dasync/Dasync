@@ -74,7 +74,7 @@ namespace Dasync.ExecutionEngine.Communication
                         ResultValueType = resultValueType
                     };
 
-                    var invocationResult = await communicator.InvokeAsync(invocationData, null, preferences);
+                    var invocationResult = await communicator.InvokeAsync(invocationData, preferences);
                     if (invocationResult.Outcome == InvocationOutcome.Complete)
                         return invocationResult;
                     messageHandle = invocationResult.MessageHandle;
@@ -84,8 +84,7 @@ namespace Dasync.ExecutionEngine.Communication
                 {
                     var result = await _localMethodRunner.RunAsync(
                         invocationData,
-                        RuntimeCommunicatorMessage.Instance,
-                        continuationState: null);
+                        RuntimeCommunicatorMessage.Instance);
 
                     if (messageHandle != null)
                         await messageHandle.Complete();
@@ -115,7 +114,7 @@ namespace Dasync.ExecutionEngine.Communication
                     ResultValueType = resultValueType
                 };
 
-                return await communicator.InvokeAsync(invocationData, null, preferences);
+                return await communicator.InvokeAsync(invocationData, preferences);
             }
         }
 

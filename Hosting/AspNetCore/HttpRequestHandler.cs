@@ -5,12 +5,10 @@ using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.Communication.Http;
-using Dasync.Communication.Http.Envelopes;
 using Dasync.EETypes;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
-using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Platform;
 using Dasync.EETypes.Resolvers;
 using Dasync.Hosting.AspNetCore.Errors;
@@ -146,8 +144,8 @@ namespace Dasync.Hosting.AspNetCore
                 return;
             }
 
-            InvokeEnvelope invokeEnvelope = null;
-            ContinueEnvelope continueEnvelope = null;
+            MethodInvocationData invokeData = null;
+            MethodContinuationData continueData = null;
             IValueContainer parametersContainer = null;
             bool compressResponse = false;
             bool respondWithEnvelope = false;
@@ -181,7 +179,7 @@ namespace Dasync.Hosting.AspNetCore
 
                 parametersContainer = new SerializedValueContainer(parametersJson, _jsonSerializer);
 
-                invokeEnvelope = new InvokeEnvelope
+                invokeData = new MethodInvocationData
                 {
                     Service = serviceId,
                     Method = methodId,
@@ -221,7 +219,7 @@ namespace Dasync.Hosting.AspNetCore
 
                     if (string.IsNullOrEmpty(methodIntentId))
                     {
-                        invokeEnvelope = new InvokeEnvelope
+                        invokeData = new MethodInvocationData
                         {
                             Service = serviceId,
                             Method = methodId,
@@ -231,26 +229,26 @@ namespace Dasync.Hosting.AspNetCore
                     }
                     else
                     {
-                        continueEnvelope = new ContinueEnvelope
+                        continueData = new MethodContinuationData
                         {
                             Service = serviceId,
                             Method = methodId.CopyTo(new PersistedMethodId()),
                             Result = parametersContainer,
                             Caller = GetCaller(context.Request.Headers)
                         };
-                        continueEnvelope.Method.IntentId = methodIntentId;
+                        continueData.Method.IntentId = methodIntentId;
                         // TODO: get ETag from the query string
                     }
                 }
                 else if (envelopeType.Equals("invoke", StringComparison.OrdinalIgnoreCase))
                 {
                     respondWithEnvelope = true;
-                    invokeEnvelope = serializer.Deserialize<InvokeEnvelope>(payloadStream);
+                    invokeData = serializer.Deserialize<MethodInvocationData>(payloadStream);
                 }
                 else if (envelopeType.Equals("continue", StringComparison.OrdinalIgnoreCase))
                 {
                     respondWithEnvelope = true;
-                    continueEnvelope = serializer.Deserialize<ContinueEnvelope>(payloadStream);
+                    continueData = serializer.Deserialize<MethodContinuationData>(payloadStream);
                 }
                 else
                 {
@@ -277,30 +275,12 @@ namespace Dasync.Hosting.AspNetCore
                 RequestId = externalRequestId
             };
 
-            if (invokeEnvelope != null)
+            if (invokeData != null)
             {
-                var methodInvocationData = new MethodInvocationData
-                {
-                    IntentId = intentId,
-                    Service = invokeEnvelope.Service,
-                    Method = invokeEnvelope.Method,
-                    Continuation = invokeEnvelope.Continuation,
-                    Caller = invokeEnvelope.Caller,
-                    FlowContext = invokeEnvelope.FlowContext,
-                    Parameters = invokeEnvelope.Parameters
-                };
+                if (invokeData.IntentId == null)
+                    invokeData.IntentId = intentId;
 
-                SerializedMethodContinuationState continuationState = null;
-                if (invokeEnvelope.ContinuationStateData?.Length > 0)
-                {
-                    continuationState = new SerializedMethodContinuationState
-                    {
-                        Format = invokeEnvelope.ContinuationStateFormat,
-                        State = invokeEnvelope.ContinuationStateData
-                    };
-                }
-
-                var invokeTask = _localTransitionRunner.RunAsync(methodInvocationData, communicatorMessage, continuationState);
+                var invokeTask = _localTransitionRunner.RunAsync(invokeData, communicatorMessage);
 
                 if (isHttpRequestBlockingExecution)
                 {
@@ -335,34 +315,16 @@ namespace Dasync.Hosting.AspNetCore
                 context.Response.Headers.Add(DasyncHttpHeaders.IntentId, intentId);
                 context.Response.StatusCode = DasyncHttpCodes.Scheduled;
             }
-            else if (continueEnvelope != null)
+            else if (continueData != null)
             {
-                var methodContinuationData = new MethodContinuationData
-                {
-                    IntentId = intentId,
-                    Service = continueEnvelope.Service,
-                    Method = continueEnvelope.Method,
-                    Caller = continueEnvelope.Caller,
-                    ContinueAt = continueEnvelope.ContinueAt,
-                    TaskId = continueEnvelope.TaskId,
-                    Result = continueEnvelope.Result
-                };
+                if (continueData.IntentId == null)
+                    continueData.IntentId = intentId;
 
-                SerializedMethodContinuationState continuationState = null;
-                if (continueEnvelope.ContinuationStateData?.Length > 0)
-                {
-                    continuationState = new SerializedMethodContinuationState
-                    {
-                        Format = continueEnvelope.ContinuationStateFormat,
-                        State = continueEnvelope.ContinuationStateData
-                    };
-                }
-
-                var continueTask = _localTransitionRunner.ContinueAsync(methodContinuationData, communicatorMessage, continuationState);
+                var continueTask = _localTransitionRunner.ContinueAsync(continueData, communicatorMessage);
                 // TODO: continue 'continueTask' in backgraound to handle exceptions
 
                 context.Response.Headers.Add("Location", context.Request.Path.ToString());
-                context.Response.Headers.Add(DasyncHttpHeaders.IntentId, methodContinuationData.Method.IntentId);
+                context.Response.Headers.Add(DasyncHttpHeaders.IntentId, continueData.Method.IntentId);
                 context.Response.StatusCode = DasyncHttpCodes.Scheduled;
             }
         }

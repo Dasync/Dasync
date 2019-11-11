@@ -35,7 +35,6 @@ namespace Dasync.Communication.InMemory
 
         public async Task<InvokeRoutineResult> InvokeAsync(
             MethodInvocationData data,
-            SerializedMethodContinuationState continuationState,
             InvocationPreferences preferences)
         {
             var message = new Message
@@ -43,7 +42,7 @@ namespace Dasync.Communication.InMemory
                 Type = MessageType.InvokeMethod,
             };
 
-            MethodInvocationDataTransformer.Write(message, data, continuationState, _serializer);
+            MethodInvocationDataTransformer.Write(message, data, _serializer);
 
             var result = new InvokeRoutineResult
             {
@@ -79,7 +78,6 @@ namespace Dasync.Communication.InMemory
 
         public Task<ContinueRoutineResult> ContinueAsync(
             MethodContinuationData data,
-            SerializedMethodContinuationState continuationState,
             InvocationPreferences preferences)
         {
             var message = new Message
@@ -88,7 +86,7 @@ namespace Dasync.Communication.InMemory
                 DeliverAt = data.ContinueAt
             };
 
-            MethodContinuationDataTransformer.Write(message, data, continuationState, _serializer);
+            MethodContinuationDataTransformer.Write(message, data, _serializer);
 
             var result = new ContinueRoutineResult();
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using Dasync.EETypes.Descriptors;
+using Dasync.EETypes.Persistence;
 using Dasync.ValueContainer;
 
 namespace Dasync.EETypes.Communication
@@ -37,5 +38,7 @@ namespace Dasync.EETypes.Communication
         /// The result of an awaited method or a trigger (represents <see cref="ITaskResult"/>).
         /// </summary>
         public IValueContainer Result { get; set; }
+
+        public SerializedMethodContinuationState State { get; set; }
     }
 }

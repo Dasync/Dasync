@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Dasync.Collections;
 using Dasync.EETypes.Communication;
 using Dasync.EETypes.Engine;
-using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Resolvers;
 using Dasync.Modeling;
 using Dasync.Serialization;
@@ -92,8 +91,7 @@ namespace Dasync.Communication.InMemory
         {
             var invocationData = MethodInvocationDataTransformer.Read(message, _serializerProvider);
             var communicationMessage = new CommunicationMessage(message);
-            var continuationState = TryGetMethodContinuationState(message);
-            var result = await _localTransitionRunner.RunAsync(invocationData, communicationMessage, continuationState);
+            var result = await _localTransitionRunner.RunAsync(invocationData, communicationMessage);
 
             if (message.Data.TryGetValue("Notification", out var sink) &&
                 sink is TaskCompletionSource<InvokeRoutineResult> tcs)
@@ -106,8 +104,7 @@ namespace Dasync.Communication.InMemory
         {
             var continuationData = MethodContinuationDataTransformer.Read(message, _serializerProvider);
             var communicationMessage = new CommunicationMessage(message);
-            var continuationState = TryGetMethodContinuationState(message);
-            await _localTransitionRunner.ContinueAsync(continuationData, communicationMessage, continuationState);
+            await _localTransitionRunner.ContinueAsync(continuationData, communicationMessage);
         }
 
         private async Task HandleEvent(Message message)
@@ -119,23 +116,6 @@ namespace Dasync.Communication.InMemory
 
             var communicationMessage = new CommunicationMessage(message);
             await _localTransitionRunner.ReactAsync(eventPublishData, communicationMessage);
-        }
-
-        private SerializedMethodContinuationState TryGetMethodContinuationState(Message message)
-        {
-            if (message.Data.TryGetValue("Continuation:State", out var stateObj) && stateObj is byte[] state && state.Length > 0)
-            {
-                return new SerializedMethodContinuationState
-                {
-                    State = state,
-                    Format =
-                        message.Data.TryGetValue("Continuation:Format", out var contentTypeObj) && contentTypeObj is string format
-                        ? format
-                        : null
-                };
-            }
-
-            return null;
         }
     }
 }
