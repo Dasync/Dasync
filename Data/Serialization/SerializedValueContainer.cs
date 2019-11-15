@@ -36,9 +36,9 @@ namespace Dasync.Serialization
             _lazyValueContainer = new Lazy<IValueContainer>(() =>
             {
                 if (_serializedForm is string text)
-                    return serializer.Deserialize<ValueContainer.ValueContainer>(text);
+                    return serializer.Deserialize<IValueContainer>(text);
                 else
-                    return serializer.Deserialize<ValueContainer.ValueContainer>((byte[])_serializedForm);
+                    return serializer.Deserialize<IValueContainer>((byte[])_serializedForm);
             });
         }
 
@@ -53,9 +53,9 @@ namespace Dasync.Serialization
             {
                 var serializer = serializerProvider.GetSerializer(_format);
                 if (_serializedForm is string text)
-                    return serializer.Deserialize<ValueContainer.ValueContainer>(text);
+                    return serializer.Deserialize<IValueContainer>(text);
                 else
-                    return serializer.Deserialize<ValueContainer.ValueContainer>((byte[])_serializedForm);
+                    return serializer.Deserialize<IValueContainer>((byte[])_serializedForm);
             });
         }
 

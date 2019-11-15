@@ -53,7 +53,31 @@ namespace Dasync.Serialization
 
         public object Deserialize(Stream stream, Type objectType = null)
         {
-            throw new NotImplementedException();
+            var result = CreateDeserializationTarget(objectType, out var valueContainer);
+            Populate(stream, valueContainer);
+            return result;
+        }
+
+        internal static object CreateDeserializationTarget(Type objectType, out IValueContainer valueContainer)
+        {
+            if (objectType == null || objectType == typeof(IValueContainer))
+            {
+                valueContainer = new ValueContainer.ValueContainer();
+                return valueContainer;
+            }
+
+            object target = Activator.CreateInstance(objectType);
+            
+            if (typeof(IValueContainer).IsAssignableFrom(objectType))
+            {
+                valueContainer = (IValueContainer)target;
+            }
+            else
+            {
+                valueContainer = ValueContainerFactory.CreateProxy(target);
+            }
+
+            return target;
         }
     }
 }

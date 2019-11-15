@@ -83,12 +83,16 @@ namespace Dasync.Serialization
 
         public object Deserialize(TextReader reader, Type objectType = null)
         {
-            throw new NotImplementedException();
+            var result = StandardSerializer.CreateDeserializationTarget(objectType, out var valueContainer);
+            Populate(reader, valueContainer);
+            return result;
         }
 
         public object Deserialize(Stream stream, Type objectType = null)
         {
-            throw new NotImplementedException();
+            var result = StandardSerializer.CreateDeserializationTarget(objectType, out var valueContainer);
+            Populate(stream, valueContainer);
+            return result;
         }
     }
 }

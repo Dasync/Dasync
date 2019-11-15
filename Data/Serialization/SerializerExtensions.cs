@@ -6,20 +6,12 @@ namespace Dasync.Serialization
 {
     public static class SerializerExtensions
     {
-        public static T Deserialize<T>(this ISerializer serializer, Stream stream) where T : new()
+        public static T Deserialize<T>(this ISerializer serializer, Stream stream)
         {
-            // Need to be 'object', because T can be a value type.
-            object target = new T();
-            var propertySet =
-                typeof(IValueContainer).IsAssignableFrom(typeof(T))
-                ? (IValueContainer)target
-                : ValueContainerFactory.CreateProxy(target);
-            using (stream)
-                serializer.Populate(stream, propertySet);
-            return (T)target;
+            return (T)serializer.Deserialize(stream, typeof(T));
         }
 
-        public static T Deserialize<T>(this ISerializer serializer, string data) where T : new()
+        public static T Deserialize<T>(this ISerializer serializer, string data)
         {
             if (serializer is ITextSerializer textSerializer)
             {
@@ -32,23 +24,16 @@ namespace Dasync.Serialization
             }
         }
 
-        public static T Deserialize<T>(this ISerializer serializer, byte[] data) where T : new()
+        public static T Deserialize<T>(this ISerializer serializer, byte[] data)
         {
             using (var stream = new MemoryStream(data, writable: false))
                 return serializer.Deserialize<T>(stream);
         }
 
-        public static T Deserialize<T>(this ITextSerializer serializer, string data) where T : new()
+        public static T Deserialize<T>(this ITextSerializer serializer, string data)
         {
-            // Need to be 'object', because T can be a value type.
-            object target = new T();
-            var propertySet =
-                typeof(IValueContainer).IsAssignableFrom(typeof(T))
-                ? (IValueContainer)target
-                : ValueContainerFactory.CreateProxy(target);
             using (var reader = new StringReader(data))
-                serializer.Populate(reader, propertySet);
-            return (T)target;
+                return (T)serializer.Deserialize(reader, typeof(T));
         }
 
         public static void Populate(this ISerializer serializer, string data, IValueContainer target)
