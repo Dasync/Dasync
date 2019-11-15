@@ -16,6 +16,7 @@ namespace Dasync.Hosting.AspNetCore.Development
             services.AddSingleton<EventingMethod>();
             services.AddSingleton<IEventingMethod>(_ => _.GetService<EventingMethod>());
             services.AddScoped<EventingMiddleware>();
+            services.AddSingleton<IMessageListeningMethod, MessageListeningMethod>();
             return services;
         }
     }

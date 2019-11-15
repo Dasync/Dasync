@@ -4,22 +4,39 @@ using Dasync.EETypes.Ioc;
 using Dasync.Modeling;
 using Microsoft.Extensions.Hosting;
 
-namespace Dasync.ExecutionEngine
+namespace Dasync.ExecutionEngine.Startup
 {
     public class StartupHostedService : IHostedService
     {
         private readonly ICommunicationModel _communicationModel;
         private readonly IDomainServiceProvider _domainServiceProvider;
+        private readonly ICommunicationListener _communicationListener;
 
         public StartupHostedService(
             ICommunicationModel communicationModel,
-            IDomainServiceProvider domainServiceProvider)
+            IDomainServiceProvider domainServiceProvider,
+            ICommunicationListener communicationListener)
         {
             _communicationModel = communicationModel;
             _domainServiceProvider = domainServiceProvider;
+            _communicationListener = communicationListener;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            ResolveAllDomainServices();
+
+            await _communicationListener.StartAsync(cancellationToken);
+        }
+
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            await _communicationListener.StopAsync(cancellationToken);
+
+            // TODO: wait for outstanding transitions to complete
+        }
+
+        private void ResolveAllDomainServices()
         {
             // Resolve all services to make sure that they have proper proxies
             // and allow them to subscribe for events in their constructors.
@@ -39,14 +56,6 @@ namespace Dasync.ExecutionEngine
                     }
                 }
             }
-
-            return Task.CompletedTask;
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            // TODO: wait for outstanding transitions to complete
-            return Task.CompletedTask;
         }
     }
 }

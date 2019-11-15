@@ -22,6 +22,7 @@ using Dasync.ExecutionEngine.Modeling;
 using Dasync.ExecutionEngine.Persistence;
 using Dasync.ExecutionEngine.Proxy;
 using Dasync.ExecutionEngine.Resolvers;
+using Dasync.ExecutionEngine.Startup;
 using Dasync.ExecutionEngine.StateMetadata.Service;
 using Dasync.ExecutionEngine.Transitions;
 using Dasync.ExecutionEngine.Triggers;
@@ -39,6 +40,7 @@ namespace Dasync.ExecutionEngine
         public static IServiceCollection Configure(this IServiceCollection services)
         {
             services.AddSingleton<IHostedService, StartupHostedService>();
+            services.AddSingleton<ICommunicationListener, CommunicationListener>();
             services.AddSingleton<IServiceProxyBuilder, ServiceProxyBuilder>();
             services.AddSingleton<IProxyMethodExecutor, ProxyMethodExecutor>();
             services.AddSingleton<ITaskContinuationTracker, TaskContinuationTracker>();

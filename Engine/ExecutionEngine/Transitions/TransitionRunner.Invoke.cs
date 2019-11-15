@@ -202,7 +202,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 {
                     var stateStorage = _methodStateStorageProvider.GetStorage(data.Service, data.Method, returnNullIfNotFound: true);
                     if (stateStorage == null)
-                        throw new InvalidOperationException($"Cannot resume method '{data.Service}'.{data.Method} due to absence of persistence mechanism.");
+                        throw new InvalidOperationException($"Cannot resume method '{data.Service}'.{data.Method} due to absence of a persistence mechanism.");
 
                     methodState = await stateStorage.ReadStateAsync(data.Service, data.Method, default);
                 }
@@ -290,6 +290,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     Caller = new CallerDescriptor(data.Service, data.Event, data.IntentId)
                 };
 
+                // TODO: think about fanning out depending on the communication mechanism, number of subscribers per event, and settings.
                 await RunAsync(invokeData, message);
             }
         }
