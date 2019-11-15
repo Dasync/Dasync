@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace Dasync.EETypes
 {
@@ -30,9 +31,7 @@ namespace Dasync.EETypes
             : base.Equals(obj);
 
         public override int GetHashCode() =>
-            (Name != null)
-            ? Name.GetHashCode()
-            : base.GetHashCode();
+            StringComparer.OrdinalIgnoreCase.GetHashCode(Name ?? "");
 
         public static bool operator ==(MethodId a, MethodId b) =>
             string.Equals(a?.Name, b?.Name, System.StringComparison.OrdinalIgnoreCase);
