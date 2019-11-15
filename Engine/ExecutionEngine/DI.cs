@@ -3,6 +3,7 @@ using Dasync.DependencyInjection;
 using Dasync.EETypes;
 using Dasync.EETypes.Cancellation;
 using Dasync.EETypes.Communication;
+using Dasync.EETypes.Configuration;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Eventing;
 using Dasync.EETypes.Ioc;
@@ -13,6 +14,7 @@ using Dasync.EETypes.Resolvers;
 using Dasync.EETypes.Triggers;
 using Dasync.ExecutionEngine.Cancellation;
 using Dasync.ExecutionEngine.Communication;
+using Dasync.ExecutionEngine.Configuration;
 using Dasync.ExecutionEngine.Continuation;
 using Dasync.ExecutionEngine.Eventing;
 using Dasync.ExecutionEngine.IntrinsicFlow;
@@ -65,7 +67,6 @@ namespace Dasync.ExecutionEngine
             services.AddSingleton<IRoutineCompletionSink>(_ => _.GetService<RoutineCompletionNotificationHub>());
             services.AddSingleton<IDomainServiceProvider, DomainServiceProvider>();
             services.AddSingleton<ICommunicatorProvider, CommunicatorProvider>();
-            services.AddSingleton<ICommunicationModelEnricher, CommunicationModelEnricher>();
             services.AddSingleton<ICommunicationSettingsProvider, CommunicationSettingsProvider>();
             services.AddSingleton<IEventSubscriber, EventSubscriber>();
             services.AddSingleton<ISingleMethodInvoker, SingleMethodInvoker>();
@@ -73,6 +74,7 @@ namespace Dasync.ExecutionEngine
             services.AddSingleton<IExternalCommunicationModel, ExternalCommunicationModel>();
             services.AddSingleton<IEventPublisherProvider, EventPublisherProvider>();
             services.AddSingleton<ISingleEventPublisher, SingleEventPublisher>();
+            services.AddSingleton<ICommunicationModelConfiguration, CommunicationModelConfiguration>();
             return services;
         }
     }

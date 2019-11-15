@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dasync.Communication.Http;
 using Dasync.EETypes;
-using Dasync.EETypes.Communication;
+using Dasync.EETypes.Configuration;
 using Dasync.EETypes.Descriptors;
 using Dasync.EETypes.Engine;
 using Dasync.EETypes.Eventing;
@@ -19,7 +19,7 @@ namespace Dasync.Hosting.AspNetCore.Development
     {
         private readonly IEventSubscriber _eventSubscriber;
         private readonly IServiceResolver _serviceResolver;
-        private readonly ICommunicatorProvider _communicatorProvider;
+        private readonly ICommunicationModelConfiguration _communicationModelConfiguration;
         private readonly IDefaultSerializerProvider _defaultSerializerProvider;
         private readonly ISerializerProvider _serializerProvider;
         private readonly Dictionary<ServiceId, EventingHttpClient> _clientMap = new Dictionary<ServiceId, EventingHttpClient>();
@@ -30,7 +30,7 @@ namespace Dasync.Hosting.AspNetCore.Development
         public BackgroundEventSubscriber(
             IEventSubscriber eventSubscriber,
             IServiceResolver serviceResolver,
-            ICommunicatorProvider communicatorProvider,
+            ICommunicationModelConfiguration communicationModelConfiguration,
             IDefaultSerializerProvider defaultSerializerProvider,
             ISerializerProvider serializerProvider,
             EventingMethod eventingMethod,
@@ -38,7 +38,7 @@ namespace Dasync.Hosting.AspNetCore.Development
         {
             _eventSubscriber = eventSubscriber;
             _serviceResolver = serviceResolver;
-            _communicatorProvider = communicatorProvider;
+            _communicationModelConfiguration = communicationModelConfiguration;
             _defaultSerializerProvider = defaultSerializerProvider;
             _serializerProvider = serializerProvider;
 
@@ -116,7 +116,7 @@ namespace Dasync.Hosting.AspNetCore.Development
         {
             var serviceRef = _serviceResolver.Resolve(serviceId);
 
-            var configuration = _communicatorProvider.GetCommunicatorConfiguration(serviceId, default);
+            var configuration = _communicationModelConfiguration.GetCommandsConfiguration(serviceRef.Definition, "communication");
             var settings = new HttpCommunicatorSettings();
             configuration.Bind(settings);
 

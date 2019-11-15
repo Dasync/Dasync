@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dasync.EETypes;
 using Dasync.EETypes.Communication;
+using Dasync.EETypes.Configuration;
 using Dasync.EETypes.Resolvers;
 using Dasync.ExecutionEngine.Modeling;
 using Dasync.Modeling;
@@ -12,7 +13,9 @@ namespace Dasync.ExecutionEngine.Communication
 {
     public class CommunicatorProvider : ICommunicatorProvider
     {
-        private readonly ICommunicationSettingsProvider _communicationSettingsProvider;
+        private const string CommunicationSectionName = "communication";
+
+        private readonly ICommunicationModelConfiguration _communicationModelConfiguration;
         private readonly IConfiguration _configuration;
         private readonly IServiceResolver _serviceResolver;
         private readonly IMethodResolver _methodResolver;
@@ -21,14 +24,14 @@ namespace Dasync.ExecutionEngine.Communication
         private readonly Dictionary<object, ICommunicator> _communicatorMap = new Dictionary<object, ICommunicator>();
 
         public CommunicatorProvider(
-            ICommunicationSettingsProvider communicationSettingsProvider,
+            ICommunicationModelConfiguration communicationModelConfiguration,
             IEnumerable<IConfiguration> safeConfiguration,
             IServiceResolver serviceResolver,
             IMethodResolver methodResolver,
             IExternalCommunicationModel externalCommunicationModel,
             IEnumerable<ICommunicationMethod> communicationMethods)
         {
-            _communicationSettingsProvider = communicationSettingsProvider;
+            _communicationModelConfiguration = communicationModelConfiguration;
             _serviceResolver = serviceResolver;
             _methodResolver = methodResolver;
             _externalCommunicationModel = externalCommunicationModel;
@@ -44,6 +47,7 @@ namespace Dasync.ExecutionEngine.Communication
             if (_communicationMethods.Count == 0)
                 throw new CommunicationMethodNotFoundException("There are no communication methods registered.");
 
+            // TODO: cache by methodId/serviceId
             var (serviceDefinition, methodDefinition) = Resolve(serviceId, methodId, assumeExternal);
 
             var key = (object)methodDefinition ?? serviceDefinition;
@@ -53,12 +57,38 @@ namespace Dasync.ExecutionEngine.Communication
                     return cachedCommunicator;
             }
 
-            MethodCommunicationSettings methodCommunicationSettings =
-                methodDefinition == null
-                ? _communicationSettingsProvider.GetServiceMethodSettings(serviceDefinition)
-                : _communicationSettingsProvider.GetMethodSettings(methodDefinition);
+            IConfiguration communicatorConfig = null;
 
-            var communicationType = methodCommunicationSettings.CommunicationType;
+            if (methodDefinition != null)
+            {
+                var configOverrideLevels = _communicationModelConfiguration.GetMethodOverrideLevels(methodDefinition, CommunicationSectionName);
+                if (configOverrideLevels.HasFlag(ConfigOverrideLevels.Primitive) ||
+                    (configOverrideLevels.HasFlag(ConfigOverrideLevels.ServicePrimitives) && methodDefinition.IsQuery)) // TODO: service communicator per commands/queries
+                {
+                    communicatorConfig = _communicationModelConfiguration.GetMethodConfiguration(methodDefinition, CommunicationSectionName);
+                }
+                else
+                {
+                    lock (_communicatorMap)
+                    {
+                        if (_communicatorMap.TryGetValue(serviceDefinition, out var cachedCommunicator))
+                        {
+                            _communicatorMap[methodDefinition] = cachedCommunicator;
+                            return cachedCommunicator;
+                        }
+                    }
+
+                    methodDefinition = null;
+                    key = serviceDefinition;
+                }
+            }
+
+            if (methodDefinition == null)
+            {
+                communicatorConfig = _communicationModelConfiguration.GetCommandsConfiguration(serviceDefinition, CommunicationSectionName);
+            }
+
+            var communicationType = GetCommunicationType(communicatorConfig);
 
             ICommunicationMethod communicationMethod;
             if (string.IsNullOrWhiteSpace(communicationType))
@@ -80,11 +110,6 @@ namespace Dasync.ExecutionEngine.Communication
                 }
             }
 
-            IConfiguration communicatorConfig =
-                methodDefinition != null
-                ? GetConfiguration(methodDefinition)
-                : GetConfiguration(serviceDefinition);
-
             var communicator = communicationMethod.CreateCommunicator(communicatorConfig);
 
             lock (_communicatorMap)
@@ -100,11 +125,7 @@ namespace Dasync.ExecutionEngine.Communication
             }
         }
 
-        public IConfiguration GetCommunicatorConfiguration(ServiceId serviceId, MethodId methodId, bool assumeExternal)
-        {
-            var (serviceDefinition, methodDefinition) = Resolve(serviceId, methodId, assumeExternal);
-            return methodDefinition != null ? GetConfiguration(methodDefinition) : GetConfiguration(serviceDefinition);
-        }
+        private static string GetCommunicationType(IConfiguration config) => config.GetSection("type").Value ?? "";
 
         private struct ServiceAndMethodDefinitions
         {
@@ -150,43 +171,6 @@ namespace Dasync.ExecutionEngine.Communication
             }
 
             return result;
-        }
-
-        private IConfiguration GetConfiguration(IServiceDefinition serviceDefinition)
-        {
-            var servicesSection = _configuration.GetSection("services");
-            var serviceSection = servicesSection.GetSection(serviceDefinition.Name);
-            var serviceCategory = serviceDefinition.Type == ServiceType.External ? "_external" : "_local";
-
-            return CombineConfiguraion(
-                _configuration.GetSection("communication"),
-                servicesSection.GetSection(serviceCategory).GetSection("communication"),
-                serviceSection.GetSection("communication"));
-        }
-
-        private IConfiguration GetConfiguration(IMethodDefinition methodDefinition)
-        {
-            var servicesSection = _configuration.GetSection("services");
-            var serviceSection = servicesSection.GetSection(methodDefinition.Service.Name);
-            var serviceCategory = methodDefinition.Service.Type == ServiceType.External ? "_external" : "_local";
-            var methodCategory = methodDefinition.IsQuery ? "queries" : "commands";
-
-            return CombineConfiguraion(
-                _configuration.GetSection("communication"),
-                _configuration.GetSection(methodCategory).GetSection("communication"),
-                servicesSection.GetSection(serviceCategory).GetSection("communication"),
-                servicesSection.GetSection(serviceCategory).GetSection(methodCategory).GetSection("communication"),
-                serviceSection.GetSection("communication"),
-                serviceSection.GetSection(methodCategory).GetSection("_all").GetSection("communication"),
-                serviceSection.GetSection(methodCategory).GetSection(methodDefinition.Name).GetSection("communication"));
-        }
-
-        private static IConfiguration CombineConfiguraion(params IConfiguration[] sections)
-        {
-            var configBuilder = new ConfigurationBuilder();
-            foreach (var section in sections)
-                configBuilder.AddConfiguration(section);
-            return configBuilder.Build();
         }
     }
 }

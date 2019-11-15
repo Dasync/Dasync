@@ -9,21 +9,7 @@ namespace Dasync.DependencyInjection
     {
         public static IServiceCollection AddCommunicationModel(this IServiceCollection services, ICommunicationModel model)
         {
-            if (model is IMutableCommunicationModel mutableModel)
-            {
-                services.AddSingleton<ICommunicationModel>(
-                    sp =>
-                    {
-                        foreach (var enricher in sp.GetServices<ICommunicationModelEnricher>())
-                            enricher.Enrich(mutableModel);
-                        return mutableModel;
-                    }
-                );
-            }
-            else
-            {
-                services.AddSingleton(model);
-            }
+            services.AddSingleton(model);
             return services;
         }
 

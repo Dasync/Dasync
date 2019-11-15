@@ -13,15 +13,8 @@ namespace Dasync.ExecutionEngine.Modeling
 
     public class ExternalCommunicationModel : PropertyBag, IExternalCommunicationModel, IMutableCommunicationModel
     {
-        private readonly ICommunicationModelEnricher _communicationModelEnricher;
-        private bool _isSelfEnriched;
         private readonly List<ExternalServiceDefinition> _services = new List<ExternalServiceDefinition>();
         private readonly List<IEntityProjectionDefinition> _projections = new List<IEntityProjectionDefinition>();
-
-        public ExternalCommunicationModel(ICommunicationModelEnricher communicationModelEnricher)
-        {
-            _communicationModelEnricher = communicationModelEnricher;
-        }
 
         public IReadOnlyCollection<IServiceDefinition> Services => _services;
 
@@ -51,14 +44,7 @@ namespace Dasync.ExecutionEngine.Modeling
                 if (existingDefinition != null)
                     return (IExternalServiceDefinition)existingDefinition;
 
-                if (!_isSelfEnriched)
-                {
-                    _communicationModelEnricher.Enrich(this, rootOnly: true);
-                    _isSelfEnriched = true;
-                }
-
-                var newDefinition = new ExternalServiceDefinition(_communicationModelEnricher, this, serviceId);
-                _communicationModelEnricher.Enrich(newDefinition, serviceOnly: true);
+                var newDefinition = new ExternalServiceDefinition(this, serviceId);
                 _services.Add(newDefinition);
                 return newDefinition;
             }

@@ -18,16 +18,13 @@ namespace Dasync.ExecutionEngine.Modeling
 
     public class ExternalServiceDefinition : PropertyBag, IExternalServiceDefinition, IMutableServiceDefinition
     {
-        private readonly ICommunicationModelEnricher _communicationModelEnricher;
         private readonly List<ExternalMethodDefinition> _methods = new List<ExternalMethodDefinition>();
         private readonly List<IEventDefinition> _events = new List<IEventDefinition>();
 
         public ExternalServiceDefinition(
-            ICommunicationModelEnricher communicationModelEnricher,
             IExternalCommunicationModel model,
             ServiceId serviceId)
         {
-            _communicationModelEnricher = communicationModelEnricher;
             Model = model;
             Id = serviceId.Clone();
         }
@@ -106,7 +103,6 @@ namespace Dasync.ExecutionEngine.Modeling
                     return (IExternalMethodDefinition)existingDefinition;
 
                 var newDefinition = new ExternalMethodDefinition(this, methodId);
-                _communicationModelEnricher.Enrich(newDefinition);
                 _methods.Add(newDefinition);
                 return newDefinition;
             }

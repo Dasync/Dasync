@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using Dasync.EETypes.Communication;
+using Dasync.EETypes.Configuration;
 using Dasync.Modeling;
+using Microsoft.Extensions.Configuration;
 
 namespace Dasync.ExecutionEngine.Communication
 {
     public class CommunicationSettingsProvider : ICommunicationSettingsProvider
     {
+        private const string CommunicationSectionName = "communication";
+        private const string PersistenceSectionName = "persistence";
+
+        private readonly ICommunicationModelConfiguration _communicationModelConfiguration;
         private readonly ConcurrentDictionary<object, object> _settings =
             new ConcurrentDictionary<object, object>();
         private readonly ConcurrentDictionary<IEventDefinition, EventCommunicationSettings> _externalEventSettings =
@@ -14,31 +20,9 @@ namespace Dasync.ExecutionEngine.Communication
         private readonly Func<object, object> _valueFactory;
         private readonly Func<IEventDefinition, EventCommunicationSettings> _externalEventValueFactory;
 
-        private static readonly MethodCommunicationSettings QueriesDefaults =
-            new MethodCommunicationSettings
-            {
-                RunInPlace = true,
-                IgnoreTransaction = true,
-            };
-
-        private static readonly MethodCommunicationSettings CommandsDefaults =
-            new MethodCommunicationSettings
-            {
-                Deduplicate = true,
-                Resilient = true,
-                Persistent = true,
-                Transactional = true,
-            };
-
-        private static readonly EventCommunicationSettings EventsDefaults =
-            new EventCommunicationSettings
-            {
-                Deduplicate = true,
-                Resilient = true
-            };
-
-        public CommunicationSettingsProvider()
+        public CommunicationSettingsProvider(ICommunicationModelConfiguration communicationModelConfiguration)
         {
+            _communicationModelConfiguration = communicationModelConfiguration;
             _valueFactory = ComposeSettings;
             _externalEventValueFactory = ComposeSettingsForExternalEventing;
         }
@@ -71,192 +55,75 @@ namespace Dasync.ExecutionEngine.Communication
 
         private MethodCommunicationSettings ComposeMethodCommunicationSettings(IServiceDefinition serviceDefinition, IMethodDefinition methodDefinition)
         {
-            var model = serviceDefinition.Model;
-            var isExternal = serviceDefinition.Type == ServiceType.External;
-            var isQuery = methodDefinition?.IsQuery == true;
+            var settings = new MethodCommunicationSettings();
 
-            return new MethodCommunicationSettings
+            if (methodDefinition != null)
             {
-                CommunicationType = GetValue<string>(
-                    methodDefinition, serviceDefinition, model,
-                    "communicationType",
-                    isExternal ? "communicationType:external" : "communicationType:local",
-                    isQuery ? "communicationType:queries" : "communicationType:commands",
-                    isExternal
-                    ? (isQuery ? "communicationType:queries:external" : "communicationType:commands:external")
-                    : (isQuery ? "communicationType:queries:local" : "communicationType:commands:local"),
-                    defaultValue: null),
+                if (methodDefinition.IsQuery)
+                {
+                    settings.RunInPlace = true;
+                    settings.IgnoreTransaction = true;
+                }
+                else
+                {
+                    settings.Deduplicate = true;
+                    settings.Resilient = true;
+                    settings.Persistent = true;
+                    settings.Transactional = true;
+                }
 
-                PersistenceType = GetValue<string>(
-                    methodDefinition, serviceDefinition, model,
-                    "persistenceType",
-                    isExternal ? "persistenceType:external" : "persistenceType:local",
-                    isQuery ? "persistenceType:queries" : "persistenceType:commands",
-                    isExternal
-                    ? (isQuery ? "persistenceType:queries:external" : "persistenceType:commands:external")
-                    : (isQuery ? "persistenceType:queries:local" : "persistenceType:commands:local"),
-                    defaultValue: null),
+                var configuration = _communicationModelConfiguration.GetMethodConfiguration(methodDefinition);
 
-                Deduplicate = GetValue(
-                    methodDefinition, serviceDefinition, model,
-                    "deduplicate",
-                    isExternal ? "deduplicate:external" : "deduplicate:local",
-                    isQuery ? "deduplicate:queries" : "deduplicate:commands",
-                    isExternal
-                    ? (isQuery ? "deduplicate:queries:external" : "deduplicate:commands:external")
-                    : (isQuery ? "deduplicate:queries:local" : "deduplicate:commands:local"),
-                    defaultValue: isQuery ? QueriesDefaults.Deduplicate : CommandsDefaults.Deduplicate),
+                configuration.Bind(settings);
 
-                Resilient = GetValue(
-                    methodDefinition, serviceDefinition, model,
-                    "resilient",
-                    isExternal ? "resilient:external" : "resilient:local",
-                    isQuery ? "resilient:queries" : "resilient:commands",
-                    isExternal
-                    ? (isQuery ? "resilient:queries:external" : "resilient:commands:external")
-                    : (isQuery ? "resilient:queries:local" : "resilient:commands:local"),
-                    defaultValue: isQuery ? QueriesDefaults.Resilient : CommandsDefaults.Resilient),
+                settings.CommunicationType =
+                    _communicationModelConfiguration
+                    .GetMethodConfiguration(methodDefinition, CommunicationSectionName)
+                    .GetSection("type").Value;
 
-                Persistent = GetValue(
-                    methodDefinition, serviceDefinition, model,
-                    "persistent",
-                    isExternal ? "persistent:external" : "persistent:local",
-                    isQuery ? "persistent:queries" : "persistent:commands",
-                    isExternal
-                    ? (isQuery ? "persistent:queries:external" : "persistent:commands:external")
-                    : (isQuery ? "persistent:queries:local" : "persistent:commands:local"),
-                    defaultValue: isQuery ? QueriesDefaults.Persistent : CommandsDefaults.Persistent),
+                settings.CommunicationType =
+                    _communicationModelConfiguration
+                    .GetMethodConfiguration(methodDefinition, PersistenceSectionName)
+                    .GetSection("type").Value;
+            }
+            else
+            {
+                var configuration = _communicationModelConfiguration.GetServiceConfiguration(serviceDefinition);
 
-                RoamingState = GetValue(
-                    methodDefinition, serviceDefinition, model,
-                    "roamingstate",
-                    isExternal ? "roamingstate:external" : "roamingstate:local",
-                    isQuery ? "roamingstate:queries" : "roamingstate:commands",
-                    isExternal
-                    ? (isQuery ? "roamingstate:queries:external" : "roamingstate:commands:external")
-                    : (isQuery ? "roamingstate:queries:local" : "roamingstate:commands:local"),
-                    defaultValue: isQuery ? QueriesDefaults.RoamingState : CommandsDefaults.RoamingState),
+                configuration.Bind(settings);
 
-                Transactional = GetValue(
-                    methodDefinition, serviceDefinition, model,
-                    "transactional",
-                    isExternal ? "transactional:external" : "transactional:local",
-                    isQuery ? "transactional:queries" : "transactional:commands",
-                    isExternal
-                    ? (isQuery ? "transactional:queries:external" : "transactional:commands:external")
-                    : (isQuery ? "transactional:queries:local" : "transactional:commands:local"),
-                    defaultValue: isQuery ? QueriesDefaults.Transactional : CommandsDefaults.Transactional),
+                settings.CommunicationType =
+                    _communicationModelConfiguration
+                    .GetServiceConfiguration(serviceDefinition, CommunicationSectionName)
+                    .GetSection("type").Value;
 
-                RunInPlace = GetValue(
-                    methodDefinition, serviceDefinition, model,
-                    "runinplace",
-                    isExternal ? "runinplace:external" : "runinplace:local",
-                    isQuery ? "runinplace:queries" : "runinplace:commands",
-                    isExternal
-                    ? (isQuery ? "runinplace:queries:external" : "runinplace:commands:external")
-                    : (isQuery ? "runinplace:queries:local" : "runinplace:commands:local"),
-                    defaultValue: isQuery ? QueriesDefaults.RunInPlace : CommandsDefaults.RunInPlace),
+                settings.PersistenceType =
+                    _communicationModelConfiguration
+                    .GetServiceConfiguration(serviceDefinition, PersistenceSectionName)
+                    .GetSection("type").Value;
+            }
 
-                IgnoreTransaction = GetValue(
-                    methodDefinition, serviceDefinition, model,
-                    "ignoretransaction",
-                    isExternal ? "ignoretransaction:external" : "ignoretransaction:local",
-                    isQuery ? "ignoretransaction:queries" : "ignoretransaction:commands",
-                    isExternal
-                    ? (isQuery ? "ignoretransaction:queries:external" : "ignoretransaction:commands:external")
-                    : (isQuery ? "ignoretransaction:queries:local" : "ignoretransaction:commands:local"),
-                    defaultValue: isQuery ? QueriesDefaults.IgnoreTransaction : CommandsDefaults.IgnoreTransaction),
-            };
+            return settings;
         }
 
         private EventCommunicationSettings ComposeEventCommunicationSettings(IEventDefinition definition, bool forceExternal = false)
         {
-            var isExternal = forceExternal || definition.Service.Type == ServiceType.External;
-
-            return new EventCommunicationSettings
+            var settings = new EventCommunicationSettings
             {
-                CommunicationType = GetValue<string>(
-                    definition, definition.Service, definition.Service.Model,
-                    "communicationType",
-                    isExternal ? "communicationType:external" : "communicationType:local",
-                    "communicationType:events",
-                    isExternal ? "communicationType:events:external" : "communicationType:events:local",
-                    defaultValue: null),
-
-                Deduplicate = GetValue(
-                    definition, definition.Service, definition.Service.Model,
-                    "deduplicate",
-                    isExternal ? "deduplicate:external" : "deduplicate:local",
-                    "deduplicate:events",
-                    isExternal ? "deduplicate:events:external" : "deduplicate:events:local",
-                    defaultValue: EventsDefaults.Deduplicate),
-
-                Resilient = GetValue(
-                    definition, definition.Service, definition.Service.Model,
-                    "resilient",
-                    isExternal ? "resilient:external" : "resilient:local",
-                    "resilient:events",
-                    isExternal ? "resilient:events:external" : "resilient:events:local",
-                    defaultValue: EventsDefaults.Resilient),
-
-                IgnoreTransaction = GetValue(
-                    definition, definition.Service, definition.Service.Model,
-                    "ignoretransaction",
-                    isExternal ? "ignoretransaction:external" : "ignoretransaction:local",
-                    "ignoretransaction:events",
-                    isExternal ? "ignoretransaction:events:external" : "ignoretransaction:events:local",
-                    defaultValue: EventsDefaults.IgnoreTransaction),
+                Deduplicate = true,
+                Resilient = true
             };
-        }
 
-        private T GetValue<T>(IPropertyBag topBag, IPropertyBag midBag, IPropertyBag lowBag,
-            string propertyName, string lowBagPropName, string categoryPropertyName, string subCategoryPropName, T defaultValue)
-        {
-            var prop = topBag?.FindProperty(propertyName);
-            if (prop?.Value != null)
-                return (T)prop.Value;
+            var configuration = _communicationModelConfiguration.GetEventConfiguration(definition, null, forceExternal);
 
-            if (subCategoryPropName != null)
-            {
-                prop = midBag.FindProperty(subCategoryPropName);
-                if (prop?.Value != null)
-                    return (T)prop.Value;
-            }
+            configuration.Bind(settings);
 
-            if (categoryPropertyName != null)
-            {
-                prop = midBag.FindProperty(categoryPropertyName);
-                if (prop?.Value != null)
-                    return (T)prop.Value;
-            }
+            settings.CommunicationType =
+                _communicationModelConfiguration
+                .GetEventConfiguration(definition, CommunicationSectionName, forceExternal)
+                .GetSection("type").Value;
 
-            prop = midBag.FindProperty(propertyName);
-            if (prop?.Value != null)
-                return (T)prop.Value;
-
-            if (subCategoryPropName != null)
-            {
-                prop = lowBag.FindProperty(subCategoryPropName);
-                if (prop?.Value != null)
-                    return (T)prop.Value;
-            }
-
-            if (categoryPropertyName != null)
-            {
-                prop = lowBag.FindProperty(categoryPropertyName);
-                if (prop?.Value != null)
-                    return (T)prop.Value;
-            }
-
-            prop = lowBag.FindProperty(lowBagPropName);
-            if (prop?.Value != null)
-                return (T)prop.Value;
-
-            prop = lowBag.FindProperty(propertyName);
-            if (prop?.Value != null)
-                return (T)prop.Value;
-
-            return defaultValue;
+            return settings;
         }
     }
 }
