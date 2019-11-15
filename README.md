@@ -1,4 +1,6 @@
-﻿[![D-ASYNC | Cloud-Native Apps Without Frameworks](dasync-banner.png)](http://dasync.io)
+﻿[![Build Status](https://github.com/Dasync/Dasync/workflows/keeps/badge.svg?event=push&branch=master)](https://github.com/Dasync/Dasync/actions?workflow=keeps)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/d_async.svg?style=social&logo=twitter)](https://twitter.com/intent/follow?screen_name=d_async)
+[![D-ASYNC | Cloud-Native Apps Without Frameworks](dasync-banner.png)](http://dasync.io)
 
 ## What is D·ASYNC?
 
