@@ -81,7 +81,7 @@ namespace Dasync.ExecutionEngine.Communication
                     .GetMethodConfiguration(methodDefinition, CommunicationSectionName)
                     .GetSection("type").Value;
 
-                settings.CommunicationType =
+                settings.PersistenceType =
                     _communicationModelConfiguration
                     .GetMethodConfiguration(methodDefinition, PersistenceSectionName)
                     .GetSection("type").Value;
