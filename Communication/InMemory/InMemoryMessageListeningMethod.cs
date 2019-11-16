@@ -19,13 +19,14 @@ namespace Dasync.Communication.InMemory
             _sinleListener = new InMemoryMessageListener(messageHandler);
         }
 
-        public Task<IEnumerable<IMessageListener>> StartListeningAsync(
+        public async Task<IEnumerable<IMessageListener>> StartListeningAsync(
             IConfiguration configuration,
             IServiceDefinition serviceDefinition,
             IDictionary<IMethodDefinition, IConfiguration> methodConfigMap,
             CancellationToken ct)
         {
-            return Task.FromResult<IEnumerable<IMessageListener>>(new[] { _sinleListener });
+            await _sinleListener.StartAsync(ct);
+            return new[] { _sinleListener };
         }
 
         public Task<IEnumerable<IMessageListener>> StartListeningAsync(
