@@ -14,10 +14,13 @@ namespace Dasync.Communication.InMemory
 
         public CommunicationTraits CommunicatorTraits =>
             CommunicationTraits.Volatile |
-            CommunicationTraits.MessageLockOnPublish;
+            CommunicationTraits.MessageLockOnPublish |
+            (WaitForResult ? CommunicationTraits.SyncReplies : default);
 
         public bool? IsRetry => Message.DeliveryCount > 1;
 
         public string RequestId => Message.Id;
+
+        public bool WaitForResult { get; set; }
     }
 }

@@ -23,16 +23,21 @@ namespace Dasync.ExecutionEngine.Transitions
 
         public TransitionCarrier(
             MethodInvocationData methodInvocationData,
-            IValueContainerCopier valueContainerCopier)
+            IValueContainerCopier valueContainerCopier,
+            ICommunicatorMessage message)
         {
             _methodInvocationData = methodInvocationData;
             Caller = methodInvocationData.Caller;
             _valueContainerCopier = valueContainerCopier;
+            Message = message;
         }
 
-        public TransitionCarrier(MethodContinuationData routineContinuationData)
+        public TransitionCarrier(
+            MethodContinuationData routineContinuationData,
+            ICommunicatorMessage message)
         {
             _methodContinuationData = routineContinuationData;
+            Message = message;
         }
 
         public void SetMethodExecutionState(MethodExecutionState methodExecutionState, IValueContainerCopier valueContainerCopier)
@@ -57,6 +62,8 @@ namespace Dasync.ExecutionEngine.Transitions
         }
 
         public string ResultTaskId => _methodContinuationData?.TaskId;
+
+        public ICommunicatorMessage Message { get; }
 
         public ITaskResult ReadResult(Type expectedResultValueType)
         {

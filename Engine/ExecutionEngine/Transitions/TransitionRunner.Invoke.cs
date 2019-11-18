@@ -102,7 +102,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
             try
             {
-                var adapter = new TransitionCarrier(data, _valueContainerCopier);
+                var adapter = new TransitionCarrier(data, _valueContainerCopier, message);
                 var transitionDescriptor = new TransitionDescriptor { Type = TransitionType.InvokeRoutine };
                 var result = await RunRoutineAsync(adapter, transitionDescriptor, default);
                 if (result.Outcome == InvocationOutcome.Complete && !string.IsNullOrEmpty(data.IntentId))
@@ -195,7 +195,7 @@ namespace Dasync.ExecutionEngine.Transitions
             try
             {
             @TryRun:
-                var adapter = new TransitionCarrier(data);
+                var adapter = new TransitionCarrier(data, message);
 
                 MethodExecutionState methodState = DecodeContinuationData(data.State);
                 if (methodState == null)
@@ -204,6 +204,7 @@ namespace Dasync.ExecutionEngine.Transitions
                     if (stateStorage == null)
                         throw new InvalidOperationException($"Cannot resume method '{data.Service}'.{data.Method} due to absence of a persistence mechanism.");
 
+                    // TODO: a method can be already completed or transitioned (duplicate messages?) - discard transition?
                     methodState = await stateStorage.ReadStateAsync(data.Service, data.Method, default);
                 }
 

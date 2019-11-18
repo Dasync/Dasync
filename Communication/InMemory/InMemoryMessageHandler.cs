@@ -91,13 +91,17 @@ namespace Dasync.Communication.InMemory
         {
             var invocationData = MethodInvocationDataTransformer.Read(message, _serializerProvider);
             var communicationMessage = new CommunicationMessage(message);
+
+            TaskCompletionSource<InvokeRoutineResult> tcs = null;
+            if (message.Data.TryGetValue("Notification", out var sink))
+            {
+                tcs = (TaskCompletionSource<InvokeRoutineResult>)sink;
+                communicationMessage.WaitForResult = true;
+            }
+
             var result = await _localTransitionRunner.RunAsync(invocationData, communicationMessage);
 
-            if (message.Data.TryGetValue("Notification", out var sink) &&
-                sink is TaskCompletionSource<InvokeRoutineResult> tcs)
-            {
-                tcs.TrySetResult(result);
-            }
+            tcs?.TrySetResult(result);
         }
 
         private async Task HandleResponse(Message message)

@@ -6,10 +6,14 @@ namespace Dasync.Hosting.AspNetCore.Invocation
     {
         public string CommunicatorType => "http";
 
-        public CommunicationTraits CommunicatorTraits => CommunicationTraits.Volatile;
+        public CommunicationTraits CommunicatorTraits =>
+            CommunicationTraits.Volatile |
+            (WaitForResult ? CommunicationTraits.SyncReplies : default);
 
         public bool? IsRetry { get; set; }
 
         public string RequestId { get; set; }
+
+        public bool WaitForResult { get; set; }
     }
 }

@@ -146,7 +146,7 @@ namespace Dasync.Hosting.AspNetCore
 
             MethodInvocationData invokeData = null;
             MethodContinuationData continueData = null;
-            IValueContainer parametersContainer = null;
+            IValueContainer parametersContainer;
             bool compressResponse = false;
             bool respondWithEnvelope = false;
 
@@ -272,7 +272,8 @@ namespace Dasync.Hosting.AspNetCore
             var communicatorMessage = new HttpCommunicatorMessage
             {
                 IsRetry = isRetry,
-                RequestId = externalRequestId
+                RequestId = externalRequestId,
+                WaitForResult = waitForResult
             };
 
             if (invokeData != null)
@@ -309,6 +310,8 @@ namespace Dasync.Hosting.AspNetCore
                 {
                     // TODO: continue 'invokeTask' and handle exceptions in background
                 }
+
+                communicatorMessage.WaitForResult = false;
 
                 var location = string.Concat(context.Request.Path, "/", intentId);
                 context.Response.Headers.Add("Location", location);

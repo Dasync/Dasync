@@ -91,9 +91,11 @@ namespace Dasync.ExecutionEngine.Transitions
                 }
                 else if (intent.RoutineResult != null)
                 {
+                    var expectsSyncReply = (transitionCarrier as TransitionCarrier)?.Message.CommunicatorTraits.HasFlag(CommunicationTraits.SyncReplies) == true;
+                    
                     // TODO: make this behavior optional if a continuation is present (no polling expected).
                     // TODO: for the event sourcing style, the result must be written by the receiver of the response.
-                    var writeResult = true;
+                    var writeResult = !expectsSyncReply;
 
                     if (writeResult && context.Caller?.Event != null)
                         writeResult = false;
@@ -108,7 +110,8 @@ namespace Dasync.ExecutionEngine.Transitions
                         // This does not cover 'fire and forget' scenarios.
                         // Fallback (B): This method must be an event handler - no need
                         // to write result because nothing should poll for the result.
-                        if (transitionCarrier.GetContinuationsAsync(default).Result?.Count > 0
+                        if (expectsSyncReply
+                            || transitionCarrier.GetContinuationsAsync(default).Result?.Count > 0
                             || context.Caller?.Event != null)
                         {
                             writeResult = false;
