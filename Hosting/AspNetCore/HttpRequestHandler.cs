@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Mime;
@@ -243,12 +244,12 @@ namespace Dasync.Hosting.AspNetCore
                 else if (envelopeType.Equals("invoke", StringComparison.OrdinalIgnoreCase))
                 {
                     respondWithEnvelope = true;
-                    invokeData = serializer.Deserialize<MethodInvocationData>(payloadStream);
+                    invokeData = await DeserializeAsync<MethodInvocationData>(serializer, payloadStream);
                 }
                 else if (envelopeType.Equals("continue", StringComparison.OrdinalIgnoreCase))
                 {
                     respondWithEnvelope = true;
-                    continueData = serializer.Deserialize<MethodContinuationData>(payloadStream);
+                    continueData = await DeserializeAsync<MethodContinuationData>(serializer, payloadStream);
                 }
                 else
                 {
@@ -423,7 +424,7 @@ namespace Dasync.Hosting.AspNetCore
             if (useEnvelope)
             {
                 response.Headers.Add(DasyncHttpHeaders.Envelope, "result");
-                serializer.Serialize(responseStream, taskResult);
+                await SerializeAsync(serializer, responseStream, taskResult);
             }
             else
             {
@@ -434,17 +435,43 @@ namespace Dasync.Hosting.AspNetCore
                     {
                         Error = taskResult.Exception.ToError()
                     };
-                    serializer.Serialize(responseStream, errorEnvelope);
+                    await SerializeAsync(serializer, responseStream, errorEnvelope);
                 }
                 else if (taskResult.IsSucceeded())
                 {
                     if (taskResult.Value != null)
-                        serializer.Serialize(responseStream, taskResult.Value);
+                    {
+                        await SerializeAsync(serializer, responseStream, taskResult.Value);
+                    }
                 }
             }
 
             if (compress)
                 responseStream.Dispose();
+        }
+
+        // Temporary method. ASP NET Core does not allow synchronous IO by default.
+        // TODO: Add ISerializer.DeseializeAsync
+        private async Task<T> DeserializeAsync<T>(ISerializer serializer, Stream stream)
+        {
+            using (var buffer = new MemoryStream())
+            {
+                await stream.CopyToAsync(buffer);
+                buffer.Position = 0;
+                return serializer.Deserialize<T>(buffer);
+            }
+        }
+
+        // Temporary method. ASP NET Core does not allow synchronous IO by default.
+        // TODO: Add ISerializer.SeializeAsync
+        private async Task SerializeAsync(ISerializer serializer, Stream stream, object payload)
+        {
+            using (var buffer = new MemoryStream())
+            {
+                serializer.Serialize(buffer, payload);
+                buffer.Position = 0;
+                await buffer.CopyToAsync(stream);
+            }
         }
 
         private Task ReplyWithTextError(HttpResponse response, int statusCode, string text)
