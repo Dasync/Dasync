@@ -6,4 +6,23 @@
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PackageVersion>2.0.0-beta1</PackageVersion>
+    <Authors>Dasync</Authors>
+    <Copyright>Copyright © 2019 D-ASYNC</Copyright>
+    <Title>Communication modeling of D-ASYNC microservices</Title>
+    <PackageDescription>Describes microservices, their queries, commands, and events.</PackageDescription>
+    <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/letter244.png</PackageIconUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageTags>d-async;dasync;model;modeling;microservice;communication;query;command;event</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19554-01" PrivateAssets="All"/>
+  </ItemGroup>
+
 </Project>

@@ -1,10 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageVersion>2.0.0-beta1</PackageVersion>
+    <Authors>Dasync</Authors>
+    <Copyright>Copyright © 2019 D-ASYNC</Copyright>
+    <Title>Entity Projections for D-ASYNC</Title>
+    <PackageDescription>Entity Projections are dynamically-generated runtime types that implement an interface that exposes read-only properties of a domain entity.</PackageDescription>
+    <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/gears244.png</PackageIconUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageTags>d-async;dasync;entity;projection;ddd</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19554-01" PrivateAssets="All"/>
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
 
