@@ -13,8 +13,8 @@ namespace Dasync.Serialization
     {
         private readonly IObjectDecomposerSelector _decomposerSelector;
         private readonly ITypeSerializerHelper _typeSerializerHelper;
-        private readonly ObjectIDGenerator _idGenerator = new ObjectIDGenerator();
-        private readonly Dictionary<long, string> _specialIds = new Dictionary<long, string>();
+        //private readonly ObjectIDGenerator _idGenerator = new ObjectIDGenerator();
+        //private readonly Dictionary<long, string> _specialIds = new Dictionary<long, string>();
 
         public ValueContainerSerializer(
             IObjectDecomposerSelector decomposerSelector,
@@ -32,14 +32,14 @@ namespace Dasync.Serialization
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
 
-            if (specialObjects != null)
-            {
-                foreach (var pair in specialObjects)
-                {
-                    var id = _idGenerator.GetId(pair.Value, out var _);
-                    _specialIds.Add(id, pair.Key);
-                }
-            }
+            //if (specialObjects != null)
+            //{
+            //    foreach (var pair in specialObjects)
+            //    {
+            //        var id = _idGenerator.GetId(pair.Value, out var _);
+            //        _specialIds.Add(id, pair.Key);
+            //    }
+            //}
 
             ValueInfo valueInfo;
             if (value is IValueContainer container)
@@ -87,20 +87,20 @@ namespace Dasync.Serialization
                 type = value.GetType();
 
             var writeValueAsReference = false;
-            if (value != null && !type.IsValueType() && type != typeof(string) && type != typeof(Uri))
-            {
-                var objectId = _idGenerator.GetId(value, out var isFirstTime);
-                if (_specialIds.TryGetValue(objectId, out var specialId))
-                {
-                    valueInfo.SpecialId = specialId;
-                    writeValueAsReference = true;
-                }
-                else
-                {
-                    valueInfo.ReferenceId = objectId;
-                    writeValueAsReference = !isFirstTime;
-                }
-            }
+            //if (value != null && !type.IsValueType() && type != typeof(string) && type != typeof(Uri))
+            //{
+            //    var objectId = _idGenerator.GetId(value, out var isFirstTime);
+            //    if (_specialIds.TryGetValue(objectId, out var specialId))
+            //    {
+            //        valueInfo.SpecialId = specialId;
+            //        writeValueAsReference = true;
+            //    }
+            //    else
+            //    {
+            //        valueInfo.ReferenceId = objectId;
+            //        writeValueAsReference = !isFirstTime;
+            //    }
+            //}
 
             if (value is Type valueAsType)
             {
