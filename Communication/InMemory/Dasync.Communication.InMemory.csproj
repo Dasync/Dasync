@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageVersion>2.0.0-beta1</PackageVersion>
+    <PackageVersion>2.0.0-beta2</PackageVersion>
     <Authors>Dasync</Authors>
     <Copyright>Copyright © 2019 D-ASYNC</Copyright>
     <Title>In-memory communication for D-ASYNC microservices</Title>

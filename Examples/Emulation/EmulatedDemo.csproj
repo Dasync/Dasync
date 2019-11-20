@@ -25,21 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Communication\InMemory\Dasync.Communication.InMemory.csproj" />
-    <ProjectReference Include="..\..\Data\Serialization.DasyncJson\Dasync.Serialization.DasyncJson.csproj" />
-    <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.csproj" />
-    <ProjectReference Include="..\..\Data\Serializers.DomainTypes\Dasync.Serializers.DomainTypes.csproj" />
-    <ProjectReference Include="..\..\Data\Serializers.EETypes\Dasync.Serializers.EETypes.csproj" />
-    <ProjectReference Include="..\..\Data\Serializers.StandardTypes\Dasync.Serializers.StandardTypes.csproj" />
-    <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.csproj" />
-    <ProjectReference Include="..\..\Engine\Accessors\Dasync.Accessors.csproj" />
-    <ProjectReference Include="..\..\Engine\AsyncStateMachine\Dasync.AsyncStateMachine.csproj" />
-    <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />
-    <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.csproj" />
-    <ProjectReference Include="..\..\Engine\Proxy\Dasync.Proxy.csproj" />
-    <ProjectReference Include="..\..\IoC\DependencyInjection\Dasync.DependencyInjection.csproj" />
-    <ProjectReference Include="..\..\Modeling\Dasync.Modeling.csproj" />
-    <ProjectReference Include="..\..\Persistence\InMemory\Dasync.Persistence.InMemory.csproj" />
+    <ProjectReference Include="..\..\Fabric\InMemory\Dasync.Fabric.InMemory.csproj" />
   </ItemGroup>
 
   <ItemGroup>

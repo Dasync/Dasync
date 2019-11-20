@@ -88,23 +88,8 @@ namespace DasyncFeatures
 
         static void PlugInDasync(IServiceCollection services, IFeatureDemo feature)
         {
-            services.AddModules(
-                Dasync.Serialization.DI.Bindings,
-                Dasync.Serialization.DasyncJson.DI.Bindings,
-                Dasync.Serializers.StandardTypes.DI.Bindings,
-                Dasync.Serializers.EETypes.DI.Bindings,
-                Dasync.Serializers.DomainTypes.DI.Bindings,
-                Dasync.Proxy.DI.Bindings,
-                Dasync.AsyncStateMachine.DI.Bindings,
-                Dasync.ExecutionEngine.DI.Bindings);
-
-            services.AddModules(
-                Dasync.Communication.InMemory.DI.Bindings,
-                Dasync.Persistence.InMemory.DI.Bindings);
-
+            services.AddDasyncInMemoryEmulation(feature.Model);
             services.AddModule(feature.Bindings);
-            services.AddCommunicationModel(feature.Model);
-            services.AddDomainServicesViaDasync(feature.Model);
         }
     }
 }
