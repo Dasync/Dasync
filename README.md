@@ -210,7 +210,7 @@ public class CoffeeMachine
 
 The technology currently matures in a production environment with early adopters in a closed environment.
 
-The [Feature Showdown Application](Examples/Emulation) works locally only and will run in the cloud soon when the platform is open to the public.
+The [Feature Showdown Application](examples/Emulation) works locally only and will run in the cloud soon when the platform is open to the public.
 
 You may [sign-up for early experience](https://www.dasync.io/#comp-jyrluu0u) with a managed solution.
 
