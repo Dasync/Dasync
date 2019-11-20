@@ -114,16 +114,26 @@ namespace Dasync.Accessors
         public static bool TrySetResult(this Task task, object result)
         {
             var taskResultType = task.GetResultType();
+            MethodInfo trySetResultMethodInfo;
+
             if (taskResultType == VoidTaskResultType)
+            {
                 result = null;
+                trySetResultMethodInfo =
+                    task.GetType().GetMethod("TrySetResult",
+                    BindingFlags.Instance | BindingFlags.NonPublic,
+                    null, Array.Empty<Type>(), null);
+
+                if (trySetResultMethodInfo != null)
+                    return (bool)trySetResultMethodInfo.Invoke(task, null);
+            }
 
 #warning pre-compile accessor for Task.TrySetResult
 #warning make sure that the result type matches
-            var method = task.GetType().GetMethod("TrySetResult",
+            trySetResultMethodInfo = task.GetType().GetMethod("TrySetResult",
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 null, new[] { taskResultType }, null);
-
-            return (bool)method.Invoke(task, new[] { result });
+            return (bool)trySetResultMethodInfo.Invoke(task, new[] { result });
         }
 
         public static Type GetResultType(this Task task)

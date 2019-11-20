@@ -17,9 +17,11 @@ namespace Dasync.Accessors
             timer = null;
             if (task.GetType().Name == "DelayPromise")
             {
-                timer = task.GetType()
-                    .GetField("Timer", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                    .GetValue(task);
+                var timerField =
+                    task.GetType().GetField("Timer", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
+                    task.GetType().GetField("_timer", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+                timer = timerField.GetValue(task);
             }
             return timer != null;
         }

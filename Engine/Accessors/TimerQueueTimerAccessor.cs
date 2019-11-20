@@ -7,20 +7,19 @@ namespace Dasync.Accessors
     public static class TimerQueueTimerAccessor
     {
         private static readonly Type TimerQueueTimerType =
-            typeof(Timer).GetAssembly().GetType(
-                "System.Threading.TimerQueueTimer");
+            typeof(Timer).GetAssembly().GetType("System.Threading.TimerQueueTimer");
 
         private static readonly FieldInfo _m_startTicks =
-            TimerQueueTimerType.GetField("m_startTicks",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            TimerQueueTimerType.GetField("_startTicks", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
+            TimerQueueTimerType.GetField("m_startTicks", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
         private static readonly FieldInfo _m_dueTime =
-            TimerQueueTimerType.GetField("m_dueTime",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            TimerQueueTimerType.GetField("_dueTime", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
+            TimerQueueTimerType.GetField("m_dueTime", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
         private static readonly FieldInfo _m_period =
-            TimerQueueTimerType.GetField("m_period",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            TimerQueueTimerType.GetField("_period", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
+            TimerQueueTimerType.GetField("m_period", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
         private static readonly MethodInfo _Close =
             TimerQueueTimerType.GetMethod("Close", new Type[0]);
@@ -31,7 +30,14 @@ namespace Dasync.Accessors
         public static bool IsTimerQueueTimer(object timerObject) =>
             TimerQueueTimerType.IsAssignableFrom(timerObject.GetType());
 
-        public static int GetStartTicks(object timerQueueTimer) => (int)_m_startTicks.GetValue(timerQueueTimer);
+        public static long GetStartTicks(object timerQueueTimer)
+        {
+            var value = _m_startTicks.GetValue(timerQueueTimer);
+            if (value is long longValue)
+                return longValue;
+            else
+                return (int)value;
+        }
 
         public static uint GetDueTime(object timerQueueTimer) => (uint)_m_dueTime.GetValue(timerQueueTimer);
 
@@ -47,7 +53,7 @@ namespace Dasync.Accessors
             var now = DateTime.Now;
             var systemStartTime = now - TimeSpan.FromMilliseconds(nowTicks);
 
-            if (startTicks != 0 && startTicks != int.MaxValue && startTicks != int.MinValue)
+            if (startTicks != 0 && startTicks != long.MaxValue && startTicks != long.MinValue && startTicks != int.MaxValue && startTicks != int.MinValue)
             {
                 startTime = systemStartTime + TimeSpan.FromMilliseconds(startTicks);
             }
@@ -77,24 +83,34 @@ namespace Dasync.Accessors
 
         public static void GetCallbackAndState(object timerQueueTimer, out TimerCallback callback, out object state)
         {
-            callback = (TimerCallback)timerQueueTimer.GetType()
-                .GetField("m_timerCallback", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .GetValue(timerQueueTimer);
+            var type = timerQueueTimer.GetType();
 
-            state = timerQueueTimer.GetType()
-                .GetField("m_state", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .GetValue(timerQueueTimer);
+            var fiTimerCallback =
+                type.GetField("_timerCallback", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
+                type.GetField("m_timerCallback", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+            var fiState =
+                type.GetField("_state", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
+                type.GetField("m_state", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+            callback = (TimerCallback)fiTimerCallback.GetValue(timerQueueTimer);
+            state = fiState.GetValue(timerQueueTimer);
         }
 
         public static void SetCallbackAndState(object timerQueueTimer, TimerCallback callback, object state)
         {
-            timerQueueTimer.GetType()
-                .GetField("m_timerCallback", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .SetValue(timerQueueTimer, callback);
+            var type = timerQueueTimer.GetType();
 
-            timerQueueTimer.GetType()
-                .GetField("m_state", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .SetValue(timerQueueTimer, state);
+            var fiTimerCallback =
+                type.GetField("_timerCallback", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
+                type.GetField("m_timerCallback", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+            var fiState =
+                type.GetField("_state", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
+                type.GetField("m_state", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+            fiTimerCallback.SetValue(timerQueueTimer, callback);
+            fiState.SetValue(timerQueueTimer, state);
         }
 
         public static void Close(object timerQueueTimer) => _Close.Invoke(timerQueueTimer, null);
