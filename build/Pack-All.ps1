@@ -1,12 +1,12 @@
 pushd
 
-cd $(Join-Path $PSScriptRoot '..')
+cd $(Join-Path $PSScriptRoot '../src')
 
 dotnet build
 dotnet pack --no-build
 
-$packagesDirectory = $(Resolve-Path $(Join-Path $PSScriptRoot 'packages')).ToString()
 New-Item -Path $PSScriptRoot -Name 'packages' -ItemType 'directory' -Force | Out-Null
+$packagesDirectory = $(Resolve-Path $(Join-Path $PSScriptRoot 'packages')).ToString()
 
 $allPackageFiles = Get-Childitem -Include '*.nupkg','*.snupkg' -File -Recurse -ErrorAction SilentlyContinue
 $allPackageFiles | % {

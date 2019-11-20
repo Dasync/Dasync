@@ -17,15 +17,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Dasync.Fabric.InMemory" Version="2.0.0-beta1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="2.2.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Fabric\InMemory\Dasync.Fabric.InMemory.csproj" />
   </ItemGroup>
 
   <ItemGroup>
