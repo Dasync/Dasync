@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
@@ -68,7 +69,7 @@ namespace Dasync.Hosting.AspNetCore.Development
                 return;
             }
 
-            var envelope = serializer.Deserialize<SubscribeEnvelope>(context.Request.Body);
+            var envelope = await DeserializeAsync<SubscribeEnvelope>(serializer, context.Request.Body);
             var eventDesc = new EventDescriptor { Service = envelope.Service, Event = envelope.Event };
             foreach (var subscriber in envelope.Subscribers)
                 _eventSubscriber.Subscribe(eventDesc, subscriber);
@@ -100,6 +101,18 @@ namespace Dasync.Hosting.AspNetCore.Development
                     : contentType.MediaType;
 
                 return _serializerProvider.GetSerializer(format);
+            }
+        }
+
+        // Temporary method. ASP NET Core does not allow synchronous IO by default.
+        // TODO: Add ISerializer.DeseializeAsync
+        private async Task<T> DeserializeAsync<T>(ISerializer serializer, Stream stream)
+        {
+            using (var buffer = new MemoryStream())
+            {
+                await stream.CopyToAsync(buffer);
+                buffer.Position = 0;
+                return serializer.Deserialize<T>(buffer);
             }
         }
     }
