@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageVersion>2.0.0-beta1</PackageVersion>
+    <Authors>Dasync</Authors>
+    <Copyright>Copyright © 2019 D-ASYNC</Copyright>
+    <Title>ASP NET Core runtime fabric for D-ASYNC microservices</Title>
+    <PackageDescription>Binds together all necessary components to run D-ASYNC on ASP NET Core with minimal effort.</PackageDescription>
+    <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/letter244.png</PackageIconUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageTags>d-async;dasync;AspNet;AspNetCore;HTTP;fabric;microservice</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19554-01" PrivateAssets="All" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\Communication\Http\Dasync.Communication.Http.csproj" />
+    <ProjectReference Include="..\..\Data\Serialization.DasyncJson\Dasync.Serialization.DasyncJson.csproj" />
+    <ProjectReference Include="..\..\Data\Serialization.Json\Dasync.Serialization.Json.csproj" />
+    <ProjectReference Include="..\..\Data\Serialization\Dasync.Serialization.csproj" />
+    <ProjectReference Include="..\..\Data\Serializers.DomainTypes\Dasync.Serializers.DomainTypes.csproj" />
+    <ProjectReference Include="..\..\Data\Serializers.EETypes\Dasync.Serializers.EETypes.csproj" />
+    <ProjectReference Include="..\..\Data\Serializers.StandardTypes\Dasync.Serializers.StandardTypes.csproj" />
+    <ProjectReference Include="..\..\Data\ValueContainer\Dasync.ValueContainer.csproj" />
+    <ProjectReference Include="..\..\Engine\Accessors\Dasync.Accessors.csproj" />
+    <ProjectReference Include="..\..\Engine\AsyncStateMachine\Dasync.AsyncStateMachine.csproj" />
+    <ProjectReference Include="..\..\Engine\EETypes\Dasync.EETypes.csproj" />
+    <ProjectReference Include="..\..\Engine\ExecutionEngine\Dasync.ExecutionEngine.csproj" />
+    <ProjectReference Include="..\..\Engine\Proxy\Dasync.Proxy.csproj" />
+    <ProjectReference Include="..\..\Hosting\AspNetCore\Dasync.Hosting.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\IoC\DependencyInjection\Dasync.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\Modeling\Dasync.Modeling.csproj" />
+  </ItemGroup>
+  
+</Project>
