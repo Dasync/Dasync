@@ -1,0 +1,27 @@
+version: '3.4'
+
+services:
+
+  rabbitmq:
+    image: rabbitmq:3-management
+
+  cassandra:
+    image: cassandra:latest
+
+  users:
+    image: ${DOCKER_REGISTRY-}users
+    build:
+      context: .
+      dockerfile: Users.Runtime/Dockerfile
+    depends_on:
+      - rabbitmq
+      - cassandra
+
+  antifraud:
+    image: ${DOCKER_REGISTRY-}antifraud
+    build:
+      context: .
+      dockerfile: AntiFraud.Runtime/Dockerfile
+    depends_on:
+      - rabbitmq
+      - cassandra

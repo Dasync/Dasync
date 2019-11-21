@@ -1,0 +1,14 @@
+version: '3.4'
+
+services:
+  users:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "52979:80"
+
+  antifraud:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "52980:80"
