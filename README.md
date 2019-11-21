@@ -209,11 +209,11 @@ public class CoffeeMachine
 
 ## Demo
 
-The technology currently matures in a production environment with early adopters in a closed environment.
+The technology and the full solution is currently matures with early adopters in a closed environment.
 
-The [Feature Showdown Application](examples/Emulation) works locally only and will run in the cloud soon when the platform is open to the public.
+The current beta version is available to the public as demonstrated in the [AspNetCoreDocker](examples/AspNetCoreDocker) example application.
 
-You may [sign-up for early experience](https://www.dasync.io/#comp-jyrluu0u) with a managed solution.
+You may [sign-up for the early experience](https://www.dasync.io/#comp-jyrluu0u) with a final managed solution that is under development.
 
 
 ## More Info
