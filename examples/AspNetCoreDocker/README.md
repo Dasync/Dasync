@@ -4,13 +4,17 @@ This demo shows two services - `Users` and `AntiFraud`, their internal interacti
 
 The `Users` service can register a new user (command), suspend a user (make inactive; command), get a list of all active users (query), and notify whenever a new user is registered (event). The `AntiFraud` service reacts to the event of registering a new user, and using a _sophisticated ML algorithm_ decides if a user is a potential fraud. When positive, the `AntiFraud` service tells the `Users` service to suspend a user.
 
-The structure of the solution is based on the Onion Architecture (Hexagonal Architecture, "Ports and Adapters") where the `*.Contract.csproj` projects define the surface area of service APIs, the `*.Domain.csproj` include the core domain business logic of services, and `*.Runtime.csproj` contain all non-functional infrastructural aspects.
+![Service Diagram](assets/service-diagram.png)
 
 ## Technical Scope
 
 The demo shows D-ASYNC's core concept of Clean Code where non-functional aspects of service communication don't get intermixed with the business logic regardless if the API is asynchronous or not, if the execution guarantee is at-least-once or at-most-once, if intermediate context of a workflow needs to be persisted or not.
 
 In the code you can find the basic use of communication primitives (queries, commands, and events) within services. With prepared two sets of example configuration, the multi-service application can use various inter-service communication mechanisms (HTTP and message queues) for the same API surface and for the same code that represents business logic.
+
+The structure of the solution is based on the Onion Architecture (Hexagonal Architecture, "Ports and Adapters") where the `*.Contract.csproj` projects define the surface area of service APIs, the `*.Domain.csproj` include the core domain business logic of services, and `*.Runtime.csproj` contain all non-functional infrastructural aspects.
+
+![Service Diagram](assets/dasync-onion-architecture.png)
 
 ## Launch Options
 
