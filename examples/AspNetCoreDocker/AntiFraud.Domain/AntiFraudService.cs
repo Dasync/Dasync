@@ -5,7 +5,7 @@ using Users.Contract;
 namespace AntiFraud.Domain
 {
     // This service does not have a contract since it just reacts to events.
-    // This service name is 'AntiFraud' be the convention that discards the suffix "Service".
+    // This service name is 'AntiFraud' by the convention that discards the suffix "Service".
     public class AntiFraudService
     {
         private readonly IUsersService _usersService;

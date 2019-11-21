@@ -33,7 +33,7 @@ Using message queues for queries is not effective. To use HTTP for queries only 
     }
   }
 ```
-So that commands and events will still be using RabbitMQ. Although, there is no inter-service querying example is shown in the code.
+So that commands and events will still be using RabbitMQ. Although, there is no inter-service querying example shown in the code.
 
 ### 2. IIS Express
 In some cases, it is easier to launch light-weight service instances hosted locally in IIS Express when no other containers are needed rather than services themselves. Go to properties of the `AspNetCoreDocker` solution, then the `Startup Project` tab, and select the `Multiple startup projects` option. Then set `Action` to `Start` for the `Users.Runtime` and `AntiFraud.Runtime` projects.
@@ -51,7 +51,7 @@ The HTTP-based endpoints have a simple convention for executing commands and que
 To run a service query, do `HTTP GET` to:
 `http[s]://{host}:{port}/api/{service-name}/{method-name}?{arg1}={value1}&{arg2}={value2}`
 
-For example, a query method in the `Users` service is defined in code like this:
+For example, a query method in the `Users` service is defined in the code like this:
 ```csharp
 public interface IUsersService
 {
@@ -66,7 +66,7 @@ curl http://localhost:52979/api/Users/GetActiveUsers?top=10
 ```
 ```powershell
 # PowerShell
-Invoke-WebRequest  http://localhost:52979/api/Users/GetActiveUsers?top=10
+Invoke-WebRequest http://localhost:52979/api/Users/GetActiveUsers?top=10
 ```
 
 ### Commands
@@ -75,7 +75,7 @@ To invoke a service command, do `HTTP POST` to:
 with `application/json` body representing method's arguments:
 `{ "arg1": value1, "arg2": value2 }`
 
-For example, a command method in the `Users` service is defined in code like this:
+For example, a command method in the `Users` service is defined in the code like this:
 ```csharp
 public interface IUsersService
 {

@@ -7,7 +7,7 @@ using Users.Contract;
 namespace Users.Domain
 {
     // Domain-specific business logic of a service, should not contain any infrastructural aspects.
-    // This service name is 'Users' be the convention that discards the suffix "Service".
+    // This service name is 'Users' by the convention that discards the suffix "Service".
     public class UsersService : IUsersService
     {
         // Should be a DB-backed repository, but keep the list in-memory just for the demo's sake.
