@@ -20,9 +20,9 @@ namespace Dasync.ExecutionEngine.Configuration
             return
                 key1.ServiceCategory == key2.ServiceCategory &&
                 key1.PrimitiveType == key2.PrimitiveType &&
-                key1.ServiceName == key2.ServiceName &&
-                key1.PrimitiveName == key2.PrimitiveName &&
-                key1.SectionName == key2.SectionName;
+                StringComparer.OrdinalIgnoreCase.Equals(key1.ServiceName, key2.ServiceName) &&
+                StringComparer.OrdinalIgnoreCase.Equals(key1.PrimitiveName, key2.PrimitiveName) &&
+                StringComparer.OrdinalIgnoreCase.Equals(key1.SectionName, key2.SectionName);
         }
 
         public static bool operator !=(ConfigurationSectionKey key1, ConfigurationSectionKey key2) => (key1 == key2);
@@ -97,7 +97,9 @@ namespace Dasync.ExecutionEngine.Configuration
 
             if (!string.IsNullOrEmpty(SectionName))
             {
-                result.Append(":").Append(SectionName);
+                if (result.Length > 0)
+                    result.Append(':');
+                result.Append(SectionName);
             }
 
             return result.ToString();
