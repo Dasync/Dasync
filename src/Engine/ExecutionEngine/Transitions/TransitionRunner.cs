@@ -271,6 +271,13 @@ namespace Dasync.ExecutionEngine.Transitions
 
             var taskBuilder = metadata.Builder.FieldInfo.GetValue(asyncStateMachine);
             var taskField = metadata.Builder.FieldInfo.FieldType.GetProperty("Task", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (taskField == null)
+            {
+                // AsyncVoidTaskBuilder
+                var takBuilderField = taskBuilder.GetType().GetField("_builder", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                taskBuilder = takBuilderField.GetValue(taskBuilder);
+                taskField = taskBuilder.GetType().GetProperty("Task", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            }
             var completionTask = (Task)taskField.GetValue(taskBuilder); // builder is a struct, need to initialize the Task here!
             return completionTask;
         }
