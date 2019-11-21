@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmulatedDemo", "Emulation\EmulatedDemo.csproj", "{F6AFE2BB-9713-4836-96CD-41993B98E297}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dasync.Features.Emulated", "Features\Dasync.Features.Emulated.csproj", "{703ADE78-C607-4F79-8951-5CD7D9A47C6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F6AFE2BB-9713-4836-96CD-41993B98E297}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F6AFE2BB-9713-4836-96CD-41993B98E297}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F6AFE2BB-9713-4836-96CD-41993B98E297}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F6AFE2BB-9713-4836-96CD-41993B98E297}.Release|Any CPU.Build.0 = Release|Any CPU
+		{703ADE78-C607-4F79-8951-5CD7D9A47C6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{703ADE78-C607-4F79-8951-5CD7D9A47C6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{703ADE78-C607-4F79-8951-5CD7D9A47C6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{703ADE78-C607-4F79-8951-5CD7D9A47C6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
