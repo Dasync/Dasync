@@ -122,7 +122,7 @@ namespace Dasync.Serialization.DasyncJson
             if (info.Name != null)
                 _jsonWriter.WritePropertyName(info.Name);
 
-            if (isInitialWrite || info.Type != null || info.ReferenceId != null || info.SpecialId != null)
+            if (isInitialWrite || info.Type != null || info.ItemType != null || info.ReferenceId != null || info.SpecialId != null)
             {
                 _jsonWriter.WriteStartObject();
                 state.MetadataWritten = true;
