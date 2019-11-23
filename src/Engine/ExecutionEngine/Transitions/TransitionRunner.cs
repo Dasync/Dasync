@@ -17,6 +17,7 @@ using Dasync.EETypes.Persistence;
 using Dasync.EETypes.Platform;
 using Dasync.EETypes.Resolvers;
 using Dasync.EETypes.Triggers;
+using Dasync.ExecutionEngine.Continuation;
 using Dasync.ExecutionEngine.Extensions;
 using Dasync.Serialization;
 using Dasync.ValueContainer;
@@ -42,6 +43,7 @@ namespace Dasync.ExecutionEngine.Transitions
         private readonly IMethodStateStorageProvider _methodStateStorageProvider;
         private readonly IValueContainerCopier _valueContainerCopier;
         private readonly IEventSubscriber _eventSubscriber;
+        private readonly ITaskContinuationClassifier _taskContinuationClassifier;
 
         public TransitionRunner(
             ITransitionScope transitionScope,
@@ -60,7 +62,8 @@ namespace Dasync.ExecutionEngine.Transitions
             ISerializerProvider serializeProvder,
             IMethodStateStorageProvider methodStateStorageProvider,
             IValueContainerCopier valueContainerCopier,
-            IEventSubscriber eventSubscriber)
+            IEventSubscriber eventSubscriber,
+            ITaskContinuationClassifier taskContinuationClassifier)
         {
             _transitionScope = transitionScope;
             _asyncStateMachineMetadataProvider = asyncStateMachineMetadataProvider;
@@ -79,6 +82,7 @@ namespace Dasync.ExecutionEngine.Transitions
             _methodStateStorageProvider = methodStateStorageProvider;
             _valueContainerCopier = valueContainerCopier;
             _eventSubscriber = eventSubscriber;
+            _taskContinuationClassifier = taskContinuationClassifier;
         }
 
         public async Task RunAsync(
@@ -130,7 +134,7 @@ namespace Dasync.ExecutionEngine.Transitions
                 Task completionTask;
                 IValueContainer asmValueContainer = null;
 
-                if (TryCreateAsyncStateMachine(methodReference.Definition.MethodInfo, out var asmInstance, out var asmMetadata))
+                if (TryCreateAsyncStateMachine(methodReference.Definition.MethodInfo, methodId.IntentId, out var asmInstance, out var asmMetadata))
                 {
                     var isContinuation = transitionDescriptor.Type == TransitionType.ContinueRoutine;
                     asmValueContainer = await LoadRoutineStateAsync(transitionCarrier, asmInstance, asmMetadata, isContinuation, ct);
@@ -246,6 +250,7 @@ namespace Dasync.ExecutionEngine.Transitions
 
         private bool TryCreateAsyncStateMachine(
             MethodInfo methodInfo,
+            string intentId,
             out IAsyncStateMachine asyncStateMachine,
             out AsyncStateMachineMetadata metadata)
         {
@@ -260,6 +265,46 @@ namespace Dasync.ExecutionEngine.Transitions
             // ASM is a struct in 'release' mode, thus need to box it.
             asyncStateMachine = (IAsyncStateMachine)Activator.CreateInstance(metadata.StateMachineType);
             metadata.State.FieldInfo?.SetValue(asyncStateMachine, -1);
+
+            //if (!string.IsNullOrEmpty(intentId) && AsyncDebugging.IsEnabled)
+            //{
+            //    Task debuggerTask;
+            //    lock (AsyncDebugging.ActiveTasksLock)
+            //    {
+            //        debuggerTask = AsyncDebugging.CurrentActiveTasks.Values.FirstOrDefault(
+            //            t => t.AsyncState is IProxyTaskState state && state.TaskId == intentId);
+            //    }
+
+            //    if (debuggerTask != null)
+            //    {
+            //        var taskBuilder = metadata.Builder.FieldInfo.GetValue(asyncStateMachine);
+            //        var taskField =
+            //            taskBuilder.GetType().GetField("_task", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
+            //            taskBuilder.GetType().GetField("m_task", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            //        if (taskField == null)
+            //        {
+            //            // AsyncVoidTaskBuilder
+            //            var takBuilderField = taskBuilder.GetType().GetField("_builder", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
+            //                taskBuilder.GetType().GetField("m_builder", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            //            var subTaskBuilder = takBuilderField.GetValue(taskBuilder);
+            //            var subTaskField =
+            //                subTaskBuilder.GetType().GetField("_task", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
+            //                subTaskBuilder.GetType().GetField("m_task", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            //            subTaskField.SetValue(subTaskBuilder, debuggerTask);
+            //            takBuilderField.SetValue(taskBuilder, subTaskBuilder);
+            //        }
+            //        else
+            //        {
+            //            taskField.SetValue(taskBuilder, debuggerTask);
+            //        }
+            //        metadata.Builder.FieldInfo.SetValue(asyncStateMachine, taskBuilder);
+
+            //        var continuationObject = debuggerTask.GetContinuationObject();
+            //        // TODO: this resets out-of-context awaiter
+            //        debuggerTask.SetContinuationObject(null);
+            //    }
+            //}
+
             return true;
         }
 
@@ -298,10 +343,12 @@ namespace Dasync.ExecutionEngine.Transitions
 
                 await transitionCarrier.ReadRoutineStateAsync(asmValueContainer, ct);
 
-                // TODO: instead of capturing created tasks, it's easier just to go through all awaiters in the state machine
+                // TODO: instead of capturing created tasks, it's easier just to go through all awaiters in the state machine. However it doe not work if a serialized Task is a variable but not inside an awaiter.
                 if (!string.IsNullOrEmpty(transitionCarrier.ResultTaskId))
-                    UpdateTasksWithAwaitedRoutineResult(
-                        TaskCapture.FinishCapturing(), transitionCarrier);
+                {
+                    UpdateTasksWithAwaitedRoutineResult(TaskCapture.FinishCapturing(), transitionCarrier);
+                    UpdateTasksForDebuggerIfEnabled(asyncStateMachine, metadata, transitionCarrier);
+                }
             }
             else
             {
@@ -322,11 +369,84 @@ namespace Dasync.ExecutionEngine.Transitions
                     // TODO: helper method
                     var taskResultType = TaskAccessor.GetResultType(task);
                     var expectedResultValueType = taskResultType == TaskAccessor.VoidTaskResultType ? typeof(object) : taskResultType;
-                    
+
                     var taskResult = carrier.ReadResult(expectedResultValueType);
                     task.TrySetResult(taskResult);
                 }
             }
+        }
+
+        private void UpdateTasksForDebuggerIfEnabled(
+            IAsyncStateMachine stateMachine,
+            AsyncStateMachineMetadata metadata,
+            ITransitionCarrier transitionCarrier)
+        {
+            if (!AsyncDebugging.IsEnabled)
+                return;
+
+            var resultTaskId = transitionCarrier.ResultTaskId;
+
+            Task debuggerTask;
+            lock (AsyncDebugging.ActiveTasksLock)
+            {
+                debuggerTask = AsyncDebugging.CurrentActiveTasks.Values.FirstOrDefault(
+                    t => t.AsyncState is IProxyTaskState state && state.TaskId == resultTaskId);
+            }
+
+            if (debuggerTask == null)
+                return;
+
+            var continuationObject = debuggerTask.GetContinuationObject();
+            if (continuationObject == null)
+                return;
+
+            var continuationInfo = _taskContinuationClassifier.GetContinuationInfo(continuationObject);
+            if (continuationInfo.Type != TaskContinuationType.AsyncStateMachine)
+                return;
+
+            var originalStateMachine = continuationInfo.Target;
+
+            // A state machine is uniquely identified by the Task inside the Builder.
+            var originalBuilder = metadata.Builder.FieldInfo.GetValue(originalStateMachine);
+            metadata.Builder.FieldInfo.SetValue(stateMachine, originalBuilder);
+
+            var builderCompletionTask = GetCompletionTask(stateMachine, metadata);
+            builderCompletionTask.SetContinuationObject(null);
+
+            var isAwaiterFound = false;
+            foreach (var localVar in metadata.LocalVariables)
+            {
+                if (!TaskAwaiterUtils.IsAwaiterType(localVar.FieldInfo.FieldType))
+                    continue;
+
+                var awaiter = localVar.FieldInfo.GetValue(stateMachine);
+                if (awaiter == null)
+                    continue;
+
+                var task = TaskAwaiterUtils.GetTask(awaiter);
+                if (task == null)
+                    continue;
+
+                if (task.AsyncState is IProxyTaskState s && s.TaskId == resultTaskId)
+                {
+                    isAwaiterFound = true;
+                    TaskAwaiterUtils.SetTask(awaiter, debuggerTask);
+                    localVar.FieldInfo.SetValue(stateMachine, awaiter);
+                    break;
+                }
+            }
+
+            if (!isAwaiterFound)
+                return;
+
+            // TODO: helper method
+            var taskResultType = TaskAccessor.GetResultType(debuggerTask);
+            var expectedResultValueType = taskResultType == TaskAccessor.VoidTaskResultType ? typeof(object) : taskResultType;
+            var taskResult = transitionCarrier.ReadResult(taskResultType);
+
+            // Reset continuation - the engine invokes MoveNext.
+            debuggerTask.SetContinuationObject(null);
+            debuggerTask.TrySetResult(taskResult);
         }
 
         private static IValueContainer GetValueContainerProxy(

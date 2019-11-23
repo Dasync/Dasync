@@ -33,7 +33,10 @@ namespace Dasync.Accessors
             }
         }
 
-        public static object ActiveTasksLock => s_activeTasksLock.GetValue(null);
+        public static object ActiveTasksLock =>
+            s_activeTasksLock != null
+            ? s_activeTasksLock.GetValue(null)
+            : CurrentActiveTasks;
 
         public static Dictionary<int, Task> CurrentActiveTasks =>
             (Dictionary<int, Task>)s_currentActiveTasks.GetValue(null);

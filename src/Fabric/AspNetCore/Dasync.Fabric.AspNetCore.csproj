@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageVersion>2.0.0-beta3</PackageVersion>
+    <PackageVersion>2.0.0-beta4</PackageVersion>
     <Authors>Dasync</Authors>
     <Copyright>Copyright © 2019 D-ASYNC</Copyright>
     <Title>ASP NET Core runtime fabric for D-ASYNC microservices</Title>

@@ -89,6 +89,12 @@ namespace Dasync.Accessors
 
         public static object GetContinuationObject(this Task task) => _getContinutationObjet(task);
 
+        public static void SetContinuationObject(this Task task, object continuationobject)
+        {
+            var m_continuationObject = typeof(Task).GetField("m_continuationObject", BindingFlags.Instance | BindingFlags.NonPublic);
+            m_continuationObject.SetValue(task, continuationobject);
+        }
+
         public static void ResetContinuation(this Task task)
         {
             var m_continuationObject = typeof(Task).GetField("m_continuationObject", BindingFlags.Instance | BindingFlags.NonPublic);
