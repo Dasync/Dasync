@@ -61,7 +61,7 @@ namespace DasyncFeatures.Feature5
         {
             Console.WriteLine("[manager] The visitor complained about a fly in the drink.");
 
-            // Similaril to example #1, this is a call to a sub-routine,
+            // Similarly to example #1, this is a call to a sub-routine,
             // but of a different service with a different deployment (usually).
             await _baristaWorker.PleaseMakeAnotherCoffee();
         }

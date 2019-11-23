@@ -88,7 +88,7 @@ namespace DasyncFeatures.Feature6
             // services can be viewed as sending commands and listening to events.
 
             // Unlike using regular synchronous service client (e.g. http), this
-            // method is guaranteed to reliably execute when a message passing is used.
+            // method is guaranteed to reliably execute when message passing is used.
         }
     }
 
