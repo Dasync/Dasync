@@ -11,7 +11,7 @@ The mission of D-ASYNC is to convert programming-language abstractions into comm
 
 
 ## Basic Programming Concepts in C#
-The following examples may look trivial and as for a single-process application, but D-ASYNC platform makes them run (without any modifications) in a resilient, persistent, scalable, and distributed manner.
+The following examples may look trivial and as for a single-process application, but D-ASYNC platform makes them run (without any modifications) in a resilient, persistent, scalable, and distributed manner. The new service-oriented syntax will be introduced with the [CloudSharp](https://github.com/Dasync/CloudSharp) project.
 
 1. Inter-Service Communication.
 ```csharp
