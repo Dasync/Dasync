@@ -4,7 +4,7 @@
 
 ## Getting Started
 
-- Core Concepts
+- [Core Concepts](Core-Concepts.md)
 - Extensibility
 - [Demo Application](../examples/AspNetCoreDocker/README.md)
 
