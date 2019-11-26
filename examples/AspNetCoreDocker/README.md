@@ -1,4 +1,4 @@
-## Description
+# Description
 
 This demo shows two services - `Users` and `AntiFraud`, their internal interaction via commands and events, and external interaction via queries and commands.
 
@@ -6,7 +6,7 @@ The `Users` service can register a new user (command), suspend a user (make inac
 
 ![Service Diagram](assets/service-diagram.png)
 
-## Technical Scope
+# Technical Scope
 
 The demo shows D-ASYNC's core concept of Clean Code where non-functional aspects of service communication don't get intermixed with the business logic regardless if the API is asynchronous or not, if the execution guarantee is at-least-once or at-most-once, if intermediate context of a workflow needs to be persisted or not.
 
@@ -16,9 +16,9 @@ The structure of the solution is based on the Onion Architecture (Hexagonal Arch
 
 ![Service Diagram](assets/dasync-onion-architecture.png)
 
-## Launch Options
+# Launch Options
 
-### 1. Docker Compose
+## 1. Docker Compose
 Select `docker-compose.dcproj` as the startup target. This option will start the two services, a [RabbitMQ](https://www.rabbitmq.com) message broker, and a [Cassandra](https://cassandra.apache.org) NoSQL database. 
 
 The `Users.Runtime` and `AntiFraud.Runtime` projects will use their `appsettings.Development.json` configuration file, which tells the D-ASYNC engine to use RabbitMQ message queues for both commands and queries, and RabbitMQ exchanges for events for service inter-communication. You can still hit HTTP  endpoints externally. Cassandra database is used to store methods' execution state and their results for asynchronous HTTP calls (result polling).
@@ -35,7 +35,7 @@ Using message queues for queries is not effective. To use HTTP for queries only 
 ```
 So that commands and events will still be using RabbitMQ. Although, there is no inter-service querying example shown in the code.
 
-### 2. IIS Express
+## 2. IIS Express
 In some cases, it is easier to launch light-weight service instances hosted locally in IIS Express when no other containers are needed rather than services themselves. Go to properties of the `AspNetCoreDocker` solution, then the `Startup Project` tab, and select the `Multiple startup projects` option. Then set `Action` to `Start` for the `Users.Runtime` and `AntiFraud.Runtime` projects.
 
 ![Select Multiple Startup Projects](assets/multiple-startup-projects.png)
@@ -44,10 +44,10 @@ With this option, the `appsettings.IISExpress.json` configuration file is used, 
 
 The downside of this light-weight option is the need for configuring ports for every service since there is no service discovery mechanism is used.
 
-## Testing API
+# Testing API
 The HTTP-based endpoints have a simple convention for executing commands and queries.
 
-### Queries
+## Queries
 To run a service query, do `HTTP GET` to:
 `http[s]://{host}:{port}/api/{service-name}/{method-name}?{arg1}={value1}&{arg2}={value2}`
 
@@ -69,7 +69,7 @@ curl http://localhost:52979/api/Users/GetActiveUsers?top=10
 Invoke-WebRequest http://localhost:52979/api/Users/GetActiveUsers?top=10
 ```
 
-### Commands
+## Commands
 To invoke a service command, do `HTTP POST` to:
 `http[s]://{host}:{port}/api/{service-name}/{method-name}`
 with `application/json` body representing method's arguments:
@@ -100,7 +100,7 @@ Invoke-WebRequest -Method 'POST' `
 
 ```
 
-### Asynchronous Commands
+## Asynchronous Commands
 To invoke a command asynchronously, add the `Prefer` HTTP header with the value of `respond-async` to the request (see [RFC7240](https://tools.ietf.org/html/rfc7240)). The response is HTTP 202 Accepted and the `X-Intent-ID` contains a unique execution ID that is used for polling as shown below. To perform a long poll, add e.g. `Prefer: wait=20` to the poll GET request
 
 ```bash
@@ -122,3 +122,61 @@ $response = Invoke-WebRequest -Method 'POST' `
 $intentId = $response.Headers['X-Intent-ID']
 Invoke-WebRequest "http://localhost:52979/api/Users/RegisterUser/$intentId"
 ```
+
+# D-ASYNC Components for ASP .NET Core
+
+In addition to standard files required by ASP .NET Core, the use of D-ASYNC requires the following project modifications:
+
+1. Project reference to the [Dasync.Fabric.AspNetCore NuGet package](https://www.nuget.org/packages/Dasync.Fabric.AspNetCore) (and few other NuGet packages for communication and persistence).
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <PackageReference
+      Include="Dasync.Fabric.AspNetCore"
+      Version="2.0.0-beta3" />
+  </ItemGroup>
+</Project>
+```
+2. Service communication model and D-ASYNC infrastructure services in a `Startup` class.
+```csharp
+public class Startup
+{
+  public void ConfigureServices(IServiceCollection services)
+  {
+    // Service communication model
+    var communicationModel = CommunicationModelBuilder.Build(...);
+    // Base infrastructure for ASP .NET Core
+    services.AddDasyncForAspNetCore(communicationModel);
+    // Communication and persistence
+    services.AddModules(
+        Dasync.Communication.RabbitMQ.DI.Bindings,
+        Dasync.Persistence.Cassandra.DI.Bindings);
+  }
+}
+```
+3. D-ASYNC HTTP request handler in a `Startup` class.
+```csharp
+public class Startup
+{
+  public void Configure(IApplicationBuilder app)
+  {
+    app.UseDasync();
+  }
+}
+```
+4. Communication, persistence, and behavior configuration in the configuration (like `appsetting.json` file or any other sources).
+```json
+{
+  "dasync": {
+    "communication": {
+      "type": "rabbitmq",
+      "hostName": "rabbitmq"
+    },
+    "persistence": {
+      "type": "cassandra",
+      "contactPoint": "cassandra"
+    }
+  }
+}
+```
+The rest of the code in this example is typical to the technologies used.
