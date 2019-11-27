@@ -20,7 +20,7 @@
 
 ## Configuration
 - [Configuration Structure](Configuration-Structure.md)
-- Method Behavior Options
+- [Method Behavior Options](Method-Behavior-Options.md)
 - Communication Options
 - Persitence Options
 - Tracing Options
