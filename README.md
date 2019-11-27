@@ -9,6 +9,7 @@ What if you don't need to write API controllers? How about you don't need to wri
 
 The mission of D-ASYNC is to convert programming-language abstractions into communication primitives of modern cloud applications based on distributed services. The ability to use the language itself helps to focus on the core value of your application, making it easy to write, read, evolve, and maintain.
 
+![D-ASYNC Concept](dasync-concept.png)
 
 ## Basic Programming Concepts in C#
 The following examples may look trivial and as for a single-process application, but D-ASYNC platform makes them run (without any modifications) in a resilient, persistent, scalable, and distributed manner. The new service-oriented syntax will be introduced with the [CloudSharp](https://github.com/Dasync/CloudSharp) project.
