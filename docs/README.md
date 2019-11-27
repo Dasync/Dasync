@@ -19,11 +19,11 @@
 - Error Handling
 
 ## Configuration
-- Configuration Structure
+- [Configuration Structure](Configuration-Structure.md)
 - Method Behavior Options
-- Communication
-- Persitence
-- Tracing
+- Communication Options
+- Persitence Options
+- Tracing Options
 
 ## Security
 - HTTP Authentication
