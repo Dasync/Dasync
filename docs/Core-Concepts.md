@@ -1,5 +1,10 @@
 # D-ASYNC Core Concepts
 
+## Services
+Modern cloud and on-premises applications have successfully adopted the microservice architecture, which enables not only continuous isolated deployments but also helps to draw a domain knowledge boundary in the organization structure.
+
+A __service__ is a logical unit that encompasses certain functionality which is accessible externally via an API. A basic example would be a user service that allows registering in a system, or deactivate an account. Services may directly or indirectly communicate with other services to achieve a particular business behavior.
+
 ## Service Communication Primitives
 The basic building blocks of a multi-service application are queries, commands, and events. Regardless of the underlying technical choices, these primitives describe what services do and their logical dependencies.
 
