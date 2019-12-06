@@ -18,30 +18,33 @@ namespace Dasync.Communication.RabbitMQ
 
         public int GetHashCode(ConnectionSettings x)
         {
-            int code = 0;
+            unchecked
+            {
+                int code = 0;
 
-            if (x.Connection != null)
-                code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(x.Connection);
+                if (x.Connection != null)
+                    code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(x.Connection);
 
-            if (x.Endpoint != null)
-                code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(x.Endpoint);
+                if (x.Endpoint != null)
+                    code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(x.Endpoint);
 
-            if (x.UserName != null)
-                code = code * 104651 + x.UserName.GetHashCode();
+                if (x.UserName != null)
+                    code = code * 104651 + x.UserName.GetHashCode();
 
-            if (x.Password != null)
-                code = code * 104651 + x.Password.GetHashCode();
+                if (x.Password != null)
+                    code = code * 104651 + x.Password.GetHashCode();
 
-            if (x.HostName != null)
-                code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(x.HostName);
+                if (x.HostName != null)
+                    code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(x.HostName);
 
-            if (x.Port != null)
-                code = code * 104651 + x.Port.Value;
+                if (x.Port != null)
+                    code = code * 104651 + x.Port.Value;
 
-            if (x.VirtualHost != null)
-                code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(x.VirtualHost);
+                if (x.VirtualHost != null)
+                    code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(x.VirtualHost);
 
-            return code;
+                return code;
+            }
         }
     }
 }

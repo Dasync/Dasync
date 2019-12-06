@@ -31,21 +31,24 @@ namespace Dasync.ExecutionEngine.Configuration
 
         public override int GetHashCode()
         {
-            int code = 0;
+            unchecked
+            {
+                int code = 0;
 
-            code = code * 104651 + (int)ServiceCategory;
-            code = code * 104651 + ((int)PrimitiveType + 11);
+                code = code * 104651 + (int)ServiceCategory;
+                code = code * 104651 + ((int)PrimitiveType + 11);
 
-            if (ServiceName != null)
-                code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(ServiceName);
+                if (ServiceName != null)
+                    code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(ServiceName);
 
-            if (PrimitiveName != null)
-                code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(PrimitiveName);
+                if (PrimitiveName != null)
+                    code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(PrimitiveName);
 
-            if (SectionName != null)
-                code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(SectionName);
+                if (SectionName != null)
+                    code = code * 104651 + StringComparer.OrdinalIgnoreCase.GetHashCode(SectionName);
 
-            return code;
+                return code;
+            }
         }
 
         public override string ToString()
