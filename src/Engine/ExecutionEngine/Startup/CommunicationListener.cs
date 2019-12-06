@@ -165,11 +165,11 @@ namespace Dasync.ExecutionEngine.Startup
 
                     var hasQueriesOverride = (_communicationModelConfiguration
                             .GetQueriesOverrideLevels(serviceDefinition, CommunicationSectionName)
-                             & (ConfigOverrideLevels.ServiceTypePrimitives | ConfigOverrideLevels.ServicePrimitives)) != default;
+                             & (ConfigOverrideLevels.BasePrimitives | ConfigOverrideLevels.ServiceTypePrimitives | ConfigOverrideLevels.ServicePrimitives)) != default;
 
                     var hasCommandsOverride = (_communicationModelConfiguration
                             .GetCommandsOverrideLevels(serviceDefinition, CommunicationSectionName)
-                            & (ConfigOverrideLevels.ServiceTypePrimitives | ConfigOverrideLevels.ServicePrimitives)) != default;
+                            & (ConfigOverrideLevels.BasePrimitives | ConfigOverrideLevels.ServiceTypePrimitives | ConfigOverrideLevels.ServicePrimitives)) != default;
 
                     if (hasQueriesOverride || hasCommandsOverride)
                     {
