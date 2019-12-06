@@ -102,11 +102,8 @@ namespace Dasync.ExecutionEngine.Transitions
             }
             else if (_methodInvocationData != null)
             {
-                var result = _methodInvocationData.Method.CopyTo(
-                    new PersistedMethodId
-                    {
-                        IntentId = _methodInvocationData.IntentId,
-                    });
+                var result = _methodInvocationData.Method.CopyTo(new PersistedMethodId());
+                result.IntentId = _methodInvocationData.IntentId;
                 return Task.FromResult(result);
             }
             else if (_methodContinuationData != null)
