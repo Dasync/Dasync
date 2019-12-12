@@ -3,13 +3,13 @@
 [![Stories on Medium](https://img.shields.io/static/v1?label=&message=Stories&color=grey&logo=medium&logoColor=white&labelColor=black)](https://medium.com/@sergiis)
 [![D-ASYNC | Cloud-Native Apps Without Frameworks](dasync-banner.jpg)](http://dasync.io)
 
-## What is D·ASYNC?
+## D-ASYNC: Zero-Cost Microservices
 
-What if you don't need to write API controllers? How about you don't need to write message and event handlers? Imagine if you can create services and entirely skip the non-functional boilerplate code for inter-service communication and workflows.
-
-The mission of D-ASYNC is to convert programming-language abstractions into communication primitives of modern cloud applications based on distributed services. The ability to use the language itself helps to focus on the core value of your application, making it easy to write, read, evolve, and maintain.
+D-ASYNC is a multifaceted and comprehensive solution for building service-oriented applications. It is based on the new Service-Oriented Programming Language paradigms, which provide an extendible framework for inter-service communication (HTTP, gRPC, message queues, event streams), a unique language-integrated stateful workflow engine, implementation of best microservice practices, a unified approach for distributed tracing, API generator and versioning capabilities, error-handler free clean code.
 
 ![D-ASYNC Concept](dasync-concept.png)
+
+The mission of D-ASYNC is to give developers a superpower of zero-cost development of scalable, reliable, and secure microservices. The ability to use the language itself helps to focus on the core value of your application, making it easy to write, read, evolve, and maintain.
 
 ## Basic Programming Concepts in C#
 The following examples may look trivial and as for a single-process application, but D-ASYNC platform makes them run (without any modifications) in a resilient, persistent, scalable, and distributed manner. The new service-oriented syntax will be introduced with the [CloudSharp](https://github.com/Dasync/CloudSharp) project.
@@ -216,6 +216,26 @@ The current beta version is available to the public as demonstrated in the [AspN
 
 You may [sign-up for the early experience](https://www.dasync.io/#comp-jyrluu0u) with a final managed solution that is under development.
 
+## Problems it Solves
+1. Unified Service Communication - both external and internal, HTTP, gRPC, message queues, event streams.
+1. API specification is auto-generated.
+1. Pub-Sub is simply declarative in the code.
+1. Transparent serialization and wire format.
+1. Stateful workflows are merely methods.
+1. Minimal learning curve.
+1. Clean Code up to 5x smaller in size.
+1. Near-zero cost of programming microservices.
+1. Delays design decisions.
+1. No specific framework is needed.
+1. Exactly once execution for mission-critical apps.
+12. No error handlers in the code.
+13. Simplified tesing due to absense of non-functional code.
+14. Easy API and workflow versioning.
+15. Unified approach for distributed tracing.
+
+## Why D-ASYNC
+
+We believe that every developer deserves the right of creating microservices without using any framework 🤍
 
 ## More Info
 
@@ -228,8 +248,3 @@ You may [sign-up for the early experience](https://www.dasync.io/#comp-jyrluu0u)
 * [The story of development on DZone](https://dzone.com/articles/d-async-cloud-native-apps)
 * [Cloud# - Service-Oriented Language Extensions for C#](https://github.com/Dasync/CloudSharp)
 * [NuGet packages](https://www.nuget.org/packages?q=dasync)
-
-
-## Why D·ASYNC?
-
-We believe that every developer deserves the right of creating microservices without using any framework 🤍
