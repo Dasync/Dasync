@@ -217,7 +217,7 @@ The current beta version is available to the public as demonstrated in the [AspN
 You may [sign-up for the early experience](https://www.dasync.io/#comp-jyrluu0u) with a final managed solution that is under development.
 
 ## Problems it Solves
-1. Unified Service Communication - both external and internal, HTTP, gRPC, message queues, event streams.
+1. Unified Service Communication - both external and internal; HTTP, gRPC, message queues, event streams.
 1. API specification is auto-generated.
 1. Pub-Sub is simply declarative in the code.
 1. Transparent serialization and wire format.
@@ -236,6 +236,13 @@ You may [sign-up for the early experience](https://www.dasync.io/#comp-jyrluu0u)
 ## Why D-ASYNC
 
 We believe that every developer deserves the right of creating microservices without using any framework 🤍
+
+## Live Chat
+Had a little chance to express your opinion, experience, pain points, or proposals while developing microservices?<br/>
+[Accept the free invite on gitter.im](https://gitter.im/dasync/community) and tell your story even if it may seem silly or insignificant :D
+
+[<img src="https://avatars0.githubusercontent.com/u/12243948?s=460&v=4" alt="drawing" width="100"/>](https://github.com/kind-serge)
+<br/>— Serge Semenov
 
 ## More Info
 
