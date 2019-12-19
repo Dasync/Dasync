@@ -229,7 +229,7 @@ You may [sign-up for the early experience](https://www.dasync.io/#comp-jyrluu0u)
 1. No specific framework is needed.
 1. Exactly once execution for mission-critical apps.
 12. No error handlers in the code.
-13. Simplified tesing due to absense of non-functional code.
+13. Simplified testing due to the absence of non-functional code.
 14. Easy API and workflow versioning.
 15. Unified approach for distributed tracing.
 
