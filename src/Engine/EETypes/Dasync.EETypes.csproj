@@ -13,7 +13,7 @@
     <Title>Execution Engine Types</Title>
     <PackageDescription>Contracts for the core and extensions.</PackageDescription>
     <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/gears244.png</PackageIconUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>d-async;dasync;core;engine</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

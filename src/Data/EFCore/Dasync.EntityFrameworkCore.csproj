@@ -12,7 +12,7 @@
     <Title>EFCore support for D-ASYNC</Title>
     <PackageDescription>EFCore support for D-ASYNC that adds Unit-of-Work, DBContext and entity serialization.</PackageDescription>
     <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/gears244.png</PackageIconUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>d-async;dasync;efcore;entity framework</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

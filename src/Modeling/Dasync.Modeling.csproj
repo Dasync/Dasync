@@ -13,7 +13,7 @@
     <Title>Communication modeling of D-ASYNC microservices</Title>
     <PackageDescription>Describes microservices, their queries, commands, and events.</PackageDescription>
     <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/letter244.png</PackageIconUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>d-async;dasync;model;modeling;microservice;communication;query;command;event</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

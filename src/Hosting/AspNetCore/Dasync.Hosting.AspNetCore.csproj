@@ -11,7 +11,7 @@
     <Title>ASP NET Core hosting for microservices</Title>
     <PackageDescription>Hosting environment for D-ASYNC microservice ecosystem that processes HTTP requests.</PackageDescription>
     <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/letter244.png</PackageIconUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>d-async;dasync;AspNet;AspNetCore;HTTP;hosting;microservice</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

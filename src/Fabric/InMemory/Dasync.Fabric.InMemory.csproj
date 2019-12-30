@@ -11,7 +11,7 @@
     <Title>In-memory emulation runtime fabric for D-ASYNC microservices</Title>
     <PackageDescription>Binds together all necessary components to run D-ASYNC in-memory for advanced development purposes.</PackageDescription>
     <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/letter244.png</PackageIconUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>d-async;dasync;in-memory;emulation;fabric;microservice</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

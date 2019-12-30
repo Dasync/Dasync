@@ -13,7 +13,7 @@
     <Title>Accessors to .NET Runtime</Title>
     <PackageDescription>Used by the D-ASYNC Execution Engine.</PackageDescription>
     <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/gears244.png</PackageIconUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>d-async;dasync;core;engine;accessors</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

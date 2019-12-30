@@ -12,9 +12,8 @@
     <Copyright>Copyright © 2019 D-ASYNC</Copyright>
     <Title>RabbitMQ communication for D-ASYNC microservices</Title>
     <PackageDescription>Enables use of RabbitMQ queues to execute commands and queries, and exchanges to publish and listen to events between microservices powered by D-ASYNC.</PackageDescription>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/letter244.png</PackageIconUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>d-async;dasync;rabbitmq;communication;connector;microservice</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

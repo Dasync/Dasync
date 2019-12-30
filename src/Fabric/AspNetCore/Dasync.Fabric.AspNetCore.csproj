@@ -11,7 +11,7 @@
     <Title>ASP NET Core runtime fabric for D-ASYNC microservices</Title>
     <PackageDescription>Binds together all necessary components to run D-ASYNC on ASP NET Core with minimal effort.</PackageDescription>
     <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/letter244.png</PackageIconUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>d-async;dasync;AspNet;AspNetCore;HTTP;fabric;microservice</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

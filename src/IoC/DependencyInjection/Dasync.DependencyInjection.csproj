@@ -13,7 +13,7 @@
     <Title>D-ASYNC-specific DI support</Title>
     <PackageDescription>DI-related abstractions and helpers specific to D-ASYNC infrastructure.</PackageDescription>
     <PackageIconUrl>https://dasync.blob.core.windows.net/public/media/gears244.png</PackageIconUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/Dasync/Dasync/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>d-async;dasync;DI;IoC;dependency injection</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
