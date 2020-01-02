@@ -1,8 +1,9 @@
 ﻿[![Build Status](https://github.com/Dasync/Dasync/workflows/keeps/badge.svg?event=push&branch=master)](https://github.com/Dasync/Dasync/actions?workflow=keeps)
-[![Follow on Twitter](https://img.shields.io/twitter/follow/kind_serge.svg?style=social&logo=twitter)](https://twitter.com/intent/follow?screen_name=kind_serge)
-[![Stories on Medium](https://img.shields.io/static/v1?label=&message=Stories&color=grey&logo=medium&logoColor=white&labelColor=black)](https://medium.com/@sergiis)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/d_async.svg?style=social&logo=twitter)](https://twitter.com/intent/follow?screen_name=d_async)
+[![Stories on Medium](https://img.shields.io/static/v1?label=&message=Best%20Practices&color=grey&logo=medium&logoColor=white&labelColor=black)](https://medium.com/dasync)
 [![D-ASYNC | Cloud-Native Apps Without Frameworks](dasync-banner.jpg)](http://dasync.io)
 
+> Sign up for the [early invite](https://www.dasync.io/#comp-jyrluu0u) to the fully managed experience with D-ASYNC Platform.
 ## D-ASYNC: Zero-Cost Microservices
 
 D-ASYNC is a multifaceted and comprehensive solution for building service-oriented applications. It is based on the new Service-Oriented Programming Language paradigms, which provide an extendible framework for inter-service communication (HTTP, gRPC, message queues, event streams), a unique language-integrated stateful workflow engine, implementation of best microservice practices, a unified approach for distributed tracing, API generator and versioning capabilities, error-handler free clean code.
@@ -12,7 +13,7 @@ D-ASYNC is a multifaceted and comprehensive solution for building service-orient
 The mission of D-ASYNC is to give developers a superpower of zero-cost development of scalable, reliable, and secure microservices. The ability to use the language itself helps to focus on the core value of your application, making it easy to write, read, evolve, and maintain.
 
 ## Basic Programming Concepts in C#
-The following examples may look trivial and as for a single-process application, but D-ASYNC platform makes them run (without any modifications) in a resilient, persistent, scalable, and distributed manner. The new service-oriented syntax will be introduced with the [CloudSharp](https://github.com/Dasync/CloudSharp) project.
+The following examples may look trivial and as for a single-process application, but D-ASYNC technology makes them run (without any modifications) in a resilient, persistent, scalable, and distributed manner. The new service-oriented syntax will be introduced with the [CloudSharp](https://github.com/Dasync/CloudSharp) project.
 
 1. Inter-Service Communication.
 ```csharp
@@ -208,15 +209,21 @@ public class CoffeeMachine
 ```
 
 
-## Demo
+## Quick Start
 
-The technology and the full solution is currently matures with early adopters in a closed environment.
+The technology currently matures with [early adopters](https://www.dasync.io/#comp-jyuf44f5) in a closed environment. You can self-start by following these guides:
 
-The current beta version is available to the public as demonstrated in the [AspNetCoreDocker](examples/AspNetCoreDocker) example application.
+* [Demo App](examples/AspNetCoreDocker)
+* [Walkthrough](docs/Tutorial-1-Create-First-Service.md)
+* [Core Concepts](docs/Core-Concepts.md)
 
-You may [sign-up for the early experience](https://www.dasync.io/#comp-jyrluu0u) with a final managed solution that is under development.
+> Cannot find what you are looking for? [Ask me a question](https://gitter.im/dasync/community)!<br/>
+[<img src="https://avatars0.githubusercontent.com/u/12243948?s=460&v=4" alt="drawing" width="100"/>](https://twitter.com/kind_serge)<br/>
+— Serge Semenov
+
 
 ## Problems it Solves
+High-level language-integrated abstractions hide a lot of implementation details like:
 1. Unified Service Communication - both external and internal; HTTP, gRPC, message queues, event streams.
 1. API specification is auto-generated.
 1. Pub-Sub is simply declarative in the code.
@@ -233,25 +240,23 @@ You may [sign-up for the early experience](https://www.dasync.io/#comp-jyrluu0u)
 14. Easy API and workflow versioning.
 15. Unified approach for distributed tracing.
 
-## Why D-ASYNC
-
-We believe that every developer deserves the right of creating microservices without using any framework 🤍
-
-## Live Chat
-Had a little chance to express your opinion, experience, pain points, or proposals while developing microservices?<br/>
-[Accept the free invite on gitter.im](https://gitter.im/dasync/community) and tell your story even if it may seem silly or insignificant :D
-
-[<img src="https://avatars0.githubusercontent.com/u/12243948?s=460&v=4" alt="drawing" width="100"/>](https://github.com/kind-serge)
-<br/>— Serge Semenov
-
 ## More Info
 
+Publications:
+* [High-level Overview on TheNewStack.io](https://thenewstack.io/meet-d-async-a-framework-for-writing-distributed-cloud-native-applications/)
+* [The story of development on DZone](https://dzone.com/articles/d-async-cloud-native-apps)
+* [Microservices Best Practices](https://medium.com/dasync)
+
+"Conquest of Distributed Systems":
 - [Part 1: Business Workflows](https://medium.com/@sergiis/conquest-of-distributed-systems-part-1-business-workflows-fdda4b7b1c42)
 - [Part 2: Orchestration with Actor Model](https://medium.com/@sergiis/actor-model-hidden-in-plain-sight-the-era-of-true-serverless-part-2-6f61470955e9)
 - [Part 3: Actor Model Hidden in Plain Sight](https://medium.com/@sergiis/conquest-of-distributed-systems-part-3-actor-model-hidden-in-plain-sight-b06126a62ae)
 - [Part 4: The Now and the Vision](https://medium.com/@sergiis/conquest-of-distributed-systems-part-4-the-now-and-the-vision-e844c9aee2c7)
 
-* [High-level Overview on TheNewStack.io](https://thenewstack.io/meet-d-async-a-framework-for-writing-distributed-cloud-native-applications/)
-* [The story of development on DZone](https://dzone.com/articles/d-async-cloud-native-apps)
+References:
 * [Cloud# - Service-Oriented Language Extensions for C#](https://github.com/Dasync/CloudSharp)
 * [NuGet packages](https://www.nuget.org/packages?q=dasync)
+
+## Why D-ASYNC
+
+We believe that every developer deserves the right of creating microservices without using any framework 🤍

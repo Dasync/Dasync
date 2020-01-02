@@ -5,8 +5,8 @@
 ## Getting Started
 
 - [Core Concepts](Core-Concepts.md)
-- Extensibility
 - [Demo Application](../examples/AspNetCoreDocker/README.md)
+- [Tutorial 1: Create First Service](Tutorial-1-Create-First-Service.md)
 
 ## Programming
 - Communication Model

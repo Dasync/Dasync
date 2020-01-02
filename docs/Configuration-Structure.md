@@ -301,23 +301,23 @@ The following template contains all possbile levels described above.
     "dasync": {
         // LEVEL 1
 
-        // [bahavior settings]
+        // [behavior settings]
         "communication": {},
         "persistence": {},
 
         // LEVEL 2
         
         "queries": {
-            // [bahavior settings]
+            // [behavior settings]
             "communication": {}
         },
         "commands": {
-            // [bahavior settings]
+            // [behavior settings]
             "communication": {},
             "persistence": {}
         },
         "events": {
-            // [bahavior settings]
+            // [behavior settings]
             "communication": {}
         },
 
@@ -326,23 +326,23 @@ The following template contains all possbile levels described above.
             // LEVEL 3
         
             "_local": {
-                // [bahavior settings]
+                // [behavior settings]
                 "communication": {},
                 "persistence": {},
 
                 // LEVEL 4
         
                 "queries": {
-                    // [bahavior settings]
+                    // [behavior settings]
                     "communication": {}
                 },
                 "commands": {
-                    // [bahavior settings]
+                    // [behavior settings]
                     "communication": {},
                     "persistence": {}
                 },
                 "events": {
-                    // [bahavior settings]
+                    // [behavior settings]
                     "communication": {}
                 }
             },
@@ -350,23 +350,23 @@ The following template contains all possbile levels described above.
             // LEVEL 3
         
             "_extenal": {
-                // [bahavior settings]
+                // [behavior settings]
                 "communication": {},
                 "persistence": {},
 
                 // LEVEL 4
         
                 "queries": {
-                    // [bahavior settings]
+                    // [behavior settings]
                     "communication": {}
                 },
                 "commands": {
-                    // [bahavior settings]
+                    // [behavior settings]
                     "communication": {},
                     "persistence": {}
                 },
                 "events": {
-                    // [bahavior settings]
+                    // [behavior settings]
                     "communication": {}
                 }
             },
@@ -374,7 +374,7 @@ The following template contains all possbile levels described above.
             // LEVEL 5
         
             "{serviceName}": {
-                // [bahavior settings]
+                // [behavior settings]
                 "communication": {},
                 "persistence": {},
 
@@ -383,14 +383,14 @@ The following template contains all possbile levels described above.
                     // LEVEL 6
         
                     "_all": {
-                        // [bahavior settings]
+                        // [behavior settings]
                         "communication": {}
                     },
 
                     // LEVEL 7
         
                     "{methodName}": {
-                        // [bahavior settings]
+                        // [behavior settings]
                         "communication": {}
                     }
                 },
@@ -399,7 +399,7 @@ The following template contains all possbile levels described above.
                     // LEVEL 6
         
                     "_all": {
-                        // [bahavior settings]
+                        // [behavior settings]
                         "communication": {},
                         "persistence": {}
                     },
@@ -407,7 +407,7 @@ The following template contains all possbile levels described above.
                     // LEVEL 7
 
                     "{methodName}": {
-                        // [bahavior settings]
+                        // [behavior settings]
                         "communication": {},
                         "persistence": {}
                     }
@@ -417,14 +417,14 @@ The following template contains all possbile levels described above.
                     // LEVEL 6
         
                     "_all": {
-                        // [bahavior settings]
+                        // [behavior settings]
                         "communication": {}
                     },
 
                     // LEVEL 7
 
                     "{eventName}": {
-                        // [bahavior settings]
+                        // [behavior settings]
                         "communication": {}
                     }
                 }
